@@ -1,0 +1,2 @@
+﻿ts,session_id,question,intent,sku,latency_ms,handoff,clicked_buy,cost_vnd,correct
+2026-10-30 14:05:00,abc123,Bánh này cay không?,INTENT_PRODUCT_INFO,BTT-001,2100,false,false,80,true
