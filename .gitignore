@@ -1,9 +1,10 @@
 .env
 *.db
 *.log
+.venv/
 __pycache__/
 .pytest_cache/
-.venv/
+.ruff_cache/
 node_modules/
 .next/
 out/
