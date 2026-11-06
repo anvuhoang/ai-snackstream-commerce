@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, ChartNoAxesCombined, ClipboardList, LayoutDashboard, LogOut, MessagesSquare, Package, Radio } from "lucide-react";
+import { Boxes, ChartNoAxesCombined, ClipboardList, LayoutDashboard, LogOut, MessagesSquare, Package, Radio, Tags } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext } from "react";
@@ -20,7 +20,8 @@ export function useAdmin() {
 // `phase` marks sections that are planned but not built yet (see docs/ROADMAP.md).
 const NAV = [
   { href: "/admin", label: "Tổng quan", Icon: LayoutDashboard },
-  { href: "/admin/products", label: "Sản phẩm", Icon: Package, phase: 1 },
+  { href: "/admin/products", label: "Sản phẩm", Icon: Package },
+  { href: "/admin/categories", label: "Danh mục", Icon: Tags },
   { href: "/admin/orders", label: "Đơn hàng", Icon: ClipboardList, phase: 2 },
   { href: "/admin/inventory", label: "Kho", Icon: Boxes, phase: 3 },
   { href: "/admin/analytics", label: "Dashboard", Icon: ChartNoAxesCombined, phase: 4 },
