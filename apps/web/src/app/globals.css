@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@import "../styles/app.css" layer(components);
+@import "../styles/motion.css" layer(components);
+@import "../styles/shop.css" layer(components);
