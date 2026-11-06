@@ -1,0 +1,34 @@
+# Render blueprint for the staging API + database. The web app is deployed separately on Vercel (see docs/DEPLOY.md).
+databases:
+  - name: snackstream-db
+    plan: free
+    databaseName: snackstream
+    user: snackstream
+
+services:
+  - type: web
+    name: snackstream-api
+    runtime: docker
+    rootDir: api
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: snackstream-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      # Staging has no shell, so migrate and seed the labelled demo catalog at start-up.
+      - key: RUN_MIGRATIONS_ON_START
+        value: "true"
+      - key: SEED_DEMO_CATALOG
+        value: "1"
+      # Create the first admin once; set these in the Render dashboard (sync: false keeps them out of git).
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
