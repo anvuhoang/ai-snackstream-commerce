@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # Dev convenience: create this admin on first start if no admin exists yet.
     bootstrap_admin_email: str = Field("", alias="BOOTSTRAP_ADMIN_EMAIL")
     bootstrap_admin_password: str = Field("", alias="BOOTSTRAP_ADMIN_PASSWORD")
+    media_dir: str = Field("./media", alias="MEDIA_DIR")
+    max_upload_bytes: int = Field(5 * 1024 * 1024, alias="MAX_UPLOAD_BYTES")
+    # Opt-in: create the labelled demo catalog at start-up (idempotent). Handy on hosts without a shell.
+    seed_demo_catalog: bool = Field(False, alias="SEED_DEMO_CATALOG")
     # Browser origin(s) allowed to call the API directly (the web app normally proxies, so this is empty).
     cors_origins: list[str] = Field(default_factory=list, alias="CORS_ORIGINS")
 

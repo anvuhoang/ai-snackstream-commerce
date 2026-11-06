@@ -7,6 +7,7 @@ from pathlib import Path
 from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from alembic import command
@@ -15,8 +16,12 @@ from app.core.config import Settings, get_settings
 from app.core.db import make_engine, make_session_factory
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestIdMiddleware, configure_logging
+from app.core.storage import LocalMediaStorage
 from app.modules.auth import router as auth_router
 from app.modules.auth import service as auth_service
+from app.modules.catalog import router_admin as catalog_admin
+from app.modules.catalog import router_public as catalog_public
+from app.modules.catalog import seed as catalog_seed
 from app.modules.health import router as health_router
 
 API_ROOT = Path(__file__).resolve().parent.parent
@@ -39,6 +44,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             run_migrations(settings.database_url)
         with app.state.session_factory() as db:
             auth_service.ensure_bootstrap_admin(db, settings)
+            if settings.seed_demo_catalog:
+                catalog_seed.seed_catalog(db)
         yield
         app.state.engine.dispose()
 
@@ -53,6 +60,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.engine = make_engine(settings.database_url)
     app.state.session_factory = make_session_factory(app.state.engine)
+    app.state.storage = LocalMediaStorage(Path(settings.media_dir))
+    app.mount("/api/media", StaticFiles(directory=app.state.storage.root), name="media")
 
     # Middleware order: the last one added runs first.
     app.add_middleware(
@@ -74,7 +83,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(RequestIdMiddleware)
 
     install_error_handlers(app)
-    for router in (health_router.router, auth_router.router):
+    for router in (health_router.router, auth_router.router, catalog_public.router, catalog_admin.router):
         app.include_router(router)
     return app
 
