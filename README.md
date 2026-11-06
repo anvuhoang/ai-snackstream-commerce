@@ -1,134 +1,76 @@
-﻿# SnackStream Analytics
+# SnackStream
 
-A dashboard that analyses sales performance across platforms (Shopee, TikTok, Facebook and the team's own website) for the course
-project "AI-Automated Social Commerce & Livestream Storefront". The dashboard is the main feature; the customer-facing `/shop` page is secondary.
+An online shop for Vietnamese street snacks, with an admin back office, a chatbot, an AI live host and an analytics dashboard.
+The interface is Vietnamese; code and documentation are English.
 
-The user interface is in **Vietnamese**; code, comments and documentation are in English.
+**Status:** Phase 0 (foundation) is done. See [docs/ROADMAP.md](docs/ROADMAP.md) for the phases, owners and open decisions, and
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the pieces fit and what the modules must agree on.
 
-## Tech stack
+## Stack
 
-| Layer | Technology | Why |
-|---|---|---|
-| Backend API | **Python 3.12+**, **FastAPI**, Uvicorn, Pydantic | The work is data-heavy (CSV/Excel intake, order reconciliation, metric maths) and Python has the best tooling for it; FastAPI gives a typed JSON API with little code |
-| Database | **PostgreSQL** (SQLite fallback for quick local runs) | Constraints and `ON CONFLICT` upserts make duplicate protection and the "missing vs 0" states reliable |
-| ORM / migrations | **SQLAlchemy 2**, **Alembic**, `psycopg` 3 | Versioned schema changes that the whole team can reproduce; migrations run on API start |
-| File intake | `openpyxl` (Excel), Python `csv` | Row-level validation and error reports for CSV/XLSX uploads |
-| Auth | Signed session cookie (`itsdangerous`), scrypt password hash, CSRF header | Simple admin login; secrets never reach the browser |
-| Frontend | **Next.js 16** (App Router), **React 19**, **TypeScript** | Server components fetch data next to the API; type-checked against the API JSON |
-| Styling | **Tailwind CSS 4** + a custom design system (CSS variables, light/dark theme, motion) | Consistent look; every animation respects `prefers-reduced-motion` |
-| Charts / icons | **Recharts 3**, `lucide-react`, `nextjs-toploader` | Themed charts that follow the CSS color tokens; a table view for every chart |
-| Integration | **Make.com** webhook (`POST /api/ingest/make`) | Matches the proposal's iPaaS layer; orders and logs can be pushed instead of imported |
-| Testing | **pytest**, `httpx`, `tests/smoke.py`, `tsc`, ESLint | Formulas, import rules, migration and every endpoint are covered |
-| Packaging | **Docker** + Docker Compose (`postgres:17`, api, web) | One command to run the whole system |
+| | |
+|---|---|
+| Web | Next.js 16 (App Router), React 19, TypeScript, Tailwind 4 |
+| API | FastAPI (modular monolith), SQLAlchemy 2, Alembic, Pydantic 2 |
+| Database | PostgreSQL 17 (SQLite only for the fast unit-test run) |
+| Contract | `api/openapi.json` exported from the API, turned into TypeScript types (`openapi-fetch`) |
+| Tooling | uv, ruff, pytest, ESLint, Docker Compose, GitHub Actions |
+| Planned | Redis (rate limit, live fan-out), Odoo (stock, JSON-RPC), object storage, Caddy (HTTPS) |
 
-Deliberately not used: NestJS (it would duplicate FastAPI's role), LangChain/LangGraph and vector databases (the chatbot looks up structured
-fields by intent, so RAG is unnecessary), WebSockets (the dashboard does not need live push).
-
-## Architecture
+## Layout
 
 ```
-apps/
-  api/       FastAPI + SQLAlchemy 2 + Alembic + PostgreSQL   (metric computation, data intake, JSON API)
-  web/       Next.js 16 + TypeScript + Tailwind 4 + Recharts (dashboard UI + customer page /shop)
-  chatbot/   Home for the chatbot module (see apps/chatbot/README.md)
-docs/          Architecture notes
-data_samples/  Sample CSV templates for each person who supplies data
+api/                 FastAPI app: app/core, app/modules/<module>, alembic/, tests/, openapi.json
+web/                 Next.js app: (store) shop, (admin) back office, (live) live page
+docs/                ROADMAP.md, ARCHITECTURE.md
+docker-compose.yml   db + api + web
 ```
 
-The browser only talks to Next.js. Next.js proxies `/api/*` to FastAPI (same origin, so the session cookie works and API keys never reach the
-browser). The `API_URL` variable of the Next.js process decides where FastAPI lives at runtime.
+## Run it
 
-## Run in development (no Docker needed)
-
-Requires Python 3.12+ and Node 22+.
+Needs Python 3.12+, [uv](https://docs.astral.sh/uv/) and Node 22+.
 
 ```powershell
-# 1) API (port 8000) — uses SQLite if DATABASE_URL is not set
-cd apps/api
-pip install -r requirements.txt
-$env:SEED_DEMO="1"            # seed labelled demo data on first run (omit when using real data)
-python -m uvicorn app.main:app --reload
+# API -> http://localhost:8000   (a local SQLite file is used when DATABASE_URL is empty)
+cd api
+copy .env.example .env          # BOOTSTRAP_ADMIN_* creates the first admin
+uv sync
+uv run uvicorn app.main:app --reload
 
-# 2) Web (port 3000)
-cd apps/web
+# Web -> http://localhost:3000   (shop)   and   /admin   (back office)
+cd web
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000 and sign in with `admin` / `admin123` (dev only). Migrations run automatically when the API starts.
+With Docker (includes PostgreSQL): `copy .env.example .env`, set `POSTGRES_PASSWORD`, then `docker compose up --build`.
 
-## Use PostgreSQL
+Create an admin without the bootstrap variables: `uv run python -m app.cli create-admin you@example.com`.
 
-```sql
-CREATE USER snack_app WITH PASSWORD 'your-password';
-CREATE DATABASE snackstream OWNER snack_app;
-```
-
-Put this in `apps/api/.env` (see `apps/api/.env.example`):
-`DATABASE_URL=postgresql+psycopg://snack_app:your-password@localhost:5432/snackstream`.
-Use a **separate** database; never write into Odoo's own database.
-
-## Run with Docker
+## Check it
 
 ```powershell
-copy .env.example .env      # then edit POSTGRES_PASSWORD, SECRET_KEY, ADMIN_PASSWORD
-docker compose up --build   # web :3000, api :8000, postgres
+cd api; uv run pytest; uv run ruff check .; uv run ruff format --check .
+cd web; npm run typecheck; npm run lint; npm run build
 ```
 
-## Deploy
+## Working together
 
-Two services plus one PostgreSQL. You must set `APP_ENV=production`, `SECRET_KEY` and `ADMIN_PASSWORD` (or `ADMIN_PASSWORD_HASH`, created with
-`python -m app.security "your-password"`); the API refuses to start while any of them still has its default value. The session cookie gets the Secure flag automatically.
-- **api**: `apps/api/Dockerfile`, variable `DATABASE_URL` (a provider's `postgres://` URL is accepted).
-- **web**: `apps/web/Dockerfile`, variable `API_URL` pointing at the api's internal address.
-- To get demo data on the first start, set `SEED_DEMO=1`, and remove it once real data is in.
-
-## Screens
-
-| Path | Content |
-|---|---|
-| `/` | Overview: KPIs, daily trends, platform comparison, best/worst content, source status, warnings |
-| `/shopee` | 4 tabs: Shop & products, Live, Video, Ads |
-| `/external` | TikTok/Facebook: the direct-to-Shopee path and the via-website path |
-| `/funnel` | Funnel, step-to-step rates, per-1,000-views conversion, period/content comparison |
-| `/ai` | Chatbot, AI Live, AI video, AI vs human vs hybrid comparison |
-| `/products` | SKUs, prices, stock, Odoo status |
-| `/data` | CSV/Excel import, manual entry, data coverage, import history, demo data |
-| `/metrics` | Definition and formula of every metric |
-| `/shop` | Customer page: 3 products + a Shopee buy button (records website events) |
-
-## Data rules
-
-- A missing value is **never** treated as 0. There are four states: has a value · no data yet (empty cell) · source does not provide it (`NA`) · not connected (`NC`).
-- Ratios use only the contents that have **both** numerator and denominator, and show `n/N` when computed on a subset. A zero denominator shows "Không tính được" (cannot be computed).
-- Orders are keyed by the Shopee order id and attributed to at most one content. The total comes from the orders table; orders that only appear in aggregate
-  reports are shown per content (tagged "báo cáo" = report) and are never added to the total. Counted statuses: shipping, completed (`COUNTED_STATUSES`).
-- Views from different platforms are never summed into "unique people". CAC is computed only when the source reveals new customers; otherwise cost per order is shown.
-- Duplicate protection: file hash + upsert on natural keys. Strict mode (default): one bad row rejects the whole file.
-- Demo data carries a `DEMO` label, can be deleted separately, and cannot be mixed with real data.
-
-## Importing data
-
-Templates: `data_samples/` or the `/data` page. Suggested order: `contents` → `metrics` → `orders` → `costs` → `ai_live` / `chat_logs` / `video_production`.
-Make.com webhook: set `INGEST_TOKEN`, then call `POST /api/ingest/make` with an `X-Ingest-Token` header and a body like
-`{"kind": "metrics", "rows": [...], "source_note": "..."}`.
-
-## Tests
-
-```powershell
-cd apps/api; python -m pytest tests -q   # 18 tests: formulas, missing data, zero denominator, duplicate import, duplicate orders, migration
-cd apps/api; python tests/smoke.py       # hits every endpoint against a temporary DB, checks login + CSRF
-cd apps/web; npx tsc --noEmit; npx eslint src; npm run build
-```
-
-## Still pending
-
-| Item | Waiting on | Notes |
-|---|---|---|
-| Run against a real PostgreSQL | An | Only tested on SQLite so far; run `pytest` and `smoke.py` with a Postgres `DATABASE_URL` |
-| Shopee, TikTok, Facebook APIs | Viet to verify access | CSV/Excel import for now; no adapters yet |
-| Odoo (SKUs, stock) | Chau | Demo products for now; CSV `products` import works |
-| Chatbot logs | Phong | The dashboard receives them as `chat_logs` files |
-| AI Live logs | Nguyen | Received as `ai_live` files |
-| How to identify "new customers" (CAC) | Viet | Until then, cost per order is shown |
-| Live viewers by source | Viet | Currently shown as "source does not provide it" |
+- **Branches and commits.** `dev` is the default branch where work is integrated; `main` holds stable, demo-ready code. Both must stay
+  green. Branch from `dev` as `feat/<module>-<what>`, open a pull request **into `dev`** (squash merge), get one review. To release,
+  open a pull request `dev` → `main` and merge it with a **merge commit, not squash** (squashing makes the two branches drift apart),
+  then tag it (`v0.1.0`). Urgent fix on `main`: branch from `main`, merge into `main`, then merge `main` back into `dev`.
+  Commits are imperative with a type prefix: `feat(catalog): add product list`, `fix(orders): release stock once`.
+- **Migrations have one owner (An).** Alembic needs one linear history; two people creating migrations from the same parent produce
+  two heads and break deploys. Describe the table or column in your PR and An adds the migration. Never edit a migration that is already
+  on `dev` or `main`. Autogenerate is a draft: a rename looks like "drop + add" and would lose data, so read the file.
+  `cd api; uv run alembic revision --autogenerate -m "add product tables" --rev-id 0002`
+- **After changing a router or schema, regenerate the contract** and commit both files (CI fails if they are stale):
+  `cd api; uv run python -m app.export_openapi openapi.json` then `cd web; npm run gen:types`.
+- **Adding an endpoint.** Pydantic schemas with a `response_model`; logic in `service.py` (the router only parses and returns);
+  expected failures are `raise AppError(status, "stable_code", "English message")` and the Vietnamese text goes in
+  `web/src/lib/errors.ts`; admin routes use `require_role(...)` and, for writes, `require_csrf`; test the happy path, an auth failure
+  and a validation failure.
+- **Pull request checklist.** Tests added; model change has a migration; contract regenerated; loading / empty / error / out-of-stock
+  states and phone width checked; no secrets, no real customer data, no `.env`.
+- **Earlier prototype.** The first dashboard (Shopee-era) is kept on branch `legacy-dashboard` for reference.
