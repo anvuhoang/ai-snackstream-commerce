@@ -4,7 +4,7 @@ import { Radio, ShoppingBasket } from "lucide-react";
 // Links whose pages do not exist yet are rendered as plain text with the phase that delivers them.
 const NAV: { href: string; label: string; phase?: number }[] = [
   { href: "/", label: "Trang chủ" },
-  { href: "/products", label: "Sản phẩm", phase: 1 },
+  { href: "/products", label: "Sản phẩm" },
   { href: "/live", label: "Live" },
 ];
 
