@@ -1,0 +1,323 @@
+{
+  "schemaVersion": 1,
+  "scope": "playback-smoke-test",
+  "exportedAt": "2026-11-07T09:52:08.098Z",
+  "events": [
+    {
+      "eventId": "9854c591-8b04-400e-8c5a-233854429356",
+      "event": "live_join",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:49:23.829Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "e7f9a9cb-de64-46cf-b9ef-690e2732fae2",
+      "event": "live_playback_error",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:49:35.685Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1,
+        "reason": "play_rejected",
+        "errorName": "NotSupportedError"
+      }
+    },
+    {
+      "eventId": "e5b58ab4-b8ab-42ea-becb-61c4c32f317e",
+      "event": "live_playback_error",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:49:36.628Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1,
+        "reason": "play_rejected",
+        "errorName": "NotSupportedError"
+      }
+    },
+    {
+      "eventId": "bf87c130-dc07-4ccc-9d61-730e464e9123",
+      "event": "live_playback_retry",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:49:38.880Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "0ebbe213-ca78-459b-8d07-bf1a4e0a23f8",
+      "event": "live_playback_error",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:49:38.907Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1,
+        "reason": "media_error",
+        "mediaErrorCode": 4
+      }
+    },
+    {
+      "eventId": "3e0c842a-0062-4f16-b5ae-ac70cef80fc1",
+      "event": "live_playback_retry",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:49:41.562Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "08300ff3-7d38-4ac4-8864-185245f51352",
+      "event": "live_playback_error",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:49:41.583Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1,
+        "reason": "media_error",
+        "mediaErrorCode": 4
+      }
+    },
+    {
+      "eventId": "1445e839-1c20-4b42-90fe-2a8e5280e4c8",
+      "event": "live_playback_retry",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:50:25.292Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "ba707c55-5833-4296-9332-5b231236175c",
+      "event": "live_playback_error",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:50:25.312Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1,
+        "reason": "media_error",
+        "mediaErrorCode": 4
+      }
+    },
+    {
+      "eventId": "02185cbe-7867-44a9-8988-6152496d7152",
+      "event": "live_playback_error",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:50:30.248Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1,
+        "reason": "play_rejected",
+        "errorName": "NotSupportedError"
+      }
+    },
+    {
+      "eventId": "1945714a-eb4a-4bf8-89fe-4d2b47e7b60d",
+      "event": "live_playback_retry",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:50:30.966Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "67c035bf-50bf-4d0f-ac82-4682eb3524fe",
+      "event": "live_playback_error",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:50:30.984Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1,
+        "reason": "media_error",
+        "mediaErrorCode": 4
+      }
+    },
+    {
+      "eventId": "b6f4a273-03f1-40bd-bfdc-46b5706d28ba",
+      "event": "live_playback_retry",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:51:32.076Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "20d93524-b9f8-4009-a947-2b817585a7e9",
+      "event": "live_media_ready",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:51:32.112Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1,
+        "durationSeconds": 10.077007
+      }
+    },
+    {
+      "eventId": "159bc5a2-a3e7-4a2b-b0b2-ba9cdbac17a5",
+      "event": "live_playback_started",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:51:35.925Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "7f79ee84-0c10-47ad-8f4c-bd6079d50278",
+      "event": "live_playback_ended",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:51:46.057Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 10.077007,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "76347468-17bb-4f35-ba3f-a0a315fa5454",
+      "event": "live_playback_waiting",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:51:49.449Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "5cc04054-187d-4aed-b343-7ecd4b0c6588",
+      "event": "live_playback_started",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:51:49.461Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0.005171,
+        "muted": false,
+        "volume": 1
+      }
+    },
+    {
+      "eventId": "b87a4b8c-4f45-4a22-88aa-eafec2b3a1d4",
+      "event": "live_audio_confirmed",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:51:50.129Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 0.635118,
+        "muted": false,
+        "volume": 1,
+        "confirmedBy": "viewer"
+      }
+    },
+    {
+      "eventId": "c05032e5-18af-464c-9029-700d3f6e9669",
+      "event": "live_playback_ended",
+      "sessionId": "9e7dff1d-8644-4cbf-ab38-62a5ee5abae3",
+      "liveId": "LIVE-PLAYBACK-DEMO-001",
+      "occurredAt": "2026-11-07T09:51:59.768Z",
+      "isDemo": true,
+      "source": "web_live",
+      "details": {
+        "mediaUrl": "/live-demo/avatar.mp4",
+        "currentTime": 10.077007,
+        "muted": false,
+        "volume": 1
+      }
+    }
+  ]
+}
