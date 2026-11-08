@@ -23,6 +23,7 @@ from app.core.config import Settings
 from app.core.db import utcnow
 from app.core.errors import AppError
 from app.core.security import new_public_token
+from app.modules.analytics import events as analytics_events
 from app.modules.auth.models import AdminUser
 from app.modules.catalog.models import Product, Variant
 from app.modules.inventory import service as inventory
@@ -250,7 +251,13 @@ def place_order(
         expires_at=now + timedelta(minutes=settings.order_expiry_minutes)
         if body.payment_method == "vnpay"
         else None,
+        is_demo=all(ln.product.is_demo for ln in lines),
     )
+    if body.attribution is not None:
+        order.session_id = body.attribution.session_id
+        order.utm_source = analytics_events.clean_source(body.attribution.source)
+        order.utm_campaign = body.attribution.campaign.strip()[:100]
+        order.utm_content = body.attribution.content_code.strip()[:100]
     for ln in lines:
         order.items.append(
             OrderItem(
@@ -273,6 +280,7 @@ def place_order(
     stock.reserve(db, order)
     try:
         db.flush()
+        analytics_events.record_order_event(db, "order_created", order)
         db.add(
             IdempotencyKey(key=idempotency_key, request_hash=request_hash, order_id=order.id, created_at=now)
         )
@@ -357,6 +365,7 @@ def change_status(db: Session, order_id: int, to: str, note: str, actor: AdminUs
     now = utcnow()
     _record(order, to, actor, note.strip(), now)
     if to == "completed":
+        analytics_events.record_order_event(db, "order_completed", order)
         # Cash on delivery is collected on the doorstep, so a completed COD order is a paid one.
         for p in order.payments:
             if p.provider == "cod" and p.status == "pending":

@@ -17,6 +17,8 @@ from app.core.db import make_engine, make_session_factory
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestIdMiddleware, configure_logging
 from app.core.storage import LocalMediaStorage
+from app.modules.analytics import router_admin as analytics_admin
+from app.modules.analytics import router_public as analytics_public
 from app.modules.auth import router as auth_router
 from app.modules.auth import service as auth_service
 from app.modules.catalog import router_admin as catalog_admin
@@ -94,6 +96,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         orders_public.router,
         orders_admin.router,
         inventory_admin.router,
+        analytics_admin.router,
+        analytics_public.router,
     ):
         app.include_router(router)
     return app
