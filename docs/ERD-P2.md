@@ -1,6 +1,6 @@
 # ERD · P2 Cart, orders, payments
 
-Draft for review before any model or migration is written. Money is integer VND. Customers have no accounts.
+Implemented in migration `0003` (module `app/modules/orders`). Money is integer VND. Customers have no accounts.
 `variant` comes from P1 (catalog) and `admin_user` from P0 (auth); everything else is new in P2.
 
 ```mermaid
