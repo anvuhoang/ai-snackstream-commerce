@@ -1474,6 +1474,236 @@
           }
         }
       }
+    },
+    "/api/admin/inventory": {
+      "get": {
+        "tags": [
+          "admin-inventory"
+        ],
+        "summary": "List Stock",
+        "operationId": "list_stock_api_admin_inventory_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "SKU or product name.",
+              "default": "",
+              "title": "Q"
+            },
+            "description": "SKU or product name."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "untracked",
+                    "out",
+                    "low"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Pagesize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/inventory/{variant_id}/adjust": {
+      "post": {
+        "tags": [
+          "admin-inventory"
+        ],
+        "summary": "Adjust",
+        "operationId": "adjust_api_admin_inventory__variant_id__adjust_post",
+        "parameters": [
+          {
+            "name": "variant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Variant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockAdjust"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/inventory/{variant_id}/movements": {
+      "get": {
+        "tags": [
+          "admin-inventory"
+        ],
+        "summary": "Movements",
+        "operationId": "movements_api_admin_inventory__variant_id__movements_get",
+        "parameters": [
+          {
+            "name": "variant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Variant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovementOut"
+                  },
+                  "title": "Response Movements Api Admin Inventory  Variant Id  Movements Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/inventory/sync": {
+      "get": {
+        "tags": [
+          "admin-inventory"
+        ],
+        "summary": "Sync Status",
+        "operationId": "sync_status_api_admin_inventory_sync_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatus"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin-inventory"
+        ],
+        "summary": "Run Sync",
+        "description": "Pull the on-hand counts from Odoo now. A failure is recorded in `lastRun`, not raised.",
+        "operationId": "run_sync_api_admin_inventory_sync_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatus"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2694,6 +2924,69 @@
         ],
         "title": "LookupIn"
       },
+      "MovementOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "deltaOnHand": {
+            "type": "integer",
+            "title": "Deltaonhand"
+          },
+          "deltaReserved": {
+            "type": "integer",
+            "title": "Deltareserved"
+          },
+          "orderCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ordercode"
+          },
+          "actorEmail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actoremail"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "deltaOnHand",
+          "deltaReserved",
+          "orderCode",
+          "actorEmail",
+          "note",
+          "createdAt"
+        ],
+        "title": "MovementOut"
+      },
       "OrderItemOut": {
         "properties": {
           "sku": {
@@ -3390,6 +3683,242 @@
           "to"
         ],
         "title": "StatusChange"
+      },
+      "StockAdjust": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "receive",
+              "adjust"
+            ],
+            "title": "Kind"
+          },
+          "delta": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": -100000.0,
+            "title": "Delta"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "delta"
+        ],
+        "title": "StockAdjust",
+        "description": "`receive` adds new goods (positive). `adjust` corrects the count after checking the shelf (either sign)."
+      },
+      "StockPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StockRow"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageSize": {
+            "type": "integer",
+            "title": "Pagesize"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "lowStockAt": {
+            "type": "integer",
+            "title": "Lowstockat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total",
+          "lowStockAt"
+        ],
+        "title": "StockPage"
+      },
+      "StockRow": {
+        "properties": {
+          "variantId": {
+            "type": "integer",
+            "title": "Variantid"
+          },
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "productName": {
+            "type": "string",
+            "title": "Productname"
+          },
+          "variantName": {
+            "type": "string",
+            "title": "Variantname"
+          },
+          "tracked": {
+            "type": "boolean",
+            "title": "Tracked"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "own",
+                  "odoo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "onHand": {
+            "type": "integer",
+            "title": "Onhand"
+          },
+          "reserved": {
+            "type": "integer",
+            "title": "Reserved"
+          },
+          "available": {
+            "type": "integer",
+            "title": "Available"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "syncedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Syncedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variantId",
+          "sku",
+          "productName",
+          "variantName",
+          "tracked",
+          "source",
+          "onHand",
+          "reserved",
+          "available",
+          "updatedAt",
+          "syncedAt"
+        ],
+        "title": "StockRow"
+      },
+      "SyncRunOut": {
+        "properties": {
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startedat"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finishedat"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "matched": {
+            "type": "integer",
+            "title": "Matched"
+          },
+          "changed": {
+            "type": "integer",
+            "title": "Changed"
+          },
+          "missingSkus": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missingskus"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "startedAt",
+          "finishedAt",
+          "ok",
+          "matched",
+          "changed",
+          "missingSkus",
+          "error"
+        ],
+        "title": "SyncRunOut"
+      },
+      "SyncStatus": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "lastRun": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncRunOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "lastRun"
+        ],
+        "title": "SyncStatus"
       },
       "ValidationError": {
         "properties": {

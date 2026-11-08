@@ -39,6 +39,12 @@ def settings(tmp_path) -> Settings:
         MEDIA_DIR=str(tmp_path / "media"),
         BOOTSTRAP_ADMIN_EMAIL=ADMIN_EMAIL,
         BOOTSTRAP_ADMIN_PASSWORD=ADMIN_PASSWORD,
+        # A developer's own api/.env may hold real VNPay or Odoo keys; tests must never read or use them.
+        VNPAY_TMN_CODE="",
+        VNPAY_HASH_SECRET="",
+        ODOO_URL="",
+        ODOO_DB="",
+        ODOO_API_KEY="",
     )
 
 
