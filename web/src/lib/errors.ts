@@ -27,6 +27,10 @@ const MESSAGES: Record<string, string> = {
   order_not_found: "Không tìm thấy đơn hàng với mã và số điện thoại này.",
   invalid_transition: "Không thể chuyển đơn sang trạng thái này.",
   payment_not_received: "Chưa nhận được thanh toán online của đơn này.",
+  out_of_stock: "Có sản phẩm vừa hết hàng hoặc không đủ số lượng. Hãy giảm số lượng hoặc xóa sản phẩm đó rồi thử lại.",
+  below_reserved: "Các đơn đang mở đã giữ nhiều hơn số này. Hãy hủy bớt đơn hoặc nhập số lớn hơn.",
+  managed_by_odoo: "Số tồn này lấy từ Odoo. Hãy đổi trong Odoo rồi đồng bộ lại.",
+  odoo_not_configured: "Chưa cấu hình kết nối Odoo.",
 };
 
 /** What a product still needs before it can be put on sale (the API's `details.missing` values). */
