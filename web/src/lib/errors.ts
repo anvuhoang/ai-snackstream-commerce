@@ -18,6 +18,15 @@ const MESSAGES: Record<string, string> = {
   variant_not_found: "Không tìm thấy biến thể.",
   image_not_found: "Không tìm thấy ảnh.",
   conflict: "Giá trị này đã được dùng.",
+  variant_unavailable: "Sản phẩm này hiện không còn bán.",
+  cart_item_not_found: "Sản phẩm không có trong giỏ hàng.",
+  cart_empty: "Giỏ hàng của bạn đang trống.",
+  item_unavailable: "Có sản phẩm trong giỏ không còn bán. Hãy xóa sản phẩm đó rồi thử lại.",
+  idempotency_key_reused: "Đơn hàng này đã được gửi với nội dung khác. Hãy tải lại trang và thử lại.",
+  payment_method_unavailable: "Hiện chưa hỗ trợ thanh toán trực tuyến. Vui lòng chọn thanh toán khi nhận hàng.",
+  order_not_found: "Không tìm thấy đơn hàng với mã và số điện thoại này.",
+  invalid_transition: "Không thể chuyển đơn sang trạng thái này.",
+  payment_not_received: "Chưa nhận được thanh toán online của đơn này.",
 };
 
 /** What a product still needs before it can be put on sale (the API's `details.missing` values). */

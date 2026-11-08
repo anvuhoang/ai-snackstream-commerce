@@ -323,6 +323,203 @@ export interface paths {
         patch: operations["update_image_api_admin_catalog_images__image_id__patch"];
         trace?: never;
     };
+    "/api/shop/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Shop Config */
+        get: operations["shop_config_api_shop_config_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Cart */
+        get: operations["get_cart_api_cart_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cart/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Item */
+        post: operations["add_item_api_cart_items_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cart/items/{variant_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Item */
+        delete: operations["remove_item_api_cart_items__variant_id__delete"];
+        options?: never;
+        head?: never;
+        /** Set Item Qty */
+        patch: operations["set_item_qty_api_cart_items__variant_id__patch"];
+        trace?: never;
+    };
+    "/api/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Checkout
+         * @description Place an order from the cart. Safe to repeat: the same Idempotency-Key and request return the same order.
+         */
+        post: operations["checkout_api_orders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Lookup */
+        post: operations["lookup_api_orders_lookup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/vnpay/ipn": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vnpay Ipn
+         * @description The gateway calls this from its servers after a payment. It is the source of truth, not the browser return.
+         */
+        get: operations["vnpay_ipn_api_payments_vnpay_ipn_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/vnpay/return": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vnpay Return
+         * @description The customer's browser lands on the web page, which asks this what to show. It never changes anything.
+         */
+        get: operations["vnpay_return_api_payments_vnpay_return_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Orders */
+        get: operations["list_orders_api_admin_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/orders/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Order */
+        get: operations["get_order_api_admin_orders__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/orders/{order_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Status */
+        post: operations["change_status_api_admin_orders__order_id__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -339,6 +536,101 @@ export interface components {
             sortOrder: number;
             /** Productcount */
             productCount: number;
+        };
+        /** AdminOrder */
+        AdminOrder: {
+            /** Code */
+            code: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "new" | "confirmed" | "shipping" | "completed" | "cancelled";
+            /** Customername */
+            customerName: string;
+            /** Customerphone */
+            customerPhone: string;
+            /** Shipaddress */
+            shipAddress: string;
+            /** Shipward */
+            shipWard: string;
+            /** Shipdistrict */
+            shipDistrict: string;
+            /** Shipprovince */
+            shipProvince: string;
+            /** Note */
+            note: string;
+            /** Subtotalvnd */
+            subtotalVnd: number;
+            /** Shippingfeevnd */
+            shippingFeeVnd: number;
+            /** Totalvnd */
+            totalVnd: number;
+            /**
+             * Paymentmethod
+             * @enum {string}
+             */
+            paymentMethod: "cod" | "vnpay";
+            /** Expiresat */
+            expiresAt: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Items */
+            items: components["schemas"]["OrderItemOut"][];
+            /** Payments */
+            payments: components["schemas"]["PaymentOut"][];
+            /** History */
+            history: components["schemas"]["HistoryOut"][];
+            /** Id */
+            id: number;
+            /** Nextstatuses */
+            nextStatuses: ("new" | "confirmed" | "shipping" | "completed" | "cancelled")[];
+        };
+        /** AdminOrderPage */
+        AdminOrderPage: {
+            /** Items */
+            items: components["schemas"]["AdminOrderRow"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+        };
+        /** AdminOrderRow */
+        AdminOrderRow: {
+            /** Id */
+            id: number;
+            /** Code */
+            code: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "new" | "confirmed" | "shipping" | "completed" | "cancelled";
+            /** Customername */
+            customerName: string;
+            /** Customerphone */
+            customerPhone: string;
+            /** Totalvnd */
+            totalVnd: number;
+            /**
+             * Paymentmethod
+             * @enum {string}
+             */
+            paymentMethod: "cod" | "vnpay";
+            /** Paymentstatus */
+            paymentStatus: ("pending" | "paid" | "failed" | "expired") | null;
+            /** Itemcount */
+            itemCount: number;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
         };
         /** AdminOut */
         AdminOut: {
@@ -461,6 +753,62 @@ export interface components {
              */
             alt?: string;
         };
+        /** CartItemAdd */
+        CartItemAdd: {
+            /** Variantid */
+            variantId: number;
+            /**
+             * Qty
+             * @default 1
+             */
+            qty?: number;
+        };
+        /** CartItemSet */
+        CartItemSet: {
+            /** Qty */
+            qty: number;
+        };
+        /** CartLine */
+        CartLine: {
+            /** Variantid */
+            variantId: number;
+            /** Sku */
+            sku: string;
+            /** Productslug */
+            productSlug: string;
+            /** Productname */
+            productName: string;
+            /** Variantname */
+            variantName: string;
+            /** Unitpricevnd */
+            unitPriceVnd: number;
+            /** Qty */
+            qty: number;
+            /** Linetotalvnd */
+            lineTotalVnd: number;
+            image: components["schemas"]["ImageOut"] | null;
+            /** Available */
+            available: boolean;
+        };
+        /** CartOut */
+        CartOut: {
+            /** Items */
+            items: components["schemas"]["CartLine"][];
+            /** Itemcount */
+            itemCount: number;
+            /** Subtotalvnd */
+            subtotalVnd: number;
+            /** Shippingfeevnd */
+            shippingFeeVnd: number;
+            /** Totalvnd */
+            totalVnd: number;
+            /** Freeshipfromvnd */
+            freeShipFromVnd: number;
+            /** Freeshipremainingvnd */
+            freeShipRemainingVnd: number;
+            /** Hasunavailable */
+            hasUnavailable: boolean;
+        };
         /** CategoryIn */
         CategoryIn: {
             /** Name */
@@ -498,10 +846,102 @@ export interface components {
             /** Sortorder */
             sortOrder?: number | null;
         };
+        /** CheckoutIn */
+        CheckoutIn: {
+            customer: components["schemas"]["CustomerIn"];
+            shipping: components["schemas"]["ShippingIn"];
+            /**
+             * Note
+             * @default
+             */
+            note?: string;
+            /**
+             * Paymentmethod
+             * @default cod
+             * @enum {string}
+             */
+            paymentMethod?: "cod" | "vnpay";
+        };
+        /** CheckoutOut */
+        CheckoutOut: {
+            /** Code */
+            code: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "new" | "confirmed" | "shipping" | "completed" | "cancelled";
+            /** Customername */
+            customerName: string;
+            /** Customerphone */
+            customerPhone: string;
+            /** Shipaddress */
+            shipAddress: string;
+            /** Shipward */
+            shipWard: string;
+            /** Shipdistrict */
+            shipDistrict: string;
+            /** Shipprovince */
+            shipProvince: string;
+            /** Note */
+            note: string;
+            /** Subtotalvnd */
+            subtotalVnd: number;
+            /** Shippingfeevnd */
+            shippingFeeVnd: number;
+            /** Totalvnd */
+            totalVnd: number;
+            /**
+             * Paymentmethod
+             * @enum {string}
+             */
+            paymentMethod: "cod" | "vnpay";
+            /** Expiresat */
+            expiresAt: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Items */
+            items: components["schemas"]["OrderItemOut"][];
+            /** Payments */
+            payments: components["schemas"]["PaymentOut"][];
+            /** History */
+            history: components["schemas"]["HistoryOut"][];
+            /** Paymenturl */
+            paymentUrl?: string | null;
+        };
+        /** CustomerIn */
+        CustomerIn: {
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HistoryOut */
+        HistoryOut: {
+            /** Fromstatus */
+            fromStatus: ("new" | "confirmed" | "shipping" | "completed" | "cancelled") | null;
+            /**
+             * Tostatus
+             * @enum {string}
+             */
+            toStatus: "new" | "confirmed" | "shipping" | "completed" | "cancelled";
+            /** Note */
+            note: string;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Actoremail */
+            actorEmail?: string | null;
         };
         /** ImageOut */
         ImageOut: {
@@ -525,6 +965,106 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** LookupIn */
+        LookupIn: {
+            /** Code */
+            code: string;
+            /** Phone */
+            phone: string;
+        };
+        /** OrderItemOut */
+        OrderItemOut: {
+            /** Sku */
+            sku: string;
+            /** Productname */
+            productName: string;
+            /** Variantname */
+            variantName: string;
+            /** Unitpricevnd */
+            unitPriceVnd: number;
+            /** Qty */
+            qty: number;
+            /** Linetotalvnd */
+            lineTotalVnd: number;
+        };
+        /** OrderOut */
+        OrderOut: {
+            /** Code */
+            code: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "new" | "confirmed" | "shipping" | "completed" | "cancelled";
+            /** Customername */
+            customerName: string;
+            /** Customerphone */
+            customerPhone: string;
+            /** Shipaddress */
+            shipAddress: string;
+            /** Shipward */
+            shipWard: string;
+            /** Shipdistrict */
+            shipDistrict: string;
+            /** Shipprovince */
+            shipProvince: string;
+            /** Note */
+            note: string;
+            /** Subtotalvnd */
+            subtotalVnd: number;
+            /** Shippingfeevnd */
+            shippingFeeVnd: number;
+            /** Totalvnd */
+            totalVnd: number;
+            /**
+             * Paymentmethod
+             * @enum {string}
+             */
+            paymentMethod: "cod" | "vnpay";
+            /** Expiresat */
+            expiresAt: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Items */
+            items: components["schemas"]["OrderItemOut"][];
+            /** Payments */
+            payments: components["schemas"]["PaymentOut"][];
+            /** History */
+            history: components["schemas"]["HistoryOut"][];
+        };
+        /** PaymentOut */
+        PaymentOut: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "cod" | "vnpay";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "paid" | "failed" | "expired";
+            /** Amountvnd */
+            amountVnd: number;
+            /** Paidat */
+            paidAt: string | null;
+        };
+        /**
+         * PaymentReturnOut
+         * @description What the customer's browser shows after coming back from the gateway. Read-only: the gateway's callback decides.
+         */
+        PaymentReturnOut: {
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "paid" | "failed" | "pending" | "invalid";
+            /** Ordercode */
+            orderCode?: string | null;
         };
         /** ProductCard */
         ProductCard: {
@@ -647,6 +1187,55 @@ export interface components {
             user: components["schemas"]["AdminOut"];
             /** Csrf */
             csrf: string;
+        };
+        /** ShippingIn */
+        ShippingIn: {
+            /** Address */
+            address: string;
+            /**
+             * Ward
+             * @default
+             */
+            ward?: string;
+            /**
+             * District
+             * @default
+             */
+            district?: string;
+            /**
+             * Province
+             * @default
+             */
+            province?: string;
+        };
+        /** ShopConfig */
+        ShopConfig: {
+            /** Shippingfeevnd */
+            shippingFeeVnd: number;
+            /** Freeshipfromvnd */
+            freeShipFromVnd: number;
+            /** Paymentmethods */
+            paymentMethods: ("cod" | "vnpay")[];
+            /**
+             * Onlinepaymentissandbox
+             * @default true
+             */
+            onlinePaymentIsSandbox?: boolean;
+            /** Orderexpiryminutes */
+            orderExpiryMinutes: number;
+        };
+        /** StatusChange */
+        StatusChange: {
+            /**
+             * To
+             * @enum {string}
+             */
+            to: "new" | "confirmed" | "shipping" | "completed" | "cancelled";
+            /**
+             * Note
+             * @default
+             */
+            note?: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -1367,6 +1956,355 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminProduct"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    shop_config_api_shop_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShopConfig"];
+                };
+            };
+        };
+    };
+    get_cart_api_cart_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+        };
+    };
+    add_item_api_cart_items_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CartItemAdd"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_item_api_cart_items__variant_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                variant_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_item_qty_api_cart_items__variant_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                variant_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CartItemSet"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    checkout_api_orders_post: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A fresh random value per checkout attempt. */
+                "idempotency-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lookup_api_orders_lookup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LookupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    vnpay_ipn_api_payments_vnpay_ipn_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    vnpay_return_api_payments_vnpay_return_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentReturnOut"];
+                };
+            };
+        };
+    };
+    list_orders_api_admin_orders_get: {
+        parameters: {
+            query?: {
+                /** @description Order code, customer name or phone. */
+                q?: string;
+                status?: ("new" | "confirmed" | "shipping" | "completed" | "cancelled") | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_order_api_admin_orders__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrder"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_status_api_admin_orders__order_id__status_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatusChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrder"];
                 };
             };
             /** @description Validation Error */
