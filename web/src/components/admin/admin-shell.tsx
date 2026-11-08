@@ -22,7 +22,7 @@ const NAV = [
   { href: "/admin/products", label: "Sản phẩm" },
   { href: "/admin/categories", label: "Danh mục" },
   { href: "/admin/orders", label: "Đơn hàng" },
-  { href: "/admin/inventory", label: "Kho", phase: 3 },
+  { href: "/admin/inventory", label: "Kho" },
   { href: "/admin/analytics", label: "Dashboard", phase: 4 },
   { href: "/admin/chat", label: "Chatbot", phase: 5 },
   { href: "/admin/live", label: "Live", phase: 6 },
