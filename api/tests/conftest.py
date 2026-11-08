@@ -10,6 +10,7 @@ from app.core.config import Settings
 from app.main import create_app
 from app.modules.auth import router as auth_router
 from app.modules.auth import service as auth_service
+from app.modules.orders import router_public as orders_public
 
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "correct-horse-battery"
@@ -44,6 +45,7 @@ def settings(tmp_path) -> Settings:
 @pytest.fixture()
 def client(settings: Settings) -> Iterator[TestClient]:
     auth_router._login_limiter._hits.clear()
+    orders_public._lookup_limiter._hits.clear()
     # Entering the context runs the lifespan: migrations + bootstrap admin.
     with TestClient(create_app(settings)) as c:
         yield c
