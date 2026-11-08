@@ -1,4 +1,3 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
@@ -16,29 +15,25 @@ export function Pagination({
 }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
-  const link = "inline-flex h-10 items-center gap-1 rounded-lg border border-line bg-surface px-3 text-sm font-medium";
+  const cell = "flex h-12 items-center px-6 text-[11px] font-medium uppercase tracking-[0.04em]";
   return (
-    <nav aria-label="Phân trang" className="mt-10 flex items-center justify-center gap-3">
+    <nav aria-label="Phân trang" className="flex items-stretch justify-center border-b border-line">
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className={cn(link, "hover:bg-canvas")} rel="prev">
-          <ChevronLeft className="size-4" /> Trước
+        <Link href={hrefFor(page - 1)} className={cn(cell, "border-r border-line hover:bg-canvas")} rel="prev">
+          ← Trước
         </Link>
       ) : (
-        <span className={cn(link, "pointer-events-none opacity-40")}>
-          <ChevronLeft className="size-4" /> Trước
-        </span>
+        <span className={cn(cell, "border-r border-line opacity-30")}>← Trước</span>
       )}
-      <span className="text-sm text-muted">
+      <span className={cn(cell, "text-muted")}>
         Trang {page} / {pages}
       </span>
       {page < pages ? (
-        <Link href={hrefFor(page + 1)} className={cn(link, "hover:bg-canvas")} rel="next">
-          Sau <ChevronRight className="size-4" />
+        <Link href={hrefFor(page + 1)} className={cn(cell, "border-l border-line hover:bg-canvas")} rel="next">
+          Sau →
         </Link>
       ) : (
-        <span className={cn(link, "pointer-events-none opacity-40")}>
-          Sau <ChevronRight className="size-4" />
-        </span>
+        <span className={cn(cell, "border-l border-line opacity-30")}>Sau →</span>
       )}
     </nav>
   );

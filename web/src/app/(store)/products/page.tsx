@@ -1,12 +1,10 @@
-import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { GridSkeleton } from "@/components/store/grid-skeleton";
-import { Button } from "@/components/ui/button";
 import { isSortKey } from "@/lib/catalog";
 import { Results } from "./results";
 
-export const metadata: Metadata = { title: "Sản phẩm" };
+export const metadata: Metadata = { title: "Cửa hàng" };
 export const dynamic = "force-dynamic";
 
 type Search = { q?: string; category?: string; sort?: string; page?: string };
@@ -19,30 +17,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const page = Math.min(10_000, Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-extrabold tracking-tight">Sản phẩm</h1>
+    <>
+      <section className="border-b border-line px-4 py-12 sm:py-14 sm:pl-60 sm:pr-6">
+        <h1 className="text-[11px] font-semibold uppercase tracking-[0.04em]">Mua SnackStream</h1>
+        <p className="mt-4 max-w-lg text-xs leading-relaxed">
+          Bánh tráng, khô gà, khô bò, trái cây sấy và nhiều món ăn vặt đường phố. Thành phần của từng món được đối chiếu với bao bì thật.
+        </p>
+      </section>
 
-      <form action="/products" className="mt-6 flex gap-2" role="search">
-        {category && <input type="hidden" name="category" value={category} />}
-        {sort !== "newest" && <input type="hidden" name="sort" value={sort} />}
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-          <input
-            name="q"
-            defaultValue={q}
-            maxLength={100}
-            placeholder="Tìm sản phẩm, ví dụ: banh trang, kho ga…"
-            aria-label="Tìm sản phẩm"
-            className="h-11 w-full rounded-lg border border-line bg-surface pl-9 pr-3 text-sm focus:border-brand"
-          />
-        </div>
-        <Button type="submit">Tìm</Button>
-      </form>
-
-      {/* The form above shows at once; the results stream in behind a skeleton. */}
-      <Suspense key={`${q}|${category}|${sort}|${page}`} fallback={<div className="mt-8"><GridSkeleton /></div>}>
+      {/* The intro above shows at once; the filters and results stream in behind a skeleton. */}
+      <Suspense key={`${q}|${category}|${sort}|${page}`} fallback={<GridSkeleton />}>
         <Results q={q} category={category} sort={sort} page={page} />
       </Suspense>
-    </div>
+    </>
   );
 }

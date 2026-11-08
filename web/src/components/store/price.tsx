@@ -15,12 +15,12 @@ export function Price({
 }) {
   return (
     <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-      {prefix && <span className="text-sm text-muted">{prefix}</span>}
-      <span className={cn("font-extrabold text-brand", size === "lg" ? "text-3xl" : "text-lg")}>{formatVnd(vnd)}</span>
+      {prefix && <span className="text-xs text-muted">{prefix}</span>}
+      <span className={cn("font-medium", size === "lg" ? "text-3xl font-light tracking-[-0.03em]" : "text-sm")}>{formatVnd(vnd)}</span>
       {compareAt ? (
         <>
-          <s className="text-sm text-muted">{formatVnd(compareAt)}</s>
-          <span className="rounded bg-brand-soft px-1.5 text-xs font-bold text-brand">-{discountPercent(vnd, compareAt)}%</span>
+          <s className="text-xs text-muted">{formatVnd(compareAt)}</s>
+          <span className="border border-ink px-1.5 text-[10px] font-medium">-{discountPercent(vnd, compareAt)}%</span>
         </>
       ) : null}
     </p>

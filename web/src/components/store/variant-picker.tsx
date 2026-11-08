@@ -1,71 +1,63 @@
 "use client";
 
-import { ExternalLink, ShoppingBasket } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import type { ProductDetail } from "@/lib/catalog";
-import { Price } from "./price";
+import { formatVnd } from "@/lib/format";
 
-/** Choose a variant (size / pack); the price follows the choice. The cart arrives in Phase 2. */
+/** Choose a variant (size / pack) as ruled rows; the cart arrives in Phase 2, so the add button stays off for now. */
 export function VariantPicker({ variants, shopeeUrl }: { variants: ProductDetail["variants"]; shopeeUrl: string }) {
   const [selectedId, setSelectedId] = useState(variants[0]?.id);
   const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
   if (!selected) return null;
 
   return (
-    <div className="grid gap-5">
-      <Price vnd={selected.priceVnd} compareAt={selected.compareAtVnd} size="lg" />
-
-      {variants.length > 1 && (
-        <fieldset className="grid gap-2">
-          <legend className="mb-1 text-sm font-semibold">Quy cách</legend>
-          <div className="flex flex-wrap gap-2">
-            {variants.map((v) => (
-              <label
-                key={v.id}
-                className={cn(
-                  "cursor-pointer rounded-lg border px-4 py-2 text-sm font-medium transition has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand",
-                  v.id === selected.id ? "border-brand bg-brand-soft text-brand" : "border-line bg-surface hover:border-muted",
-                )}
-              >
-                <input type="radio" name="variant" value={v.id} checked={v.id === selected.id} onChange={() => setSelectedId(v.id)} className="sr-only" />
-                {v.name}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      )}
-
-      <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted">
-        <div className="flex gap-1.5">
-          <dt>Mã SKU:</dt>
-          <dd className="font-mono text-ink">{selected.sku}</dd>
-        </div>
-        {selected.weightG ? (
-          <div className="flex gap-1.5">
-            <dt>Khối lượng:</dt>
-            <dd className="text-ink">{selected.weightG} g</dd>
-          </div>
-        ) : null}
-      </dl>
-
-      <div className="flex flex-wrap gap-3">
-        <Button size="lg" disabled title="Giỏ hàng sẽ có ở giai đoạn 2">
-          <ShoppingBasket className="size-5" /> Thêm vào giỏ
-        </Button>
-        {shopeeUrl && (
-          <a
-            href={shopeeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-line bg-surface px-6 text-base font-semibold hover:bg-canvas"
+    <div>
+      <fieldset>
+        <legend className="sr-only">Quy cách</legend>
+        {variants.map((v) => (
+          <label
+            key={v.id}
+            className={cn(
+              "flex cursor-pointer items-center justify-between gap-6 border-b border-line px-6 py-[18px] text-xs transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-ink",
+              v.id === selected.id ? "bg-canvas" : "hover:bg-[#fafaf9]",
+            )}
           >
-            Mua trên Shopee <ExternalLink className="size-4" />
+            <input type="radio" name="variant" value={v.id} checked={v.id === selected.id} onChange={() => setSelectedId(v.id)} className="sr-only" />
+            <span>
+              <b className="block text-[13px] font-medium">{v.name}</b>
+              <span className="text-[11px] text-muted">
+                {v.sku}
+                {v.weightG ? ` · ${v.weightG} g` : ""}
+              </span>
+            </span>
+            <span className="text-right font-medium">
+              {formatVnd(v.priceVnd)}
+              {v.compareAtVnd ? <s className="ml-2 font-normal text-muted">{formatVnd(v.compareAtVnd)}</s> : null}
+            </span>
+          </label>
+        ))}
+      </fieldset>
+
+      <button
+        type="button"
+        disabled
+        title="Giỏ hàng sẽ có ở giai đoạn 2"
+        className="flex h-14 w-full items-center justify-between bg-ink px-6 text-xs font-medium uppercase tracking-[0.04em] text-white disabled:opacity-40"
+      >
+        <span>Thêm vào giỏ</span>
+        <span>{formatVnd(selected.priceVnd)}</span>
+      </button>
+      <div className="flex flex-wrap justify-between gap-4 border-b border-line px-6 py-4 text-[11px] leading-[1.7]">
+        <b className="font-medium">Giỏ hàng đang được xây dựng</b>
+        {shopeeUrl ? (
+          <a href={shopeeUrl} target="_blank" rel="noopener noreferrer" className="border-b border-current">
+            Mua trên Shopee ↗
           </a>
+        ) : (
+          <span className="text-muted">Thanh toán sẽ có ở giai đoạn 2.</span>
         )}
       </div>
-      <p className="text-xs text-muted">Giỏ hàng và thanh toán đang được xây dựng.</p>
     </div>
   );
 }
