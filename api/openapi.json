@@ -1704,6 +1704,143 @@
           }
         }
       }
+    },
+    "/api/admin/analytics/overview": {
+      "get": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Overview",
+        "description": "Funnel, totals, sources and products for Vietnam calendar days `from`..`to` (default: the last 30 days).",
+        "operationId": "overview_api_admin_analytics_overview_get",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "demo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "exclude",
+                "include",
+                "only"
+              ],
+              "type": "string",
+              "default": "exclude",
+              "title": "Demo"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A utm_source, or \"direct\".",
+              "title": "Source"
+            },
+            "description": "A utm_source, or \"direct\"."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Overview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events": {
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Send Event",
+        "description": "Record one behaviour event. Order events are not accepted here: the server writes them when an order changes.",
+        "operationId": "send_event_api_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2294,6 +2431,43 @@
         ],
         "title": "AdminVariant"
       },
+      "AttributionIn": {
+        "properties": {
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{8,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sessionid"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Source",
+            "default": ""
+          },
+          "campaign": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Campaign",
+            "default": ""
+          },
+          "contentCode": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Contentcode",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "AttributionIn",
+        "description": "Where the buyer came from, sent with the checkout. It only labels the order; it never changes money."
+      },
       "Body_upload_image_api_admin_catalog_products__product_id__images_post": {
         "properties": {
           "file": {
@@ -2587,6 +2761,16 @@
             ],
             "title": "Paymentmethod",
             "default": "cod"
+          },
+          "attribution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AttributionIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -2754,6 +2938,208 @@
           "phone"
         ],
         "title": "CustomerIn"
+      },
+      "EventIn": {
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "product_view",
+              "add_to_cart",
+              "checkout_started",
+              "shopee_click",
+              "live_join",
+              "live_product_click",
+              "chat_question"
+            ],
+            "title": "Event"
+          },
+          "sessionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "title": "Sessionid"
+          },
+          "eventId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{8,40}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eventid"
+          },
+          "sku": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sku"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Source",
+            "default": ""
+          },
+          "campaign": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Campaign",
+            "default": ""
+          },
+          "contentCode": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Contentcode",
+            "default": ""
+          },
+          "surface": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "store",
+                  "chat",
+                  "live"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Surface"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 99.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qty"
+          },
+          "cartValueVnd": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cartvaluevnd"
+          },
+          "liveId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Liveid"
+          },
+          "conversationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversationid"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "title": "Isdemo",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "event",
+          "sessionId"
+        ],
+        "title": "EventIn"
+      },
+      "FunnelStep": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "product_view",
+              "add_to_cart",
+              "checkout_started",
+              "order_created",
+              "order_completed"
+            ],
+            "title": "Key"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "sessions",
+              "orders"
+            ],
+            "title": "Unit"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "rateNote": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "first_step",
+              "previous_step_empty"
+            ],
+            "title": "Ratenote"
+          },
+          "trackingGap": {
+            "type": "boolean",
+            "title": "Trackinggap"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "unit",
+          "count",
+          "rate",
+          "rateNote",
+          "trackingGap"
+        ],
+        "title": "FunnelStep"
       },
       "HTTPValidationError": {
         "properties": {
@@ -3152,6 +3538,81 @@
         ],
         "title": "OrderOut"
       },
+      "Overview": {
+        "properties": {
+          "dateFrom": {
+            "type": "string",
+            "format": "date",
+            "title": "Datefrom"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date",
+            "title": "Dateto"
+          },
+          "demo": {
+            "type": "string",
+            "enum": [
+              "exclude",
+              "include",
+              "only"
+            ],
+            "title": "Demo"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "funnel": {
+            "items": {
+              "$ref": "#/components/schemas/FunnelStep"
+            },
+            "type": "array",
+            "title": "Funnel"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/Totals"
+          },
+          "bySource": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRow"
+            },
+            "type": "array",
+            "title": "Bysource"
+          },
+          "topProducts": {
+            "items": {
+              "$ref": "#/components/schemas/ProductRow"
+            },
+            "type": "array",
+            "title": "Topproducts"
+          },
+          "shopeeClicks": {
+            "type": "integer",
+            "title": "Shopeeclicks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dateFrom",
+          "dateTo",
+          "demo",
+          "source",
+          "funnel",
+          "totals",
+          "bySource",
+          "topProducts",
+          "shopeeClicks"
+        ],
+        "title": "Overview"
+      },
       "PaymentOut": {
         "properties": {
           "provider": {
@@ -3477,6 +3938,44 @@
         ],
         "title": "ProductDetail"
       },
+      "ProductRow": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "productName": {
+            "type": "string",
+            "title": "Productname"
+          },
+          "variantName": {
+            "type": "string",
+            "title": "Variantname"
+          },
+          "viewers": {
+            "type": "integer",
+            "title": "Viewers"
+          },
+          "carters": {
+            "type": "integer",
+            "title": "Carters"
+          },
+          "shopeeClicks": {
+            "type": "integer",
+            "title": "Shopeeclicks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "productName",
+          "variantName",
+          "viewers",
+          "carters",
+          "shopeeClicks"
+        ],
+        "title": "ProductRow"
+      },
       "ProductUpdate": {
         "properties": {
           "name": {
@@ -3657,6 +4156,44 @@
           "orderExpiryMinutes"
         ],
         "title": "ShopConfig"
+      },
+      "SourceRow": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "viewers": {
+            "type": "integer",
+            "title": "Viewers"
+          },
+          "carters": {
+            "type": "integer",
+            "title": "Carters"
+          },
+          "ordersCreated": {
+            "type": "integer",
+            "title": "Orderscreated"
+          },
+          "ordersCompleted": {
+            "type": "integer",
+            "title": "Orderscompleted"
+          },
+          "revenueVnd": {
+            "type": "integer",
+            "title": "Revenuevnd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "viewers",
+          "carters",
+          "ordersCreated",
+          "ordersCompleted",
+          "revenueVnd"
+        ],
+        "title": "SourceRow"
       },
       "StatusChange": {
         "properties": {
@@ -3919,6 +4456,53 @@
           "lastRun"
         ],
         "title": "SyncStatus"
+      },
+      "Totals": {
+        "properties": {
+          "ordersCreated": {
+            "type": "integer",
+            "title": "Orderscreated"
+          },
+          "ordersCompleted": {
+            "type": "integer",
+            "title": "Orderscompleted"
+          },
+          "revenueVnd": {
+            "type": "integer",
+            "title": "Revenuevnd"
+          },
+          "averageOrderVnd": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Averageordervnd"
+          },
+          "completionRate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completionrate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ordersCreated",
+          "ordersCompleted",
+          "revenueVnd",
+          "averageOrderVnd",
+          "completionRate"
+        ],
+        "title": "Totals"
       },
       "ValidationError": {
         "properties": {
