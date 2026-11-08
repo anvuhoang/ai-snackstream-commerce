@@ -28,7 +28,7 @@ def test_seed_is_idempotent_and_never_overwrites_edits(client, signed_in):
     run_seed(client)
     assert run_seed(client) == {"categories": 0, "products": 0}
 
-    row = signed_in.get(f"{ADMIN}/products", params={"q": "Bò khô"}).json()["items"][0]
+    row = signed_in.get(f"{ADMIN}/products", params={"q": "Khô bò"}).json()["items"][0]
     signed_in.patch(f"{ADMIN}/products/{row['id']}", json={"description": "Đã chỉnh sửa bởi nhân viên"})
     run_seed(client)
     assert (

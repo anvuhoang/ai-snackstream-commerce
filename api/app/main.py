@@ -45,7 +45,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with app.state.session_factory() as db:
             auth_service.ensure_bootstrap_admin(db, settings)
             if settings.seed_demo_catalog:
-                catalog_seed.seed_catalog(db)
+                catalog_seed.seed_catalog(db, Path(settings.media_dir))
         yield
         app.state.engine.dispose()
 
