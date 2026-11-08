@@ -17,10 +17,12 @@ from urllib.parse import quote
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.db import utcnow
 from app.core.text import slugify
+from app.modules.inventory.models import StockLevel, StockMovement
 
 from . import service
-from .models import Category, Product, ProductImage
+from .models import Category, Product, ProductImage, Variant
 from .schemas import CategoryIn, ProductCreate, VariantIn
 
 ASSETS = Path(__file__).parent / "seed_assets"
@@ -114,6 +116,32 @@ def _attach_images(db: Session, product: Product, skus: list[str], media_dir: Pa
     db.commit()
 
 
+DEMO_STOCK = 100
+
+
+def _stock_demo_variants(db: Session) -> int:
+    """Give every demo variant that is not tracked yet a starting count, so the shop can be tried end to end."""
+    tracked = select(StockLevel.variant_id)
+    variants = db.scalars(
+        select(Variant)
+        .join(Product, Product.id == Variant.product_id)
+        .where(Product.is_demo.is_(True), Variant.id.not_in(tracked))
+    ).all()
+    for v in variants:
+        db.add(StockLevel(variant_id=v.id, on_hand=DEMO_STOCK, reserved=0))
+        db.add(
+            StockMovement(
+                variant_id=v.id,
+                kind="receive",
+                delta_on_hand=DEMO_STOCK,
+                note="Demo starting stock",
+                created_at=utcnow(),
+            )
+        )
+    db.commit()
+    return len(variants)
+
+
 def seed_catalog(db: Session, media_dir: Path | None = None) -> dict[str, int]:
     """Create the categories and products that do not exist yet. Returns how many of each were created.
 
@@ -152,4 +180,5 @@ def seed_catalog(db: Session, media_dir: Path | None = None) -> dict[str, int]:
         if media_dir is not None:
             _attach_images(db, product, [v[0] for v in variants], media_dir)
         created["products"] += 1
+    _stock_demo_variants(db)  # not counted in the result: callers and tests rely on its two keys
     return created
