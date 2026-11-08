@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { TrackOnMount } from "@/components/analytics/tracker";
 import { ProductImage } from "@/components/store/product-image";
 import { VariantPicker } from "@/components/store/variant-picker";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +99,7 @@ export default async function ProductPage({ params }: Props) {
           )}
         </div>
 
+        <TrackOnMount event="product_view" sku={p.variants[0]?.sku} />
         <VariantPicker variants={p.variants} shopeeUrl={p.shopeeUrl} />
 
         <Accordion title="Thành phần" defaultOpen>

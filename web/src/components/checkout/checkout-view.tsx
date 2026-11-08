@@ -12,6 +12,7 @@ import { browserApi } from "@/lib/api/browser";
 import { cn } from "@/lib/cn";
 import { errorText } from "@/lib/errors";
 import { formatVnd } from "@/lib/format";
+import { attribution, track } from "@/lib/track";
 import { PAYMENT_METHOD_LABEL, type CheckoutOut, type PaymentMethod, type ShopConfig } from "@/lib/shop";
 
 const schema = z.object({
@@ -41,6 +42,16 @@ export function CheckoutView() {
   // One key per checkout attempt. It is kept when the outcome is unknown (network drop) so a retry cannot create a second order.
   const idemKey = useRef<string | null>(null);
 
+  // Opening checkout with something to buy is one funnel step, counted once per visit to this page.
+  const startedSent = useRef(false);
+  const hasCart = !!cart && cart.subtotalVnd > 0;
+  const cartValue = cart?.subtotalVnd ?? 0;
+  useEffect(() => {
+    if (!hasCart || startedSent.current) return;
+    startedSent.current = true;
+    track("checkout_started", { cartValueVnd: cartValue });
+  }, [hasCart, cartValue]);
+
   useEffect(() => {
     void browserApi.GET("/api/shop/config").then(({ data }) => data && setConfig(data));
   }, []);
@@ -67,6 +78,7 @@ export function CheckoutView() {
           shipping: { address: v.address, ward: v.ward, district: v.district, province: v.province },
           note: v.note,
           paymentMethod: v.paymentMethod as PaymentMethod,
+          attribution: attribution(),
         },
       });
       idemKey.current = null; // a real answer: the next attempt is a new one

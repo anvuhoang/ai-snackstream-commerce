@@ -6,6 +6,7 @@ import { useCart } from "@/components/cart/cart-provider";
 import { cn } from "@/lib/cn";
 import type { ProductDetail } from "@/lib/catalog";
 import { formatVnd } from "@/lib/format";
+import { track } from "@/lib/track";
 
 /** Choose a variant (size / pack) as ruled rows, pick a quantity and put it in the cart. */
 export function VariantPicker({ variants, shopeeUrl }: { variants: ProductDetail["variants"]; shopeeUrl: string }) {
@@ -23,7 +24,9 @@ export function VariantPicker({ variants, shopeeUrl }: { variants: ProductDetail
 
   async function addToCart() {
     if (!selected) return;
-    setAdded(await add(selected.id, qty));
+    const ok = await add(selected.id, qty);
+    setAdded(ok);
+    if (ok) track("add_to_cart", { sku: selected.sku, qty, surface: "store" });
   }
 
   return (
@@ -105,7 +108,13 @@ export function VariantPicker({ variants, shopeeUrl }: { variants: ProductDetail
           <b className="font-medium">Miễn phí giao từ 300.000đ</b>
         )}
         {shopeeUrl ? (
-          <a href={shopeeUrl} target="_blank" rel="noopener noreferrer" className="border-b border-current">
+          <a
+            href={shopeeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track("shopee_click", { sku: selected.sku })}
+            className="border-b border-current"
+          >
             Mua trên Shopee ↗
           </a>
         ) : (
