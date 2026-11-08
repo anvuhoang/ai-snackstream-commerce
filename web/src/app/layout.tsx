@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter_Tight } from "next/font/google";
+import { UtmCapture } from "@/components/analytics/tracker";
 import "./globals.css";
 
 const interTight = Inter_Tight({ subsets: ["latin", "vietnamese"], variable: "--font-inter-tight", display: "swap" });
@@ -12,7 +13,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi" className={interTight.variable}>
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        <UtmCapture />
+        {children}
+      </body>
     </html>
   );
 }

@@ -592,6 +592,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/analytics/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Overview
+         * @description Funnel, totals, sources and products for Vietnam calendar days `from`..`to` (default: the last 30 days).
+         */
+        get: operations["overview_api_admin_analytics_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Event
+         * @description Record one behaviour event. Order events are not accepted here: the server writes them when an order changes.
+         */
+        post: operations["send_event_api_events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -815,6 +855,29 @@ export interface components {
             /** Sortorder */
             sortOrder: number;
         };
+        /**
+         * AttributionIn
+         * @description Where the buyer came from, sent with the checkout. It only labels the order; it never changes money.
+         */
+        AttributionIn: {
+            /** Sessionid */
+            sessionId?: string | null;
+            /**
+             * Source
+             * @default
+             */
+            source?: string;
+            /**
+             * Campaign
+             * @default
+             */
+            campaign?: string;
+            /**
+             * Contentcode
+             * @default
+             */
+            contentCode?: string;
+        };
         /** Body_upload_image_api_admin_catalog_products__product_id__images_post */
         Body_upload_image_api_admin_catalog_products__product_id__images_post: {
             /** File */
@@ -933,6 +996,7 @@ export interface components {
              * @enum {string}
              */
             paymentMethod?: "cod" | "vnpay";
+            attribution?: components["schemas"]["AttributionIn"] | null;
         };
         /** CheckoutOut */
         CheckoutOut: {
@@ -990,6 +1054,74 @@ export interface components {
             name: string;
             /** Phone */
             phone: string;
+        };
+        /** EventIn */
+        EventIn: {
+            /**
+             * Event
+             * @enum {string}
+             */
+            event: "product_view" | "add_to_cart" | "checkout_started" | "shopee_click" | "live_join" | "live_product_click" | "chat_question";
+            /** Sessionid */
+            sessionId: string;
+            /** Eventid */
+            eventId?: string | null;
+            /** Sku */
+            sku?: string | null;
+            /**
+             * Source
+             * @default
+             */
+            source?: string;
+            /**
+             * Campaign
+             * @default
+             */
+            campaign?: string;
+            /**
+             * Contentcode
+             * @default
+             */
+            contentCode?: string;
+            /** Surface */
+            surface?: ("store" | "chat" | "live") | null;
+            /** Qty */
+            qty?: number | null;
+            /** Cartvaluevnd */
+            cartValueVnd?: number | null;
+            /** Liveid */
+            liveId?: string | null;
+            /** Conversationid */
+            conversationId?: string | null;
+            /**
+             * Isdemo
+             * @default false
+             */
+            isDemo?: boolean;
+        };
+        /** FunnelStep */
+        FunnelStep: {
+            /**
+             * Key
+             * @enum {string}
+             */
+            key: "product_view" | "add_to_cart" | "checkout_started" | "order_created" | "order_completed";
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "sessions" | "orders";
+            /** Count */
+            count: number;
+            /** Rate */
+            rate: number | null;
+            /**
+             * Ratenote
+             * @enum {string}
+             */
+            rateNote: "ok" | "first_step" | "previous_step_empty";
+            /** Trackinggap */
+            trackingGap: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1130,6 +1262,35 @@ export interface components {
             /** History */
             history: components["schemas"]["HistoryOut"][];
         };
+        /** Overview */
+        Overview: {
+            /**
+             * Datefrom
+             * Format: date
+             */
+            dateFrom: string;
+            /**
+             * Dateto
+             * Format: date
+             */
+            dateTo: string;
+            /**
+             * Demo
+             * @enum {string}
+             */
+            demo: "exclude" | "include" | "only";
+            /** Source */
+            source: string | null;
+            /** Funnel */
+            funnel: components["schemas"]["FunnelStep"][];
+            totals: components["schemas"]["Totals"];
+            /** Bysource */
+            bySource: components["schemas"]["SourceRow"][];
+            /** Topproducts */
+            topProducts: components["schemas"]["ProductRow"][];
+            /** Shopeeclicks */
+            shopeeClicks: number;
+        };
         /** PaymentOut */
         PaymentOut: {
             /**
@@ -1253,6 +1414,21 @@ export interface components {
              */
             updatedAt: string;
         };
+        /** ProductRow */
+        ProductRow: {
+            /** Sku */
+            sku: string;
+            /** Productname */
+            productName: string;
+            /** Variantname */
+            variantName: string;
+            /** Viewers */
+            viewers: number;
+            /** Carters */
+            carters: number;
+            /** Shopeeclicks */
+            shopeeClicks: number;
+        };
         /**
          * ProductUpdate
          * @description Only the fields that are sent are changed.
@@ -1317,6 +1493,21 @@ export interface components {
             onlinePaymentIsSandbox?: boolean;
             /** Orderexpiryminutes */
             orderExpiryMinutes: number;
+        };
+        /** SourceRow */
+        SourceRow: {
+            /** Source */
+            source: string;
+            /** Viewers */
+            viewers: number;
+            /** Carters */
+            carters: number;
+            /** Orderscreated */
+            ordersCreated: number;
+            /** Orderscompleted */
+            ordersCompleted: number;
+            /** Revenuevnd */
+            revenueVnd: number;
         };
         /** StatusChange */
         StatusChange: {
@@ -1412,6 +1603,19 @@ export interface components {
             /** Enabled */
             enabled: boolean;
             lastRun: components["schemas"]["SyncRunOut"] | null;
+        };
+        /** Totals */
+        Totals: {
+            /** Orderscreated */
+            ordersCreated: number;
+            /** Orderscompleted */
+            ordersCompleted: number;
+            /** Revenuevnd */
+            revenueVnd: number;
+            /** Averageordervnd */
+            averageOrderVnd: number | null;
+            /** Completionrate */
+            completionRate: number | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -2631,6 +2835,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SyncStatus"];
+                };
+            };
+        };
+    };
+    overview_api_admin_analytics_overview_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                demo?: "exclude" | "include" | "only";
+                /** @description A utm_source, or "direct". */
+                source?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Overview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_event_api_events_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
