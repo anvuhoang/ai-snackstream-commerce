@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Radio, ShoppingBasket } from "lucide-react";
+import { ChatLauncher } from "@/components/chat-launcher";
 
 // Links whose pages do not exist yet are rendered as plain text with the phase that delivers them.
 const NAV: { href: string; label: string; phase?: number }[] = [
@@ -42,6 +43,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
       <main className="flex-1">{children}</main>
+      <ChatLauncher />
       <footer className="border-t border-line py-8 text-center text-sm text-muted">
         © SnackStream · Đặc sản ăn vặt đường phố
       </footer>
