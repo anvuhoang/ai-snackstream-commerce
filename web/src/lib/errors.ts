@@ -11,6 +11,12 @@ const MESSAGES: Record<string, string> = {
   live_session_exists: "Đã có phiên chưa kết thúc. Hãy tải lại trang để xem phiên đó.",
   live_not_found: "Không tìm thấy phiên. Hãy tải lại trang.",
   live_invalid_state: "Trạng thái phiên đã thay đổi. Hãy tải lại trang và thử lại.",
+  live_invalid_sku: "SKU không nằm trong danh sách của phiên.",
+  live_not_running: "Phiên hiện không nhận câu hỏi.",
+  live_question_conflict: "Mã câu hỏi đã được dùng cho nội dung khác.",
+  live_question_capacity: "Phiên thử nghiệm đã đạt giới hạn số câu hỏi.",
+  live_queue_full: "Hàng đợi đang đầy. Vui lòng gửi lại sau.",
+  live_question_not_found: "Không tìm thấy câu hỏi trong phiên này.",
 };
 
 export const GENERIC_ERROR = "Có lỗi xảy ra. Vui lòng thử lại.";

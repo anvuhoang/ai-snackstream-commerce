@@ -20,7 +20,10 @@ export function CreateLiveForm({ disabled }: { disabled: boolean }) {
     if (busy || disabled || user.role !== "admin") return;
 
     const form = event.currentTarget;
-    const title = String(new FormData(form).get("title") ?? "").trim();
+    const data = new FormData(form);
+    const title = String(data.get("title") ?? "").trim();
+    const scheduledSkus = String(data.get("skus") ?? "")
+  .split(",").map((sku) => sku.trim()).filter(Boolean);
     setError("");
     setNotice("");
 
@@ -29,10 +32,17 @@ export function CreateLiveForm({ disabled }: { disabled: boolean }) {
       return;
     }
 
+    if (scheduledSkus.length < 1 || scheduledSkus.length > 6
+      || !scheduledSkus.every((sku) => /^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$/.test(sku))
+      || new Set(scheduledSkus.map((sku) => sku.toUpperCase())).size !== scheduledSkus.length) {
+      setError("Nhập 1–6 SKU không trùng nhau, chỉ gồm chữ, số, dấu gạch ngang hoặc gạch dưới.");
+      return;
+    }
+
     setBusy(true);
     try {
       const { response, error: failure } = await browserApi.POST("/api/admin/live", {
-        body: { title },
+        body: { title, scheduledSkus },
         headers: adminHeaders(csrf),
       });
 
@@ -68,6 +78,9 @@ export function CreateLiveForm({ disabled }: { disabled: boolean }) {
       <fieldset disabled={busy || disabled} className="grid gap-4">
         <Field label="Tiêu đề phiên">
           <Input name="title" required maxLength={160} placeholder="Nhập tiêu đề phiên live" />
+        </Field>
+        <Field label="SKU trong phiên, cách nhau bằng dấu phẩy">
+          <Input name="skus" required maxLength={250} defaultValue="BT-XIKE-01, KG-LC-250" />
         </Field>
         <Button type="submit" className="w-fit">
           {busy ? "Đang tạo…" : "Tạo phiên"}

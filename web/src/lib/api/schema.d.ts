@@ -112,6 +112,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/live/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live Events */
+        get: operations["live_events_api_live_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/live/{live_id}/questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Live Question */
+        post: operations["submit_live_question_api_live__live_id__questions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/live": {
         parameters: {
             query?: never;
@@ -163,6 +197,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/live/{live_id}/pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pin Live */
+        post: operations["pin_live_api_admin_live__live_id__pin_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/questions/{question_id}/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Skip Live Question */
+        post: operations["skip_live_question_api_admin_live__live_id__questions__question_id__skip_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause Live */
+        post: operations["pause_live_api_admin_live__live_id__pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Live */
+        post: operations["resume_live_api_admin_live__live_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -187,11 +289,80 @@ export interface components {
         /** LiveCurrentOut */
         LiveCurrentOut: {
             session?: components["schemas"]["LiveSessionOut"] | null;
+            /**
+             * Servertime
+             * Format: date-time
+             */
+            serverTime?: string;
+        };
+        /** LivePinIn */
+        LivePinIn: {
+            /** Sku */
+            sku: string;
+        };
+        /** LivePlaybackOut */
+        LivePlaybackOut: {
+            /** Playbackid */
+            playbackId: string;
+            /** Videourl */
+            videoUrl: string;
+            /**
+             * Startedat
+             * Format: date-time
+             */
+            startedAt: string;
+            /** Pausedat */
+            pausedAt?: string | null;
+        };
+        /** LiveQuestionIn */
+        LiveQuestionIn: {
+            /** Questionid */
+            questionId: string;
+            /** Sessionid */
+            sessionId: string;
+            /** Text */
+            text: string;
+        };
+        /** LiveQuestionOut */
+        LiveQuestionOut: {
+            /** Questionid */
+            questionId: string;
+            /** Liveid */
+            liveId: string;
+            /** Text */
+            text: string;
+            /** Sku */
+            sku: string;
+            /**
+             * Receivedat
+             * Format: date-time
+             */
+            receivedAt: string;
+            /**
+             * Status
+             * @default queued
+             * @enum {string}
+             */
+            status: "queued" | "skipped";
+            /**
+             * Isdemo
+             * @default true
+             * @constant
+             */
+            isDemo: true;
+            /**
+             * Source
+             * @default web_live
+             * @constant
+             */
+            source: "web_live";
         };
         /** LiveSessionCreate */
         LiveSessionCreate: {
             /** Title */
             title: string;
+            /** Scheduledskus */
+            scheduledSkus: string[];
         };
         /** LiveSessionOut */
         LiveSessionOut: {
@@ -199,6 +370,10 @@ export interface components {
             liveId: string;
             /** Title */
             title: string;
+            /** Scheduledskus */
+            scheduledSkus: string[];
+            /** Pinnedsku */
+            pinnedSku: string;
             /**
              * Isdemo
              * @default true
@@ -211,6 +386,9 @@ export interface components {
              * @enum {string}
              */
             status: "not_started" | "playing" | "paused" | "ended";
+            playback?: components["schemas"]["LivePlaybackOut"] | null;
+            /** Questions */
+            questions?: components["schemas"]["LiveQuestionOut"][];
         };
         /** LoginIn */
         LoginIn: {
@@ -387,6 +565,59 @@ export interface operations {
             };
         };
     };
+    live_events_api_live_events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    submit_live_question_api_live__live_id__questions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveQuestionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveQuestionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_live_api_admin_live_post: {
         parameters: {
             query?: never;
@@ -452,6 +683,135 @@ export interface operations {
         };
     };
     end_live_api_admin_live__live_id__end_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pin_live_api_admin_live__live_id__pin_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LivePinIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    skip_live_question_api_admin_live__live_id__questions__question_id__skip_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveQuestionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pause_live_api_admin_live__live_id__pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_live_api_admin_live__live_id__resume_post: {
         parameters: {
             query?: never;
             header?: never;

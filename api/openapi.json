@@ -159,6 +159,72 @@
         }
       }
     },
+    "/api/live/events": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Live Events",
+        "operationId": "live_events_api_live_events_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/live/{live_id}/questions": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Submit Live Question",
+        "operationId": "submit_live_question_api_live__live_id__questions_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveQuestionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveQuestionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/live": {
       "post": {
         "tags": [
@@ -283,6 +349,193 @@
           }
         }
       }
+    },
+    "/api/admin/live/{live_id}/pin": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Pin Live",
+        "operationId": "pin_live_api_admin_live__live_id__pin_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LivePinIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/questions/{question_id}/skip": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Skip Live Question",
+        "operationId": "skip_live_question_api_admin_live__live_id__questions__question_id__skip_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveQuestionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/pause": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Pause Live",
+        "operationId": "pause_live_api_admin_live__live_id__pause_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/resume": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Resume Live",
+        "operationId": "resume_live_api_admin_live__live_id__resume_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -338,11 +591,152 @@
                 "type": "null"
               }
             ]
+          },
+          "serverTime": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Servertime"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "title": "LiveCurrentOut"
+      },
+      "LivePinIn": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sku"
+        ],
+        "title": "LivePinIn"
+      },
+      "LivePlaybackOut": {
+        "properties": {
+          "playbackId": {
+            "type": "string",
+            "title": "Playbackid"
+          },
+          "videoUrl": {
+            "type": "string",
+            "title": "Videourl"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startedat"
+          },
+          "pausedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pausedat"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "playbackId",
+          "videoUrl",
+          "startedAt"
+        ],
+        "title": "LivePlaybackOut"
+      },
+      "LiveQuestionIn": {
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Questionid"
+          },
+          "sessionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Sessionid"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "questionId",
+          "sessionId",
+          "text"
+        ],
+        "title": "LiveQuestionIn"
+      },
+      "LiveQuestionOut": {
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "title": "Questionid"
+          },
+          "liveId": {
+            "type": "string",
+            "title": "Liveid"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Receivedat"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "skipped"
+            ],
+            "title": "Status",
+            "default": "queued"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "const": true,
+            "title": "Isdemo",
+            "default": true
+          },
+          "source": {
+            "type": "string",
+            "const": "web_live",
+            "title": "Source",
+            "default": "web_live"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "questionId",
+          "liveId",
+          "text",
+          "sku",
+          "receivedAt"
+        ],
+        "title": "LiveQuestionOut"
       },
       "LiveSessionCreate": {
         "properties": {
@@ -351,12 +745,23 @@
             "maxLength": 160,
             "minLength": 1,
             "title": "Title"
+          },
+          "scheduledSkus": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Scheduledskus"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "title"
+          "title",
+          "scheduledSkus"
         ],
         "title": "LiveSessionCreate"
       },
@@ -369,6 +774,17 @@
           "title": {
             "type": "string",
             "title": "Title"
+          },
+          "scheduledSkus": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scheduledskus"
+          },
+          "pinnedSku": {
+            "type": "string",
+            "title": "Pinnedsku"
           },
           "isDemo": {
             "type": "boolean",
@@ -386,13 +802,32 @@
             ],
             "title": "Status",
             "default": "not_started"
+          },
+          "playback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LivePlaybackOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/LiveQuestionOut"
+            },
+            "type": "array",
+            "title": "Questions"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
           "liveId",
-          "title"
+          "title",
+          "scheduledSkus",
+          "pinnedSku"
         ],
         "title": "LiveSessionOut"
       },

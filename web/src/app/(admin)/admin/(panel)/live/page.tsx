@@ -1,6 +1,7 @@
 import { LiveControls } from "@/components/live/live-controls";
 import { CreateLiveForm } from "@/components/live/create-live-form";
 import { serverApi } from "@/lib/api/server";
+import { AdminLiveQuestions } from "@/components/live/admin-live-questions";
 
 const STATUS_LABELS = {
   not_started: "Chưa bắt đầu",
@@ -67,8 +68,12 @@ export default async function AdminLivePage() {
           </dl>
           <LiveControls key={live.liveId} live={live} />
         </section>
-      ) : (
+        ) : (
         <p className="text-muted">Chưa có phiên live hiện tại.</p>
+      )}
+
+      {live && (
+        <AdminLiveQuestions key={live.liveId} liveId={live.liveId} />
       )}
     </div>
   );

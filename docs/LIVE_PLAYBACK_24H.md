@@ -10,7 +10,7 @@ Use branch `feat/live-playback-log` from `dev`. Run the API and web as described
 Copy a playable existing Q-014 MP4 to `web/public/live-demo/avatar.mp4`, creating the folders as needed.
 The copy is ignored by Git; keep the original evidence file. No new avatar generation is needed.
 
-Open `/live` in Chrome and Edge on the same computer. Both fetch the same media file, but have independent
+Open `/live/check` in Chrome and Edge on the same computer. Both fetch the same media file, but have independent
 playback controls and client sessions. This proves neither shared broadcast nor Make integration,
 host control, question handling or interrupt/resume. It tests the HTTP media path and client playback.
 
