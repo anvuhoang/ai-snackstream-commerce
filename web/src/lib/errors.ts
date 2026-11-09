@@ -8,6 +8,9 @@ const MESSAGES: Record<string, string> = {
   too_many_attempts: "Bạn thử sai quá nhiều lần. Vui lòng chờ vài phút rồi thử lại.",
   csrf_invalid: "Phiên làm việc đã hết hạn. Hãy tải lại trang và thử lại.",
   forbidden: "Bạn không có quyền thực hiện thao tác này.",
+  live_session_exists: "Đã có phiên chưa kết thúc. Hãy tải lại trang để xem phiên đó.",
+  live_not_found: "Không tìm thấy phiên. Hãy tải lại trang.",
+  live_invalid_state: "Trạng thái phiên đã thay đổi. Hãy tải lại trang và thử lại.",
 };
 
 export const GENERIC_ERROR = "Có lỗi xảy ra. Vui lòng thử lại.";

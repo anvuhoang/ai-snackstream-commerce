@@ -25,7 +25,7 @@ const NAV = [
   { href: "/admin/inventory", label: "Kho", Icon: Boxes, phase: 3 },
   { href: "/admin/analytics", label: "Dashboard", Icon: ChartNoAxesCombined, phase: 4 },
   { href: "/admin/chat", label: "Chatbot", Icon: MessagesSquare, phase: 5 },
-  { href: "/admin/live", label: "Live", Icon: Radio, phase: 6 },
+  { href: "/admin/live", label: "Live", Icon: Radio },
 ] as const;
 
 export function AdminShell({ user, csrf, children }: { user: User; csrf: string; children: React.ReactNode }) {

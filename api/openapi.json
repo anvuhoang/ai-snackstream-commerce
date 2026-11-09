@@ -137,6 +137,152 @@
           }
         }
       }
+    },
+    "/api/live/current": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Get Current Live",
+        "operationId": "get_current_live_api_live_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveCurrentOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Create Live",
+        "operationId": "create_live_api_admin_live_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveSessionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/start": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Start Live",
+        "operationId": "start_live_api_admin_live__live_id__start_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/end": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "End Live",
+        "operationId": "end_live_api_admin_live__live_id__end_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -180,6 +326,75 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "LiveCurrentOut": {
+        "properties": {
+          "session": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiveSessionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LiveCurrentOut"
+      },
+      "LiveSessionCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "LiveSessionCreate"
+      },
+      "LiveSessionOut": {
+        "properties": {
+          "liveId": {
+            "type": "string",
+            "title": "Liveid"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "const": true,
+            "title": "Isdemo",
+            "default": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_started",
+              "playing",
+              "paused",
+              "ended"
+            ],
+            "title": "Status",
+            "default": "not_started"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "liveId",
+          "title"
+        ],
+        "title": "LiveSessionOut"
       },
       "LoginIn": {
         "properties": {

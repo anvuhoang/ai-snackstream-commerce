@@ -18,6 +18,8 @@ from app.core.logging import RequestIdMiddleware, configure_logging
 from app.modules.auth import router as auth_router
 from app.modules.auth import service as auth_service
 from app.modules.health import router as health_router
+from app.modules.live import router as live_router
+from app.modules.live.service import LiveService
 
 API_ROOT = Path(__file__).resolve().parent.parent
 
@@ -53,6 +55,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.engine = make_engine(settings.database_url)
     app.state.session_factory = make_session_factory(app.state.engine)
+    app.state.live = LiveService()
 
     # Middleware order: the last one added runs first.
     app.add_middleware(
@@ -74,7 +77,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(RequestIdMiddleware)
 
     install_error_handlers(app)
-    for router in (health_router.router, auth_router.router):
+    for router in (
+        health_router.router,
+        auth_router.router,
+        live_router.router,
+        live_router.admin_router,
+    ):
         app.include_router(router)
     return app
 
