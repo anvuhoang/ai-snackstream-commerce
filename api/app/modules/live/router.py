@@ -1,7 +1,10 @@
 import asyncio
+
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from fastapi.responses import StreamingResponse
+
 from app.modules.auth.deps import require_csrf, require_role
+
 from .deps import require_make_callback
 from .dispatcher import dispatch_next_question
 from .schemas import (

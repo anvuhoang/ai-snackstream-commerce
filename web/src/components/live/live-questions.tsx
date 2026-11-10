@@ -6,9 +6,16 @@ import { Field } from "@/components/ui/input";
 import { browserApi } from "@/lib/api/browser";
 import type { components } from "@/lib/api/schema";
 import { errorText } from "@/lib/errors";
+import type { LivePlaybackLog } from "@/lib/live/playback-log";
 
 type Live = components["schemas"]["LiveSessionOut"];
 type QuestionIn = components["schemas"]["LiveQuestionIn"];
+
+type Props = {
+  live: Live;
+  connected: boolean;
+  onLog: LivePlaybackLog["record"];
+};
 
 const STATUS_LABELS = {
   queued: "Chờ xử lý",
@@ -20,13 +27,7 @@ const STATUS_LABELS = {
   skipped: "Đã bỏ qua",
 };
 
-export function LiveQuestions({
-  live,
-  connected,
-}: {
-  live: Live;
-  connected: boolean;
-}) {
+export function LiveQuestions({ live, connected, onLog }: Props) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -53,6 +54,7 @@ export function LiveQuestions({
     }
 
     viewerId.current ??= crypto.randomUUID();
+    const isRetry = pending.current?.text === cleanText;
 
     if (!pending.current || pending.current.text !== cleanText) {
       pending.current = {
@@ -62,23 +64,66 @@ export function LiveQuestions({
       };
     }
 
+    const request = pending.current;
     sending.current = true;
     setBusy(true);
 
     try {
+      onLog(
+        "live_question_sent",
+        {
+          liveId: live.liveId,
+          questionId: request.questionId,
+        },
+        {
+          isRetry,
+          requestSessionId: request.sessionId,
+          pinnedSkuAtSend: live.pinnedSku,
+        },
+      );
+
       const { response, data, error: failure } = await browserApi.POST(
         "/api/live/{live_id}/questions",
         {
           params: { path: { live_id: live.liveId } },
-          body: pending.current,
+          body: request,
         },
       );
 
       if (!response.ok) {
+        onLog(
+          response.status < 500
+            ? "live_question_rejected"
+            : "live_question_delivery_unknown",
+          {
+            liveId: live.liveId,
+            questionId: request.questionId,
+          },
+          {
+            httpStatus: response.status,
+          },
+        );
+
         if (response.status < 500) pending.current = null;
-        setError(errorText(failure));
+        setError(response.status < 500 ? errorText(failure)
+          : "Chưa xác nhận được kết quả. Giữ nguyên nội dung và gửi lại để kiểm tra.");
         return;
       }
+
+      onLog(
+        "live_question_accepted",
+        {
+          liveId: live.liveId,
+          questionId: request.questionId,
+          sku: data?.sku,
+          mediaSource: data?.mediaSource ?? undefined,
+        },
+        {
+          httpStatus: response.status,
+          status: data?.status ?? null,
+          receivedAt: data?.receivedAt ?? null,
+        },
+      );
 
       pending.current = null;
       setText("");
@@ -88,6 +133,17 @@ export function LiveQuestions({
           : "Đã nhận câu hỏi. Danh sách sẽ tự cập nhật.",
       );
     } catch {
+      onLog(
+        "live_question_delivery_unknown",
+        {
+          liveId: live.liveId,
+          questionId: request.questionId,
+        },
+        {
+          reason: "network_error",
+        },
+      );
+
       setError(
         "Chưa xác nhận được kết quả. Giữ nguyên nội dung và gửi lại để kiểm tra.",
       );
@@ -113,9 +169,17 @@ export function LiveQuestions({
               <p className="whitespace-pre-wrap break-words">
                 {question.text}
               </p>
+
               <p className="text-sm text-muted">
                 SKU: {question.sku} · {STATUS_LABELS[question.status]}
               </p>
+
+              {question.mediaSource === "prerecorded" && (
+                <p className="text-sm text-muted">
+                  Video mô phỏng: dùng clip có sẵn để kiểm tra luồng phát,
+                  chưa tạo câu trả lời AI cho câu hỏi này.
+                </p>
+              )}
             </li>
           ))}
         </ul>
