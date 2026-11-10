@@ -18,11 +18,15 @@ def settings(tmp_path) -> Settings:
     # SQLite keeps unit tests dependency-free. Anything that relies on PostgreSQL features (row locks,
     # full-text search) must be marked `@pytest.mark.postgres` and runs against DATABASE_URL in CI.
     return Settings(
+        _env_file=None,
         APP_ENV="test",
         DATABASE_URL=f"sqlite:///{(tmp_path / 'test.db').as_posix()}",
         SECRET_KEY="test-secret",
         BOOTSTRAP_ADMIN_EMAIL=ADMIN_EMAIL,
         BOOTSTRAP_ADMIN_PASSWORD=ADMIN_PASSWORD,
+        LIVE_MOCK_ENABLED=False,
+        LIVE_MAKE_WEBHOOK_URL="",
+        LIVE_MAKE_CALLBACK_TOKEN="",
     )
 
 

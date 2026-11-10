@@ -24,6 +24,8 @@ export function SessionVideo({
   onEnable,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const replyEnded = useRef(false);
+  const isReply = playback.kind === "reply";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -40,31 +42,40 @@ export function SessionVideo({
       video.pause();
     }
 
+    if (isReply && replyEnded.current) {
+      video.pause();
+      return;
+    }
+
     const referenceTime = playback.pausedAt ?? serverTime;
     const elapsedSinceSnapshot = playback.pausedAt
       ? 0
       : (performance.now() - receivedAtMs) / 1000;
-
-    const elapsed = Math.max(
-      0,
+    const elapsed = Math.max(0,
       (Date.parse(referenceTime) - Date.parse(playback.startedAt)) / 1000
-        + elapsedSinceSnapshot,
+      + elapsedSinceSnapshot,
     );
-
     if (!Number.isFinite(elapsed)) return;
 
-    if (
-      video.readyState >= 1 &&
-      Number.isFinite(video.duration) &&
-      video.duration > 0
-    ) {
-      const target = elapsed % video.duration;
+    if (video.readyState >= 1 && Number.isFinite(video.duration) && video.duration > 0) {
+      const duration = isReply
+        ? Math.min(video.duration, playback.durationSeconds ?? video.duration)
+        : video.duration;
+      const target = isReply ? Math.min(elapsed, duration) : elapsed % duration;
       const distance = Math.abs(video.currentTime - target);
+      const drift = isReply ? distance : Math.min(distance, duration - distance);
       const tolerance = playback.pausedAt ? 0.05 : 0.75;
+      if (drift > tolerance) video.currentTime = target;
+      if (isReply && elapsed >= duration) replyEnded.current = true;
+    }
 
-      if (Math.min(distance, video.duration - distance) > tolerance) {
-        video.currentTime = target;
-      }
+    if (isReply && (
+      replyEnded.current || video.ended
+      || (playback.durationSeconds != null && elapsed >= playback.durationSeconds)
+    )) {
+      replyEnded.current = true;
+      video.pause();
+      return;
     }
 
     if (allowPlay && !playback.pausedAt && video.paused) {
@@ -75,12 +86,9 @@ export function SessionVideo({
       });
     }
   }, [
-    connected,
-    enabled,
-    playback.startedAt,
-    playback.pausedAt,
-    serverTime,
-    receivedAtMs,
+    connected, enabled, isReply,
+    playback.startedAt, playback.pausedAt, playback.durationSeconds,
+    serverTime, receivedAtMs,
   ]);
 
   useEffect(() => {
@@ -102,12 +110,14 @@ export function SessionVideo({
 
   return (
     <section className="grid gap-3">
-      <video
-        ref={videoRef}
-        src={playback.videoUrl}
-        loop
-        playsInline
-        preload="auto"
+      <p role="status" className="text-sm text-muted">
+        {isReply
+          ? playback.mediaSource === "prerecorded"
+            ? "Video trả lời mô phỏng — dùng clip có sẵn."
+            : "Video trả lời của avatar."
+          : "Video nội dung live."}
+      </p>
+      <video ref={videoRef} src={playback.videoUrl} loop={!isReply} playsInline preload="auto"
         className="aspect-video w-full rounded-card bg-black object-contain"
         aria-label="Video avatar của phiên"
         onLoadedMetadata={() => sync()}
@@ -117,6 +127,10 @@ export function SessionVideo({
         onPlaying={() => {
           setLoading(false);
           setError("");
+        }}
+        onEnded={() => {
+          if (isReply) replyEnded.current = true;
+          setLoading(false);
         }}
         onError={() => {
           setLoading(false);

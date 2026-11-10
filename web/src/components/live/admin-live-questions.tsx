@@ -11,6 +11,11 @@ type Snapshot = components["schemas"]["LiveCurrentOut"];
 
 const STATUS_LABELS = {
   queued: "Chờ xử lý",
+  processing: "Đang xử lý",
+  ready: "Video đã sẵn sàng",
+  answering: "Đang phát trả lời",
+  answered: "Đã phát xong",
+  failed: "Không tạo được câu trả lời",
   skipped: "Đã bỏ qua",
 };
 
@@ -128,8 +133,13 @@ export function AdminLiveQuestions({ liveId }: { liveId: string }) {
                   <p className="text-sm text-muted">
                     SKU: {question.sku} · {STATUS_LABELS[question.status]}
                   </p>
-
-                  {question.status === "queued" && user.role === "admin" && (
+                  {question.mediaSource === "prerecorded" && (
+                    <p className="text-sm text-muted">
+                      Video mô phỏng: dùng clip có sẵn để kiểm tra luồng phát, chưa tạo câu trả lời AI cho câu hỏi này.
+                    </p>
+                  )}                  
+                  {["queued", "processing", "ready", "answering"].includes(question.status) &&
+                    user.role === "admin" && (
                     <Button
                       type="button"
                       variant="outline"

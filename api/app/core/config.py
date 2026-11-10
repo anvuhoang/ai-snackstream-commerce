@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEV_SECRET = "dev-only-change-me"
@@ -33,9 +33,22 @@ class Settings(BaseSettings):
     bootstrap_admin_password: str = Field("", alias="BOOTSTRAP_ADMIN_PASSWORD")
     # Browser origin(s) allowed to call the API directly (the web app normally proxies, so this is empty).
     cors_origins: list[str] = Field(default_factory=list, alias="CORS_ORIGINS")
+    live_make_enabled: bool = Field(False, alias="LIVE_MAKE_ENABLED")
+    live_make_webhook_url: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_WEBHOOK_URL")
+    live_make_callback_token: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_CALLBACK_TOKEN")
+    live_mock_enabled: bool = Field(False, alias="LIVE_MOCK_ENABLED")
+    live_mock_video_duration_seconds: float = Field(
+        10.077007,
+        gt=0,
+        le=300,
+        allow_inf_nan=False,
+        alias="LIVE_MOCK_VIDEO_DURATION_SECONDS",
+    )
 
     @model_validator(mode="after")
     def _finalize(self) -> Settings:
+        if self.live_make_enabled and self.live_mock_enabled:
+            raise ValueError("Enable only one of LIVE_MAKE_ENABLED and LIVE_MOCK_ENABLED")
         self.database_url = normalize_db_url(self.database_url)
         if self.run_migrations_on_start is None:
             self.run_migrations_on_start = self.env != "production"

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -20,6 +21,7 @@ from app.modules.auth import service as auth_service
 from app.modules.health import router as health_router
 from app.modules.live import router as live_router
 from app.modules.live.service import LiveService
+from app.modules.live.runtime import run_mock_playback
 
 API_ROOT = Path(__file__).resolve().parent.parent
 
@@ -41,8 +43,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             run_migrations(settings.database_url)
         with app.state.session_factory() as db:
             auth_service.ensure_bootstrap_admin(db, settings)
-        yield
-        app.state.engine.dispose()
+        playback_task = None
+        if settings.live_mock_enabled:
+            playback_task = asyncio.create_task(run_mock_playback(app.state.live, settings))
+        try:
+            yield
+        finally:
+            if playback_task is not None:
+                playback_task.cancel()
+                await asyncio.gather(playback_task, return_exceptions=True)
+            app.state.engine.dispose()
 
     app = FastAPI(
         title="SnackStream API",

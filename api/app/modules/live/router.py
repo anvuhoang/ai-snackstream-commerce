@@ -1,12 +1,13 @@
 import asyncio
-
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from fastapi.responses import StreamingResponse
-
 from app.modules.auth.deps import require_csrf, require_role
-
+from .deps import require_make_callback
+from .dispatcher import dispatch_next_question
 from .schemas import (
     LiveCurrentOut,
+    LiveMakeResultAck,
+    LiveMakeResultIn,
     LivePinIn,
     LiveQuestionIn,
     LiveQuestionOut,
@@ -23,6 +24,19 @@ admin_router = APIRouter(
     dependencies=[Depends(require_role("admin"))],
 )
 
+def _schedule_make(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    live_id: str,
+) -> None:
+    settings = request.app.state.settings
+    if settings.live_make_enabled or settings.live_mock_enabled:
+        background_tasks.add_task(
+            dispatch_next_question,
+            live_id,
+            request.app.state.live,
+            settings,
+        )
 
 @router.get("/current", response_model=LiveCurrentOut)
 def get_current_live(request: Request) -> LiveCurrentOut:
@@ -46,9 +60,15 @@ def create_live(body: LiveSessionCreate, request: Request) -> LiveSessionOut:
     response_model=LiveSessionOut,
     dependencies=[Depends(require_csrf)],
 )
-def start_live(live_id: str, request: Request) -> LiveSessionOut:
+def start_live(
+    live_id: str,
+    request: Request,
+    background_tasks: BackgroundTasks,
+) -> LiveSessionOut:
     live: LiveService = request.app.state.live
-    return live.start_session(live_id)
+    session = live.start_session(live_id)
+    _schedule_make(request, background_tasks, live_id)
+    return session
 
 
 @admin_router.post(
@@ -99,9 +119,16 @@ def pin_live(live_id: str, body: LivePinIn, request: Request) -> LiveSessionOut:
     return live.pin_sku(live_id, body.sku)
 
 @router.post("/{live_id}/questions", response_model=LiveQuestionOut)
-def submit_live_question(live_id: str, body: LiveQuestionIn, request: Request) -> LiveQuestionOut:
+def submit_live_question(
+    live_id: str,
+    body: LiveQuestionIn,
+    request: Request,
+    background_tasks: BackgroundTasks,
+) -> LiveQuestionOut:
     live: LiveService = request.app.state.live
-    return live.submit_question(live_id, body)
+    question = live.submit_question(live_id, body)
+    _schedule_make(request, background_tasks, live_id)
+    return question
 
 @admin_router.post(
     "/{live_id}/questions/{question_id}/skip",
@@ -112,9 +139,12 @@ def skip_live_question(
     live_id: str,
     question_id: str,
     request: Request,
+    background_tasks: BackgroundTasks,
 ) -> LiveQuestionOut:
     live: LiveService = request.app.state.live
-    return live.skip_question(live_id, question_id)
+    question = live.skip_question(live_id, question_id)
+    _schedule_make(request, background_tasks, live_id)
+    return question
 
 @admin_router.post(
     "/{live_id}/pause",
@@ -131,6 +161,32 @@ def pause_live(live_id: str, request: Request) -> LiveSessionOut:
     response_model=LiveSessionOut,
     dependencies=[Depends(require_csrf)],
 )
-def resume_live(live_id: str, request: Request) -> LiveSessionOut:
+def resume_live(
+    live_id: str,
+    request: Request,
+    background_tasks: BackgroundTasks,
+) -> LiveSessionOut:
     live: LiveService = request.app.state.live
-    return live.resume_session(live_id)
+    session = live.resume_session(live_id)
+    _schedule_make(request, background_tasks, live_id)
+    return session
+
+@router.post(
+    "/make-result",
+    response_model=LiveMakeResultAck,
+    dependencies=[Depends(require_make_callback)],
+)
+def receive_make_result(
+    body: LiveMakeResultIn,
+    request: Request,
+    background_tasks: BackgroundTasks,
+) -> LiveMakeResultAck:
+    live: LiveService = request.app.state.live
+    ack = live.receive_make_result(body)
+
+    if ack.reason == "question_skipped" or (
+        ack.applied and body.status in ("failed", "skipped")
+    ):
+        _schedule_make(request, background_tasks, body.live_id)
+
+    return ack

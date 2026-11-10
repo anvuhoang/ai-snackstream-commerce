@@ -225,6 +225,52 @@
         }
       }
     },
+    "/api/live/make-result": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Receive Make Result",
+        "operationId": "receive_make_result_api_live_make_result_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveMakeResultIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveMakeResultAck"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
     "/api/admin/live": {
       "post": {
         "tags": [
@@ -602,6 +648,131 @@
         "type": "object",
         "title": "LiveCurrentOut"
       },
+      "LiveMakeResultAck": {
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "const": true,
+            "title": "Received",
+            "default": true
+          },
+          "applied": {
+            "type": "boolean",
+            "title": "Applied"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "duplicate",
+              "stale_session",
+              "session_ended",
+              "question_skipped"
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "applied",
+          "reason"
+        ],
+        "title": "LiveMakeResultAck"
+      },
+      "LiveMakeResultIn": {
+        "properties": {
+          "liveId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Liveid"
+          },
+          "questionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Questionid"
+          },
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "failed",
+              "skipped"
+            ],
+            "title": "Status"
+          },
+          "replyText": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replytext"
+          },
+          "videoUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Videourl"
+          },
+          "providerTalkId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providertalkid"
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "unsupported_intent",
+                  "product_not_found",
+                  "generation_failed",
+                  "generation_timeout"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errorcode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "liveId",
+          "questionId",
+          "sku",
+          "status"
+        ],
+        "title": "LiveMakeResultIn"
+      },
       "LivePinIn": {
         "properties": {
           "sku": {
@@ -643,6 +814,48 @@
               }
             ],
             "title": "Pausedat"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "script",
+              "reply"
+            ],
+            "title": "Kind",
+            "default": "script"
+          },
+          "mediaSource": {
+            "type": "string",
+            "enum": [
+              "prerecorded",
+              "make"
+            ],
+            "title": "Mediasource",
+            "default": "prerecorded"
+          },
+          "questionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questionid"
+          },
+          "durationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationseconds"
           }
         },
         "additionalProperties": false,
@@ -709,10 +922,111 @@
             "type": "string",
             "enum": [
               "queued",
+              "processing",
+              "ready",
+              "answering",
+              "answered",
+              "failed",
               "skipped"
             ],
             "title": "Status",
             "default": "queued"
+          },
+          "processingStartedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processingstartedat"
+          },
+          "resultReceivedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resultreceivedat"
+          },
+          "replyText": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replytext"
+          },
+          "videoUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Videourl"
+          },
+          "mediaSource": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "prerecorded",
+                  "make"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mediasource"
+          },
+          "videoDurationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Videodurationseconds"
+          },
+          "providerTalkId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providertalkid"
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errorcode"
           },
           "isDemo": {
             "type": "boolean",
@@ -910,6 +1224,13 @@
           "type"
         ],
         "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Live-Make-Token"
       }
     }
   }

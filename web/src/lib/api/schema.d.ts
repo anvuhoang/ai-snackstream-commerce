@@ -146,6 +146,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/live/make-result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Receive Make Result */
+        post: operations["receive_make_result_api_live_make_result_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/live": {
         parameters: {
             query?: never;
@@ -295,6 +312,44 @@ export interface components {
              */
             serverTime?: string;
         };
+        /** LiveMakeResultAck */
+        LiveMakeResultAck: {
+            /**
+             * Received
+             * @default true
+             * @constant
+             */
+            received: true;
+            /** Applied */
+            applied: boolean;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "accepted" | "duplicate" | "stale_session" | "session_ended" | "question_skipped";
+        };
+        /** LiveMakeResultIn */
+        LiveMakeResultIn: {
+            /** Liveid */
+            liveId: string;
+            /** Questionid */
+            questionId: string;
+            /** Sku */
+            sku: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "failed" | "skipped";
+            /** Replytext */
+            replyText?: string | null;
+            /** Videourl */
+            videoUrl?: string | null;
+            /** Providertalkid */
+            providerTalkId?: string | null;
+            /** Errorcode */
+            errorCode?: ("unsupported_intent" | "product_not_found" | "generation_failed" | "generation_timeout") | null;
+        };
         /** LivePinIn */
         LivePinIn: {
             /** Sku */
@@ -313,6 +368,22 @@ export interface components {
             startedAt: string;
             /** Pausedat */
             pausedAt?: string | null;
+            /**
+             * Kind
+             * @default script
+             * @enum {string}
+             */
+            kind: "script" | "reply";
+            /**
+             * Mediasource
+             * @default prerecorded
+             * @enum {string}
+             */
+            mediaSource: "prerecorded" | "make";
+            /** Questionid */
+            questionId?: string | null;
+            /** Durationseconds */
+            durationSeconds?: number | null;
         };
         /** LiveQuestionIn */
         LiveQuestionIn: {
@@ -343,7 +414,23 @@ export interface components {
              * @default queued
              * @enum {string}
              */
-            status: "queued" | "skipped";
+            status: "queued" | "processing" | "ready" | "answering" | "answered" | "failed" | "skipped";
+            /** Processingstartedat */
+            processingStartedAt?: string | null;
+            /** Resultreceivedat */
+            resultReceivedAt?: string | null;
+            /** Replytext */
+            replyText?: string | null;
+            /** Videourl */
+            videoUrl?: string | null;
+            /** Mediasource */
+            mediaSource?: ("prerecorded" | "make") | null;
+            /** Videodurationseconds */
+            videoDurationSeconds?: number | null;
+            /** Providertalkid */
+            providerTalkId?: string | null;
+            /** Errorcode */
+            errorCode?: string | null;
             /**
              * Isdemo
              * @default true
@@ -605,6 +692,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LiveQuestionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    receive_make_result_api_live_make_result_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveMakeResultIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveMakeResultAck"];
                 };
             };
             /** @description Validation Error */

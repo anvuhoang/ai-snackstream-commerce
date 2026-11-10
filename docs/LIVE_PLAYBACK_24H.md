@@ -1,4 +1,6 @@
 # Live playback check: 24-hour milestone
+> Historical smoke-test checkpoint (2026-11-07). Current integration status:
+> [Live integration checkpoint](LIVE_MOCK_PLAYBACK.md).
 
 Status: playback smoke-test accepted by the user in Chrome and Edge on 2026-11-07; the two exported
 client logs were inspected. Agreement with An on the proposed log extension remains pending.

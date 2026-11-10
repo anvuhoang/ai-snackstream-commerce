@@ -12,6 +12,11 @@ type QuestionIn = components["schemas"]["LiveQuestionIn"];
 
 const STATUS_LABELS = {
   queued: "Chờ xử lý",
+  processing: "Đang xử lý",
+  ready: "Video đã sẵn sàng",
+  answering: "Đang phát trả lời",
+  answered: "Đã phát xong",
+  failed: "Không tạo được câu trả lời",
   skipped: "Đã bỏ qua",
 };
 

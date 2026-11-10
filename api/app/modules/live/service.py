@@ -5,6 +5,8 @@ from uuid import uuid4
 from app.core.errors import AppError
 
 from .schemas import (
+    LiveMakeResultAck,
+    LiveMakeResultIn,
     LivePlaybackOut,
     LiveQuestionIn,
     LiveQuestionOut,
@@ -18,6 +20,9 @@ class LiveService:
         self._current: LiveSessionOut | None = None
         self._lock = Lock()
         self._question_requests: dict[str, LiveQuestionIn] = {}
+        self._active_question_id: str | None = None
+        self._make_results: dict[str, LiveMakeResultIn] = {}
+        self._script_playback: LivePlaybackOut | None = None
 
     def get_current(self) -> LiveSessionOut | None:
         with self._lock:
@@ -44,6 +49,9 @@ class LiveService:
 
             self._current = session
             self._question_requests.clear()
+            self._active_question_id = None
+            self._make_results.clear()
+            self._script_playback = None
             return session.model_copy(deep=True)
 
     def _require_current(self, live_id: str) -> LiveSessionOut:
@@ -81,11 +89,13 @@ class LiveService:
             session = self._require_current(live_id)
             session.status = "ended"
             session.playback = None
+            self._script_playback = None
 
             for question in session.questions:
-                if question.status == "queued":
+                if question.status in ("queued", "processing", "ready", "answering"):
                     question.status = "skipped"
 
+            self._active_question_id = None
             return session.model_copy(deep=True)
 
     def pin_sku(self, live_id: str, sku: str) -> LiveSessionOut:
@@ -162,9 +172,17 @@ class LiveService:
                     "Question not found in this session.",
                 )
 
-            if question.status == "queued":
+            if question.status in ("queued", "processing", "ready", "answering"):
+                if question.status == "answering" and not self._restore_script(
+                    session, datetime.now(UTC)
+                ):
+                    raise AppError(409, "live_invalid_state", "Cannot restore script playback.")
+                if (
+                    question.status in ("ready", "answering")
+                    and self._active_question_id == question_id
+                ):
+                    self._active_question_id = None
                 question.status = "skipped"
-
             return question.model_copy(deep=True)
 
     def pause_session(self, live_id: str) -> LiveSessionOut:
@@ -208,3 +226,259 @@ class LiveService:
             session.playback.paused_at = None
             session.status = "playing"
             return session.model_copy(deep=True)
+
+    def claim_next_question(self, live_id: str) -> LiveQuestionOut | None:
+        with self._lock:
+            session = self._require_current(live_id)
+
+            if session.status != "playing" or self._active_question_id is not None:
+                return None
+
+            question = next(
+                (item for item in session.questions if item.status == "queued"),
+                None,
+            )
+
+            if question is None:
+                return None
+
+            question.status = "processing"
+            question.processing_started_at = datetime.now(UTC)
+            self._active_question_id = question.question_id
+
+            return question.model_copy(deep=True)
+
+    def start_ready_reply(self, live_id: str) -> bool:
+        with self._lock:
+            session = self._current
+            if (
+                session is None
+                or session.live_id != live_id
+                or session.status != "playing"
+                or session.playback is None
+                or session.playback.kind != "script"
+                or self._script_playback is not None
+            ):
+                return False
+
+            question = next(
+                (
+                    item for item in session.questions
+                    if item.question_id == self._active_question_id
+                ),
+                None,
+            )
+            if (
+                question is None
+                or question.status != "ready"
+                or question.media_source != "prerecorded"
+                or question.video_url is None
+                or question.video_duration_seconds is None
+            ):
+                return False
+
+            now = datetime.now(UTC)
+            reply = LivePlaybackOut(
+                playback_id=uuid4().hex,
+                video_url=question.video_url,
+                started_at=now,
+                kind="reply",
+                media_source="prerecorded",
+                question_id=question.question_id,
+                duration_seconds=question.video_duration_seconds,
+            )
+            self._script_playback = session.playback.model_copy(deep=True)
+            self._script_playback.paused_at = now
+            session.playback = reply
+            question.status = "answering"
+            return True
+
+    def _restore_script(self, session: LiveSessionOut, now: datetime) -> bool:
+        script = self._script_playback
+        if script is None or script.paused_at is None:
+            return False
+
+        restored = script.model_copy(deep=True)
+        restored.started_at += now - script.paused_at
+        restored.paused_at = now if session.status == "paused" else None
+        restored.playback_id = uuid4().hex
+        session.playback = restored
+        self._script_playback = None
+        return True
+
+    def finish_reply(self, live_id: str) -> bool:
+        with self._lock:
+            session = self._current
+            if (
+                session is None
+                or session.live_id != live_id
+                or session.status != "playing"
+                or session.playback is None
+                or session.playback.kind != "reply"
+                or session.playback.duration_seconds is None
+                or session.playback.question_id != self._active_question_id
+            ):
+                return False
+
+            question = next(
+                (
+                    item for item in session.questions
+                    if item.question_id == self._active_question_id
+                ),
+                None,
+            )
+            if question is None or question.status != "answering":
+                return False
+
+            now = datetime.now(UTC)
+            elapsed = (now - session.playback.started_at).total_seconds()
+            if elapsed < session.playback.duration_seconds:
+                return False
+            if not self._restore_script(session, now):
+                return False
+
+            question.status = "answered"
+            self._active_question_id = None
+            return True
+
+    def complete_mock_question(
+        self, live_id: str, question_id: str, duration_seconds: float
+    ) -> bool:
+        with self._lock:
+            session = self._current
+            if (
+                session is None
+                or session.live_id != live_id
+                or session.status == "ended"
+                or self._active_question_id != question_id
+            ):
+                return False
+
+            question = next(
+                (item for item in session.questions if item.question_id == question_id),
+                None,
+            )
+            if question is None:
+                return False
+            if question.status == "skipped":
+                self._active_question_id = None
+                return False
+            if question.status != "processing":
+                return False
+
+            prepared = LiveQuestionOut.model_validate(
+                {
+                    **question.model_dump(),
+                    "status": "ready",
+                    "result_received_at": datetime.now(UTC),
+                    "reply_text": (
+                        "Video mô phỏng để kiểm tra phát và tiếp tục phiên live. "
+                        "Đây không phải câu trả lời được tạo cho câu hỏi này."
+                    ),
+                    "video_url": "/live-demo/avatar.mp4",
+                    "media_source": "prerecorded",
+                    "video_duration_seconds": duration_seconds,
+                }
+            )
+            session.questions[session.questions.index(question)] = prepared
+            return True
+
+    def receive_make_result(self, data: LiveMakeResultIn) -> LiveMakeResultAck:
+        with self._lock:
+            session = self._current
+
+            if session is None or session.live_id != data.live_id:
+                return LiveMakeResultAck(applied=False, reason="stale_session")
+
+            if session.status == "ended":
+                return LiveMakeResultAck(applied=False, reason="session_ended")
+
+            previous = self._make_results.get(data.question_id)
+            if previous is not None:
+                if previous != data:
+                    raise AppError(
+                        409,
+                        "live_make_result_conflict",
+                        "Result differs from the saved result.",
+                    )
+                return LiveMakeResultAck(applied=False, reason="duplicate")
+
+            question = next(
+                (item for item in session.questions if item.question_id == data.question_id),
+                None,
+            )
+
+            if question is None:
+                raise AppError(
+                    404,
+                    "live_question_not_found",
+                    "Question not found in this session.",
+                )
+
+            if (
+                self._active_question_id != data.question_id
+                or question.processing_started_at is None
+                or question.status not in ("processing", "skipped")
+            ):
+                raise AppError(
+                    409,
+                    "live_question_not_active",
+                    "Question is not being processed.",
+                )
+
+            if data.sku != question.sku:
+                raise AppError(
+                    409,
+                    "live_make_sku_mismatch",
+                    "Result SKU differs from the question SKU.",
+                )
+
+            self._make_results[data.question_id] = data.model_copy(deep=True)
+            question.result_received_at = datetime.now(UTC)
+            question.provider_talk_id = data.provider_talk_id
+
+            if question.status == "skipped":
+                self._active_question_id = None
+                return LiveMakeResultAck(applied=False, reason="question_skipped")
+
+            question.status = data.status
+            question.reply_text = data.reply_text
+            question.video_url = str(data.video_url) if data.video_url is not None else None
+            question.media_source = "make" if data.status == "ready" else None
+            question.error_code = data.error_code
+
+            if data.status != "ready":
+                self._active_question_id = None
+
+            return LiveMakeResultAck(applied=True, reason="accepted")
+
+    def record_make_dispatch_error(
+        self,
+        live_id: str,
+        question_id: str,
+        code: str,
+    ) -> None:
+        with self._lock:
+            session = self._current
+            if (
+                session is None
+                or session.live_id != live_id
+                or session.status == "ended"
+                or self._active_question_id != question_id
+                or question_id in self._make_results
+            ):
+                return
+
+            question = next(
+                (item for item in session.questions if item.question_id == question_id),
+                None,
+            )
+            if question is None:
+                return
+
+            question.error_code = code
+
+            if code in ("live_make_disabled", "live_make_not_configured"):
+                if question.status == "processing":
+                    question.status = "failed"
+                self._active_question_id = None
