@@ -132,6 +132,7 @@ class OrderItemOut(ApiModel):
     unit_price_vnd: int
     qty: int
     line_total_vnd: int
+    image: ImageOut | None = None  # filled for the back office only
 
 
 class PaymentOut(ApiModel):

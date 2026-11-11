@@ -8,8 +8,10 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
+from app.core.storage import MediaStorage, get_storage
 from app.modules.auth.deps import current_admin, require_csrf, require_role
 from app.modules.auth.models import AdminUser
+from app.modules.catalog import presenters as catalog_presenters
 
 from . import service, sync
 from .schemas import MovementOut, StockAdjust, StockPage, StockRow, StockState, SyncRunOut, SyncStatus
@@ -19,14 +21,16 @@ router = APIRouter(prefix="/api/admin/inventory", tags=["admin-inventory"])
 Reader = Depends(require_role("admin", "staff"))
 Operator = [Depends(require_role("admin", "staff")), Depends(require_csrf)]
 Db = Annotated[Session, Depends(get_db)]
+Storage = Annotated[MediaStorage, Depends(get_storage)]
 
 
-def _row(variant, product, level) -> StockRow:
+def _row(variant, product, level, storage: MediaStorage) -> StockRow:
     return StockRow(
         variant_id=variant.id,
         sku=variant.sku,
         product_name=product.name,
         variant_name=variant.name,
+        image=catalog_presenters.image(product.images[0], storage) if product.images else None,
         tracked=level is not None,
         source=level.source if level else None,
         on_hand=level.on_hand if level else 0,
@@ -54,6 +58,7 @@ def _run(run) -> SyncRunOut | None:
 @router.get("", response_model=StockPage, dependencies=[Reader])
 def list_stock(
     db: Db,
+    storage: Storage,
     q: str = Query("", max_length=100, description="SKU or product name."),
     state: StockState | None = None,
     page: int = Query(1, ge=1, le=10_000),
@@ -61,7 +66,7 @@ def list_stock(
 ) -> StockPage:
     rows, total = service.list_levels(db, q, state or "", page, page_size)
     return StockPage(
-        items=[_row(*r) for r in rows],
+        items=[_row(*r, storage) for r in rows],
         page=page,
         page_size=page_size,
         total=total,
@@ -70,9 +75,11 @@ def list_stock(
 
 
 @router.post("/{variant_id}/adjust", response_model=StockRow, dependencies=Operator)
-def adjust(variant_id: int, body: StockAdjust, db: Db, actor: AdminUser = Depends(current_admin)) -> StockRow:
+def adjust(
+    variant_id: int, body: StockAdjust, db: Db, storage: Storage, actor: AdminUser = Depends(current_admin)
+) -> StockRow:
     service.adjust(db, variant_id, body.delta, body.kind, body.note, actor)
-    return _row(*service.get_row(db, variant_id))
+    return _row(*service.get_row(db, variant_id), storage)
 
 
 @router.get("/{variant_id}/movements", response_model=list[MovementOut], dependencies=[Reader])

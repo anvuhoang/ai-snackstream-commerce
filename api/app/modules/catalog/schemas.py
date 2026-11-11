@@ -205,6 +205,7 @@ class AdminProductRow(ApiModel):
     variant_count: int
     is_demo: bool
     updated_at: datetime
+    image: ImageOut | None = None  # the cover photo, for the list
 
 
 class AdminProductPage(ApiModel):

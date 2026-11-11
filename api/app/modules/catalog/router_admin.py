@@ -57,6 +57,7 @@ def update_category(category_id: int, body: CategoryUpdate, db: Db) -> AdminCate
 @router.get("/products", response_model=AdminProductPage, dependencies=[Reader])
 def list_products(
     db: Db,
+    storage: Storage,
     q: str = Query("", max_length=100),
     status: Status | None = None,
     page: int = Query(1, ge=1, le=10_000),
@@ -64,7 +65,7 @@ def list_products(
 ) -> AdminProductPage:
     items, total = service.list_admin_products(db, q, status or "", page, page_size)
     return AdminProductPage(
-        items=[presenters.admin_row(p) for p in items], page=page, page_size=page_size, total=total
+        items=[presenters.admin_row(p, storage) for p in items], page=page, page_size=page_size, total=total
     )
 
 

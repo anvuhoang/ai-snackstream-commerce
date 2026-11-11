@@ -835,6 +835,7 @@ export interface components {
              * Format: date-time
              */
             updatedAt: string;
+            image?: components["schemas"]["ImageOut"] | null;
         };
         /** AdminVariant */
         AdminVariant: {
@@ -1213,6 +1214,7 @@ export interface components {
             qty: number;
             /** Linetotalvnd */
             lineTotalVnd: number;
+            image?: components["schemas"]["ImageOut"] | null;
         };
         /** OrderOut */
         OrderOut: {
@@ -1563,6 +1565,7 @@ export interface components {
             productName: string;
             /** Variantname */
             variantName: string;
+            image: components["schemas"]["ImageOut"] | null;
             /** Tracked */
             tracked: boolean;
             /** Source */

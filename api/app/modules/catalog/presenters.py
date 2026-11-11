@@ -70,7 +70,7 @@ def admin_category(c: Category, count: int) -> AdminCategory:
     return AdminCategory(id=c.id, slug=c.slug, name=c.name, sort_order=c.sort_order, product_count=count)
 
 
-def admin_row(p: Product) -> AdminProductRow:
+def admin_row(p: Product, storage: MediaStorage) -> AdminProductRow:
     return AdminProductRow(
         id=p.id,
         slug=p.slug,
@@ -80,6 +80,7 @@ def admin_row(p: Product) -> AdminProductRow:
         variant_count=len(p.variants),
         is_demo=p.is_demo,
         updated_at=p.updated_at,
+        image=image(p.images[0], storage) if p.images else None,
     )
 
 

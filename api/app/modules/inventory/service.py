@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.db import utcnow
 from app.core.errors import AppError
@@ -180,6 +180,7 @@ def get_row(db: Session, variant_id: int) -> tuple[Variant, Product, StockLevel 
         .join(Product, Product.id == Variant.product_id)
         .outerjoin(StockLevel, StockLevel.variant_id == Variant.id)
         .where(Variant.id == variant_id)
+        .options(selectinload(Product.images))
     ).one_or_none()
     if row is None:
         raise AppError(404, "variant_not_found", "Variant not found.")
@@ -194,6 +195,7 @@ def list_levels(
         select(Variant, Product, StockLevel)
         .join(Product, Product.id == Variant.product_id)
         .outerjoin(StockLevel, StockLevel.variant_id == Variant.id)
+        .options(selectinload(Product.images))
     )
     if q.strip():
         like = f"%{q.strip()}%"

@@ -2354,6 +2354,16 @@
             "type": "string",
             "format": "date-time",
             "title": "Updatedat"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3398,6 +3408,16 @@
           "lineTotalVnd": {
             "type": "integer",
             "title": "Linetotalvnd"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -4306,6 +4326,16 @@
             "type": "string",
             "title": "Variantname"
           },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "tracked": {
             "type": "boolean",
             "title": "Tracked"
@@ -4368,6 +4398,7 @@
           "sku",
           "productName",
           "variantName",
+          "image",
           "tracked",
           "source",
           "onHand",
