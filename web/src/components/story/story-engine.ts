@@ -6,8 +6,10 @@ export function startStory(THREE, Lenis) {
   var stopped = false, rafId = 0, ac = new AbortController();
   var root = document.querySelector('.story');
   var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var PMAX = 1.19; // scroll progress (0..1) maps to scene time 0..PMAX, then sceneT() skips the idle part of the Minh bach hold; the pour ends at 1.23
-  function sceneT(x) { return x > 0.72 ? x + 0.04 : x; }
+  var PMAX = 1.11; // scroll progress (0..1) maps to 0..PMAX, then sceneT() adds the part of scene time that is skipped; the pour ends at 1.23
+  // The Minh bach page used to stay still for a stretch while the scroll went on, which felt like the page stuck. Now the scroll skips that stretch (0.12):
+  // the page slides in, and from the moment it is fully in view it slides out again, moving at the same speed as the rest of the page.
+  function sceneT(x) { return x > 0.64 ? x + 0.12 : x; }
   function el(id) { return document.getElementById(id); }
   // One smooth scroll for the whole page (the way Postevand feels): the page itself is eased, and every animation reads that position directly.
   var lenis = (Lenis && !RM) ? new Lenis({ lerp: 0.085, wheelMultiplier: 1 }) : null;
