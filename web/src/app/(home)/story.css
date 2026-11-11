@@ -36,7 +36,7 @@ a{color:inherit;text-decoration:none}
 
 /* hero */
 #hero{z-index:1;background:linear-gradient(180deg,#F5B82E 0%,#F9D77E 46%,#FFF8EA 100%)}
-#hero h1{position:absolute;left:1.5vw;bottom:-.05em;margin:0;font-weight:800;font-size:clamp(64px,14.8vw,290px);line-height:.85;letter-spacing:-.06em;color:var(--espresso);white-space:nowrap}
+#hero h1{position:absolute;left:1.5vw;bottom:-.05em;margin:0;font-weight:800;font-size:clamp(40px,14.8vw,290px);line-height:.85;letter-spacing:-.06em;color:var(--espresso);white-space:nowrap}
 #hero h1 sup{font-size:.2em;letter-spacing:0;vertical-align:top;position:relative;top:.5em;color:var(--accent)}
 #hero p{position:absolute;right:max(24px,env(safe-area-inset-right,0px));top:calc(var(--bar) + 36px);margin:0;max-width:280px;font-size:15px;font-weight:500;line-height:1.55;text-align:right}
 #hint{position:absolute;left:max(24px,env(safe-area-inset-left,0px));top:calc(var(--bar) + 36px);font-size:13px;font-weight:600}
