@@ -28,9 +28,9 @@ export function StockSync({ status }: { status: SyncStatus }) {
   }
 
   return (
-    <section className="grid gap-3 border border-line bg-surface p-5" aria-label="Đồng bộ Odoo">
+    <section className="grid gap-3 rounded-[20px] border border-line bg-surface p-5" aria-label="Đồng bộ Odoo">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.04em]">Đồng bộ Odoo</h2>
+        <h2 className="text-sm font-extrabold">Đồng bộ Odoo</h2>
         {status.enabled ? (
           <Button size="sm" disabled={busy} onClick={sync}>
             {busy ? "Đang đồng bộ…" : "Đồng bộ ngay"}

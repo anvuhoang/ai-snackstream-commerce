@@ -59,9 +59,9 @@ export function StockAdjust({
     );
   }
 
-  const field = "h-9 border border-line bg-surface px-2 text-sm focus:bg-canvas focus:outline-none";
+  const field = "h-10 rounded-xl border-2 border-line bg-surface px-3 text-sm focus:border-accent focus:outline-none";
   return (
-    <div className="grid w-64 gap-2 border border-line bg-canvas p-3">
+    <div className="grid w-64 gap-2 rounded-[20px] border border-line bg-canvas p-3">
       <select value={kind} onChange={(e) => setKind(e.target.value as "receive" | "adjust")} className={field} aria-label="Loại thay đổi">
         <option value="receive">Nhập hàng (+)</option>
         <option value="adjust">Điều chỉnh (+ hoặc −)</option>

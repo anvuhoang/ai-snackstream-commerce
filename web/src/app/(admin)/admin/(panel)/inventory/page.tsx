@@ -4,6 +4,7 @@ import Link from "next/link";
 import { StockAdjust } from "@/components/admin/stock-adjust";
 import { StockSync } from "@/components/admin/stock-sync";
 import { Pagination } from "@/components/store/pagination";
+import { ProductImage } from "@/components/store/product-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { serverApi } from "@/lib/api/server";
@@ -36,7 +37,7 @@ export default async function AdminInventoryPage({ searchParams }: { searchParam
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-[clamp(34px,4vw,56px)] font-light leading-none tracking-[-0.05em]">Kho</h1>
+        <h1 className="text-[clamp(34px,4vw,56px)] font-extrabold leading-[1.05] tracking-[-0.04em]">Kho</h1>
         <p className="mt-2 text-xs text-muted">
           {data.total} biến thể · “Còn bán” = tồn kho trừ số đang giữ cho đơn chưa giao. Biến thể chưa theo dõi được bán không giới hạn.
         </p>
@@ -45,15 +46,15 @@ export default async function AdminInventoryPage({ searchParams }: { searchParam
       <StockSync status={sync} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap border border-line" aria-label="Lọc theo tình trạng">
+        <div className="flex flex-wrap gap-2" aria-label="Lọc theo tình trạng">
           {STOCK_STATES.map((s) => (
             <Link
               key={s.value ?? "all"}
               href={href({ state: s.value ?? "" })}
               aria-current={state === s.value ? "true" : undefined}
               className={cn(
-                "flex h-9 items-center border-r border-line px-4 text-[11px] font-medium uppercase tracking-[0.04em] last:border-r-0",
-                state === s.value ? "bg-ink text-white" : "hover:bg-canvas",
+                "inline-flex h-10 items-center rounded-full border-2 px-4 text-sm font-semibold transition-colors",
+                state === s.value ? "border-accent bg-accent text-white" : "border-ink hover:bg-canvas",
               )}
             >
               {s.label}
@@ -69,7 +70,7 @@ export default async function AdminInventoryPage({ searchParams }: { searchParam
               defaultValue={q}
               placeholder="SKU hoặc tên sản phẩm…"
               aria-label="Tìm trong kho"
-              className="h-10 w-72 border border-line bg-surface pl-9 pr-3 text-sm focus:bg-canvas focus:outline-none"
+              className="h-10 w-72 rounded-xl border-2 border-line bg-surface pl-9 pr-3 text-sm focus:bg-canvas focus:outline-none"
             />
           </div>
           <Button type="submit" size="sm" variant="outline" className="h-10">
@@ -79,9 +80,9 @@ export default async function AdminInventoryPage({ searchParams }: { searchParam
       </div>
 
       {data.items.length === 0 ? (
-        <p className="border border-dashed border-line p-12 text-center text-sm text-muted">Không có biến thể nào khớp bộ lọc.</p>
+        <p className="rounded-[20px] border-2 border-dashed border-line p-12 text-center text-sm text-muted">Không có biến thể nào khớp bộ lọc.</p>
       ) : (
-        <div className="overflow-x-auto border border-line bg-surface">
+        <div className="overflow-x-auto rounded-[20px] border border-line bg-surface">
           <table className="w-full min-w-[920px] text-left text-sm">
             <thead className="border-b border-line text-[10px] uppercase tracking-[0.04em] text-muted">
               <tr>
@@ -104,15 +105,20 @@ export default async function AdminInventoryPage({ searchParams }: { searchParam
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    {r.productName}
-                    <span className="block text-xs text-muted">{r.variantName}</span>
+                    <div className="flex items-center gap-3">
+                      <ProductImage image={r.image} name={r.productName} className="size-12 shrink-0" sizes="48px" />
+                      <span>
+                        {r.productName}
+                        <span className="block text-xs text-muted">{r.variantName}</span>
+                      </span>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-xs">{r.source ? SOURCE_LABEL[r.source] : <span className="text-muted">Chưa theo dõi</span>}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{r.tracked ? r.onHand : "—"}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{r.tracked ? r.reserved : "—"}</td>
                   <td className="px-4 py-3 text-right tabular-nums">
                     {r.tracked ? (
-                      <Badge tone={r.available <= 0 ? "warn" : r.available <= data.lowStockAt ? "neutral" : "ok"}>{r.available}</Badge>
+                      <Badge tone={r.available <= 0 ? "danger" : r.available <= data.lowStockAt ? "warn" : "ok"}>{r.available}</Badge>
                     ) : (
                       "—"
                     )}

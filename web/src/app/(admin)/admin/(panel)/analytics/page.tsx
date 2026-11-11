@@ -15,9 +15,9 @@ type Search = { from?: string; to?: string; demo?: string; source?: string };
 function Tile({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="grid content-between gap-3 bg-surface p-5">
-      <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">{label}</span>
+      <span className="text-[13px] font-semibold text-muted">{label}</span>
       <div>
-        <b className="block text-[30px] font-light leading-none tracking-[-0.03em] tabular-nums">{value}</b>
+        <b className="block text-[30px] font-extrabold leading-none tracking-[-0.03em] tabular-nums">{value}</b>
         {note && <span className="mt-1.5 block text-xs text-muted">{note}</span>}
       </div>
     </div>
@@ -45,13 +45,13 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-[clamp(34px,4vw,56px)] font-light leading-none tracking-[-0.05em]">Dashboard</h1>
+        <h1 className="text-[clamp(34px,4vw,56px)] font-extrabold leading-[1.05] tracking-[-0.04em]">Dashboard</h1>
         <p className="mt-2 max-w-3xl text-xs text-muted">
           Lượt xem được đếm theo <b className="font-medium text-ink">phiên truy cập</b> (một trình duyệt), không phải số người: một người dùng hai thiết bị là hai phiên. Ngày tính theo giờ Việt Nam.
         </p>
       </div>
 
-      <form action="/admin/analytics" className="flex flex-wrap items-end gap-3 border border-line bg-surface p-4">
+      <form action="/admin/analytics" className="flex flex-wrap items-end gap-3 rounded-[20px] border border-line bg-surface p-4">
         <label className="grid gap-1 text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
           Từ ngày
           <input type="date" name="from" defaultValue={from} max={to} className={input} />
@@ -88,7 +88,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       </form>
 
       {!data ? (
-        <p className="border border-dashed border-line p-12 text-center text-sm text-muted" role="alert">
+        <p className="rounded-[20px] border-2 border-dashed border-line p-12 text-center text-sm text-muted" role="alert">
           {(error as { error?: { code?: string } } | undefined)?.error?.code === "invalid_range"
             ? "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc."
             : (error as { error?: { code?: string } } | undefined)?.error?.code === "range_too_long"
@@ -97,7 +97,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </p>
       ) : (
         <>
-          <section aria-label="Chỉ số chính" className="grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+          <section aria-label="Chỉ số chính" className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
             <Tile label="Doanh thu" value={formatVnd(data.totals.revenueVnd)} note="Chỉ tính đơn đã hoàn tất" />
             <Tile label="Đơn đã tạo" value={data.totals.ordersCreated.toLocaleString("vi-VN")} />
             <Tile label="Đơn hoàn tất" value={data.totals.ordersCompleted.toLocaleString("vi-VN")} />
@@ -121,8 +121,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             Hai phễu dùng hai đơn vị khác nhau nên không so thẳng với nhau. Tỷ lệ phiên → đơn không được tự suy ra, vì một phiên có thể đặt nhiều đơn và đơn có thể đến từ nguồn không theo dõi được.
           </p>
 
-          <section className="overflow-x-auto border border-line bg-surface" aria-label="Theo nguồn">
-            <h2 className="border-b border-line px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.04em]">Theo nguồn</h2>
+          <section className="overflow-x-auto rounded-[20px] border border-line bg-surface" aria-label="Theo nguồn">
+            <h2 className="border-b border-line px-5 py-3 text-sm font-extrabold">Theo nguồn</h2>
             {data.bySource.length === 0 ? (
               <p className="p-8 text-center text-sm text-muted">Chưa có dữ liệu trong khoảng này.</p>
             ) : (
@@ -156,8 +156,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             </p>
           </section>
 
-          <section className="overflow-x-auto border border-line bg-surface" aria-label="Sản phẩm được xem nhiều">
-            <h2 className="border-b border-line px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.04em]">Sản phẩm được xem nhiều</h2>
+          <section className="overflow-x-auto rounded-[20px] border border-line bg-surface" aria-label="Sản phẩm được xem nhiều">
+            <h2 className="border-b border-line px-5 py-3 text-sm font-extrabold">Sản phẩm được xem nhiều</h2>
             {data.topProducts.length === 0 ? (
               <p className="p-8 text-center text-sm text-muted">Chưa có dữ liệu trong khoảng này.</p>
             ) : (
