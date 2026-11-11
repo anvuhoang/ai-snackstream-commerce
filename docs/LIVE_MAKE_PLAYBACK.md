@@ -1,10 +1,11 @@
 # Make reply playback contract — 2026-11-11
 
 The code supports an authenticated Make `ready` callback through shared reply playback,
-completion, FIFO queue release and exact script-position restoration. Code verification uses
-fake providers; the user-confirmed Make entrance-filter check is recorded below. A real newly
-generated Vietnamese D-ID video has **not** been accepted end to end. This does not
-complete N01–N04.
+completion, FIFO queue release and exact script-position restoration. Automated code
+verification uses fake providers. The user has now reported one accepted end-to-end
+run creating a new D-ID video; its evidence is recorded below separately from replay
+and prior failures. This is **n=1**, not proof of stable latency or completion of N01–N04.
+Data and avatars remain experimental; real Odoo is not integrated.
 
 The preceding prerecorded diagnostics package was accepted by the user and committed
 as `2f14052`. Its evidence remains in [LIVE_MOCK_PLAYBACK.md](LIVE_MOCK_PLAYBACK.md);
@@ -39,9 +40,9 @@ mapping still require verification outside this repository.
 
 On 2026-11-11, the user confirmed importing the deadline blueprint into Make and
 observing a payload with `deadline_unix_ms = 1` blocked by the entrance filter before
-OpenAI 9. This records the user's confirmation of that entrance check. Downstream
-branches, clock behavior across Sleep, callbacks and a newly generated D-ID video
-remain unverified in the real scenario. This does not complete N01–N04.
+OpenAI 9. That entrance check alone did not verify downstream branches, clock
+behavior across Sleep, callbacks or a new D-ID video. The later n=1 happy-path
+acceptance below does not establish all branches or timing stability.
 
 ## Measure the downloaded MP4
 
@@ -81,7 +82,7 @@ Errors use the existing `{ "error": { "code": ..., "message": ... } }` shape:
 or missing/non-finite/non-positive/>300-second duration; 504 `live_ffprobe_timeout`.
 Gateway backend-connection failures return 502. Do not endlessly retry invalid media.
 
-Planned Make mapping: **HTTP 20 downloads MP4 → POST those same binary bytes to
+Make integration contract: **HTTP 20 downloads MP4 → POST those same binary bytes to
 `/api/live/media-metadata` → map response `durationSeconds` into HTTP 30's existing
 ready callback**. Keep the original IDs/SKU and send a browser-playable HTTPS URL
 for that same MP4 as `videoUrl`; this endpoint does not host/upload video. Preserve
@@ -89,12 +90,48 @@ for that same MP4 as `videoUrl`; this endpoint does not host/upload video. Prese
 measurement does not extend the claim deadline. On an unrecoverable inspection error,
 send the existing terminal failure before the deadline instead of inventing duration.
 
-The user reported D-ID `done` and successful MP4 download/upload, but Drive returned
+An earlier attempt reported D-ID `done` and successful MP4 download/upload, but Drive returned
 only ID/mimeType and five metadata reads ended in `failed/generation_failed`.
 Local verification uses the supplied MP4 fixture (container duration 4.365011 seconds).
-No new render or provider request was made for this implementation. Actual Make
-mapping, the full scenario/callback path and newly generated-video playback remain
-unaccepted; this does not complete N01–N04.
+No new render or provider request was made by Codex for that implementation. The
+subsequent user-provided acceptance below records one new-video scenario/callback/
+playback success; broader coverage and N01–N04 remain unconfirmed.
+
+## User-provided new-video E2E acceptance — 2026-11-11
+
+The user supplied the following correlated evidence for **one newly generated video,
+not a replay**. Codex did not execute this scenario, call a provider or independently
+rerun the test when recording these results.
+
+| Evidence | User-reported result |
+| --- | --- |
+| Talk ID | `tlk_q_D04gw8KszhnlNIfipSw` |
+| Provider `created_at` | `2026-11-11T13:38:28.748Z` |
+| Final HTTP 19 poll | Same Talk ID, `status=done`, `result_url` present |
+| HTTP 74 metadata | `durationSeconds=2.971995` |
+| HTTP 30 callback | HTTP 200, `received=true`, `applied=true`, `reason=accepted` |
+| Diagnostic export | `live-diagnostic-c1886f2c-9e3a-41fa-b480-1edd425f53b7 (1).json` |
+| liveId | `0d8ee5540d844051a7228e8b62b4201d` |
+| questionId | `0ab5c295-7e42-4692-b49d-2d8d1768d08b` |
+| Send-to-first-playing | 73.6826 seconds |
+| First playing position / native ended | 0.016199 / 2.971995 seconds |
+| User acceptance | Heard the complete reply; script continued |
+
+The export has **`droppedEvents=1925`**. The user reports that this question's
+milestones remain retained; the overall log is **not lossless**. Raw evidence stays
+outside the repository. Send-to-first-playing covers the whole observed question
+path, not provider render time alone.
+
+Keep the attempts distinct: the prior timeout remains an unsuccessful attempt;
+the earlier Drive-metadata failure remains `failed/generation_failed`. The accepted
+existing-media replay (11.587 seconds to first playing, 5.108005-second clip,
+`droppedEvents=0`) is separate from this fresh 73.6826-second E2E run. Do not combine
+their log completeness or latency claims.
+
+This accepts one new-video happy path under the current 180-second callback-deadline
+configuration. **n=1 does not establish stable latency, repeatability, all error
+branches or completion of N01–N04.** Data/avatar are experimental and real Odoo
+integration is still absent. Further independent real-world coverage remains needed.
 
 ## Successful callback
 
@@ -266,14 +303,15 @@ unmuted browser `playing` proves human hearing.
 6. Update/restart the callback gateway and backend together: legacy `ready` bodies
    without duration now fail 422; failed/skipped bodies without media fields remain
    valid. Backend callback probes also now require Make mode enabled.
-7. Verify mapping and automatic error routes with fake providers before any paid
-   render. Once access/credit and extraction are available, separately accept a newly
-   generated Vietnamese D-ID video, actual picture/audio, measured duration, return
-   to script and two-viewer behavior.
+7. Continue checking mapping and automatic error routes with fake providers before
+   paid renders. The user's n=1 new-video acceptance above is a separate real-world
+   checkpoint; repeatability, latency stability and multi-viewer/error coverage
+   still require further acceptance.
 
 No Make scenario was edited by this repository implementation. The earlier HTTP 402
 InsufficientCreditsError is historical evidence; the user's latest render reached
-`done`. Metadata mapping and end-to-end playback still require real-scenario verification.
+`done`. The later new-video playback acceptance above covers one reported happy path;
+it does not establish complete real-scenario coverage.
 
 ## Verification and reproduction
 

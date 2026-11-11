@@ -77,8 +77,8 @@ The unfinished media-metadata package and existing `web/next-env.d.ts` are prese
 
 No Make scenario, provider, new render or private environment change is required by
 these code checks. Real-browser unmuted playback/native end establishes media
-behavior, not that a person heard the audio. End-to-end real Make/D-ID acceptance
-and completion of N01–N04 are not claimed.
+behavior, not that a person heard the audio. Separate user-provided replay and
+new-video acceptance checkpoints are recorded below; neither establishes N01–N04.
 
 ## User-reported replay acceptance — 2026-11-11
 
@@ -89,6 +89,32 @@ confirmed hearing the complete beginning and end. This is user-provided acceptan
 evidence, not an additional test run performed by Codex.
 
 Send-to-first-playing was approximately 11.587 seconds for **replay of existing
-media**; it does not measure new-video generation latency. Successful new-video
-generation through playback within the 180-second deadline remains unaccepted.
-Completion of N01–N04 is not confirmed.
+media**; it does not measure new-video generation latency. At that replay checkpoint,
+new-video generation through playback had not been accepted. The later n=1 run below
+is separate; completion of N01–N04 remains unconfirmed.
+
+## User-provided new-video E2E acceptance — 2026-11-11
+
+The user subsequently accepted one newly generated D-ID reply, not a replay.
+Talk `tlk_q_D04gw8KszhnlNIfipSw` was created at `2026-11-11T13:38:28.748Z`;
+the user matched the final HTTP 19 poll to that same ID with `status=done` and a
+`result_url`. HTTP 74 returned `durationSeconds=2.971995`; HTTP 30 returned HTTP 200,
+`received=true`, `applied=true`, `reason=accepted`.
+
+Export `live-diagnostic-c1886f2c-9e3a-41fa-b480-1edd425f53b7 (1).json` identifies
+live `0d8ee5540d844051a7228e8b62b4201d` and question
+`0ab5c295-7e42-4692-b49d-2d8d1768d08b`. Send-to-first-playing was **73.6826 seconds**,
+first playing position **0.016199 seconds**, and native ended **2.971995 seconds**.
+The user confirmed hearing the complete reply and script continuation.
+
+This export has **`droppedEvents=1925`**; the user reports this question's milestones
+are retained. Do not describe the entire log as lossless or copy the replay log's
+`droppedEvents=0` claim to it. The previous timeout remains a failed attempt, distinct
+from both the successful existing-media replay and this newly generated reply.
+
+These are **user-provided results, not a test Codex executed**. This is one accepted
+new-video E2E run with the current 180-second callback deadline: **n=1**, with no claim
+of stable latency, repeatability or completion of N01–N04. Data/avatar remain
+experimental and real Odoo is not integrated. Full correlated evidence is summarized
+in [LIVE_MAKE_PLAYBACK.md](LIVE_MAKE_PLAYBACK.md#user-provided-new-video-e2e-acceptance--2026-11-11);
+raw logs remain outside the repository.
