@@ -19,6 +19,19 @@ idempotent and every demo row is labelled `is_demo`.
 2. Environment variable `API_URL` = the Render URL from step 1 (no trailing slash).
 3. Deploy. The web app proxies `/api/*` to the API, so the admin session cookie stays same-origin.
 
+## 3. Optional: online payment, Odoo and background jobs
+
+These are all set as environment variables of the Render API service (the blueprint lists them with `sync: false`).
+
+| Feature | Variables | Notes |
+|---|---|---|
+| **VNPay sandbox** | `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET`, `VNPAY_RETURN_URL` | Register a test merchant at sandbox.vnpayment.vn. `VNPAY_RETURN_URL` is the **web** address plus `/checkout/result`. In the merchant page set the IPN URL to `https://<api>.onrender.com/api/payments/vnpay/ipn`. Empty = cash on delivery only. |
+| **Odoo stock** | `ODOO_URL`, `ODOO_DB`, `ODOO_API_KEY` | A key made in Odoo (My Profile → Account Security → New API Key). Never commit it. Then press "Đồng bộ ngay" in `/admin/inventory`, or schedule `python -m app.cli sync-odoo`. |
+| **Stale stock rule** | `STOCK_STALE_MINUTES` | A count copied from Odoo that is older than this shows "contact the shop" and cannot be added to a cart. `0` (default) = never expire. Set it only when `sync-odoo` runs on a schedule. |
+| **Background jobs** | see the commented blocks in `render.yaml` | `expire-orders` every minute and `sync-odoo` every 10 minutes. Render cron needs a paid plan. Without them an unpaid order still expires the next time it is read. |
+
+After the first deploy, open the web app and place one cash-on-delivery order, then one VNPay order, before a demo.
+
 ## Limits to know about
 
 - **Free tier sleeps.** Render's free web service stops after a period of inactivity, so the first request is slow.
