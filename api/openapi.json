@@ -1807,6 +1807,590 @@
         }
       }
     },
+    "/api/admin/analytics/channels": {
+      "get": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Channels Report",
+        "description": "What TikTok, Facebook and others report (imported or typed in), per channel.",
+        "operationId": "channels_report_api_admin_analytics_channels_get",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "demo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "exclude",
+                "include",
+                "only"
+              ],
+              "type": "string",
+              "default": "exclude",
+              "title": "Demo"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Channel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/analytics/shopee": {
+      "get": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Shopee Report",
+        "operationId": "shopee_report_api_admin_analytics_shopee_get",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "demo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "exclude",
+                "include",
+                "only"
+              ],
+              "type": "string",
+              "default": "exclude",
+              "title": "Demo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopeeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/analytics/ai": {
+      "get": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Ai Report",
+        "operationId": "ai_report_api_admin_analytics_ai_get",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "demo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "exclude",
+                "include",
+                "only"
+              ],
+              "type": "string",
+              "default": "exclude",
+              "title": "Demo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/analytics/imports": {
+      "get": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "List Imports",
+        "operationId": "list_imports_api_admin_analytics_imports_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BatchOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Imports Api Admin Analytics Imports Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Import File",
+        "description": "Import a CSV of numbers reported by other channels. A bad row refuses the whole file; the same file is refused twice.",
+        "operationId": "import_file_api_admin_analytics_imports_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_file_api_admin_analytics_imports_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/analytics/manual": {
+      "post": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Add Manual",
+        "operationId": "add_manual_api_admin_analytics_manual_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/analytics/imports/{batch_id}": {
+      "delete": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Undo Import",
+        "operationId": "undo_import_api_admin_analytics_imports__batch_id__delete",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/analytics/export/channels.csv": {
+      "get": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Export Channels",
+        "description": "Every stored channel number in the period, one row per value, in the same format the importer reads back.",
+        "operationId": "export_channels_api_admin_analytics_export_channels_csv_get",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "demo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "exclude",
+                "include",
+                "only"
+              ],
+              "type": "string",
+              "default": "exclude",
+              "title": "Demo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/analytics/export/overview.csv": {
+      "get": {
+        "tags": [
+          "admin-analytics"
+        ],
+        "summary": "Export Overview",
+        "description": "The funnel and the by-source table, as the dashboard shows them (empty cells = cannot be computed).",
+        "operationId": "export_overview_api_admin_analytics_export_overview_csv_get",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "demo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "exclude",
+                "include",
+                "only"
+              ],
+              "type": "string",
+              "default": "exclude",
+              "title": "Demo"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/events": {
       "post": {
         "tags": [
@@ -2441,6 +3025,61 @@
         ],
         "title": "AdminVariant"
       },
+      "AiOut": {
+        "properties": {
+          "dateFrom": {
+            "type": "string",
+            "format": "date",
+            "title": "Datefrom"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date",
+            "title": "Dateto"
+          },
+          "demo": {
+            "type": "string",
+            "enum": [
+              "exclude",
+              "include",
+              "only"
+            ],
+            "title": "Demo"
+          },
+          "chatQuestions": {
+            "type": "integer",
+            "title": "Chatquestions"
+          },
+          "chatSessions": {
+            "type": "integer",
+            "title": "Chatsessions"
+          },
+          "liveJoins": {
+            "type": "integer",
+            "title": "Livejoins"
+          },
+          "liveProductClicks": {
+            "type": "integer",
+            "title": "Liveproductclicks"
+          },
+          "collected": {
+            "type": "boolean",
+            "title": "Collected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dateFrom",
+          "dateTo",
+          "demo",
+          "chatQuestions",
+          "chatSessions",
+          "liveJoins",
+          "liveProductClicks",
+          "collected"
+        ],
+        "title": "AiOut"
+      },
       "AttributionIn": {
         "properties": {
           "sessionId": {
@@ -2477,6 +3116,90 @@
         "type": "object",
         "title": "AttributionIn",
         "description": "Where the buyer came from, sent with the checkout. It only labels the order; it never changes money."
+      },
+      "BatchOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "manual"
+            ],
+            "title": "Kind"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "title": "Isdemo"
+          },
+          "rowsTotal": {
+            "type": "integer",
+            "title": "Rowstotal"
+          },
+          "valuesImported": {
+            "type": "integer",
+            "title": "Valuesimported"
+          },
+          "valuesSkipped": {
+            "type": "integer",
+            "title": "Valuesskipped"
+          },
+          "createdByEmail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdbyemail"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "filename",
+          "isDemo",
+          "rowsTotal",
+          "valuesImported",
+          "valuesSkipped",
+          "createdByEmail",
+          "createdAt"
+        ],
+        "title": "BatchOut"
+      },
+      "Body_import_file_api_admin_analytics_imports_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "title": "Isdemo",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_file_api_admin_analytics_imports_post"
       },
       "Body_upload_image_api_admin_catalog_products__product_id__images_post": {
         "properties": {
@@ -2748,6 +3471,178 @@
         },
         "type": "object",
         "title": "CategoryUpdate"
+      },
+      "ChannelRow": {
+        "properties": {
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "views": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Views"
+          },
+          "impressions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impressions"
+          },
+          "clicks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clicks"
+          },
+          "orders": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orders"
+          },
+          "revenueVnd": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenuevnd"
+          },
+          "costVnd": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Costvnd"
+          },
+          "ctr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ctr"
+          },
+          "ctrNote": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "no_data",
+              "no_denominator"
+            ],
+            "title": "Ctrnote"
+          },
+          "costPerOrderVnd": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Costperordervnd"
+          },
+          "costPerOrderNote": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "no_data",
+              "no_denominator"
+            ],
+            "title": "Costperordernote"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel",
+          "views",
+          "impressions",
+          "clicks",
+          "orders",
+          "revenueVnd",
+          "costVnd",
+          "ctr",
+          "ctrNote",
+          "costPerOrderVnd",
+          "costPerOrderNote",
+          "days"
+        ],
+        "title": "ChannelRow"
+      },
+      "ChannelsOut": {
+        "properties": {
+          "dateFrom": {
+            "type": "string",
+            "format": "date",
+            "title": "Datefrom"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date",
+            "title": "Dateto"
+          },
+          "demo": {
+            "type": "string",
+            "enum": [
+              "exclude",
+              "include",
+              "only"
+            ],
+            "title": "Demo"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ChannelRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dateFrom",
+          "dateTo",
+          "demo",
+          "rows"
+        ],
+        "title": "ChannelsOut"
       },
       "CheckoutIn": {
         "properties": {
@@ -3320,6 +4215,116 @@
         ],
         "title": "LookupIn"
       },
+      "ManualIn": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "channel": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Channel"
+          },
+          "contentCode": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Contentcode",
+            "default": ""
+          },
+          "views": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Views"
+          },
+          "impressions": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impressions"
+          },
+          "clicks": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clicks"
+          },
+          "orders": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orders"
+          },
+          "revenueVnd": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenuevnd"
+          },
+          "costVnd": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Costvnd"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "title": "Isdemo",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "channel"
+        ],
+        "title": "ManualIn"
+      },
       "MovementOut": {
         "properties": {
           "id": {
@@ -3766,6 +4771,11 @@
           "isDemo": {
             "type": "boolean",
             "title": "Isdemo"
+          },
+          "soldOut": {
+            "type": "boolean",
+            "title": "Soldout",
+            "default": false
           }
         },
         "type": "object",
@@ -4176,6 +5186,52 @@
           "orderExpiryMinutes"
         ],
         "title": "ShopConfig"
+      },
+      "ShopeeOut": {
+        "properties": {
+          "dateFrom": {
+            "type": "string",
+            "format": "date",
+            "title": "Datefrom"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date",
+            "title": "Dateto"
+          },
+          "demo": {
+            "type": "string",
+            "enum": [
+              "exclude",
+              "include",
+              "only"
+            ],
+            "title": "Demo"
+          },
+          "webClicks": {
+            "type": "integer",
+            "title": "Webclicks"
+          },
+          "reported": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChannelRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "dateFrom",
+          "dateTo",
+          "demo",
+          "webClicks",
+          "reported"
+        ],
+        "title": "ShopeeOut"
       },
       "SourceRow": {
         "properties": {
@@ -4673,6 +5729,40 @@
               }
             ],
             "title": "Weightg"
+          },
+          "available": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available"
+          },
+          "stockStatus": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "low",
+              "out",
+              "unknown"
+            ],
+            "title": "Stockstatus",
+            "default": "ok"
+          },
+          "stockUpdatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stockupdatedat"
           }
         },
         "type": "object",

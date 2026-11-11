@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import Field
@@ -100,3 +100,70 @@ class Overview(ApiModel):
     by_source: list[SourceRow]
     top_products: list[ProductRow]
     shopee_clicks: int  # never counted as a purchase
+
+
+# ------------------------------------------------------------------ channels reported by others (imported or typed in)
+class ChannelRow(ApiModel):
+    channel: str
+    views: int | None  # None = never reported in this period (not 0)
+    impressions: int | None
+    clicks: int | None
+    orders: int | None  # orders the CHANNEL reports; never added to the web's own orders
+    revenue_vnd: int | None
+    cost_vnd: int | None
+    ctr: float | None  # clicks / views, over the days that report BOTH
+    ctr_note: Literal["ok", "no_data", "no_denominator"]
+    cost_per_order_vnd: int | None  # cost / orders, over the days that report BOTH
+    cost_per_order_note: Literal["ok", "no_data", "no_denominator"]
+    days: int
+
+
+class ChannelsOut(ApiModel):
+    date_from: date
+    date_to: date
+    demo: DemoFilter
+    rows: list[ChannelRow]
+
+
+class ShopeeOut(ApiModel):
+    date_from: date
+    date_to: date
+    demo: DemoFilter
+    web_clicks: int  # "Buy on Shopee" clicks on our web: a hand-off, never a sale of ours
+    reported: ChannelRow | None  # what Shopee's own report says (imported); None when nothing was imported
+
+
+class AiOut(ApiModel):
+    date_from: date
+    date_to: date
+    demo: DemoFilter
+    chat_questions: int
+    chat_sessions: int
+    live_joins: int
+    live_product_clicks: int
+    collected: bool  # False until chat or live has ever sent an event
+
+
+class BatchOut(ApiModel):
+    id: int
+    kind: Literal["csv", "manual"]
+    filename: str
+    is_demo: bool
+    rows_total: int
+    values_imported: int
+    values_skipped: int
+    created_by_email: str | None
+    created_at: datetime
+
+
+class ManualIn(ApiModel):
+    day: date
+    channel: str = Field(min_length=1, max_length=40)
+    content_code: str = Field("", max_length=100)
+    views: int | None = Field(None, ge=0, le=2_000_000_000)
+    impressions: int | None = Field(None, ge=0, le=2_000_000_000)
+    clicks: int | None = Field(None, ge=0, le=2_000_000_000)
+    orders: int | None = Field(None, ge=0, le=2_000_000_000)
+    revenue_vnd: int | None = Field(None, ge=0, le=2_000_000_000)
+    cost_vnd: int | None = Field(None, ge=0, le=2_000_000_000)
+    is_demo: bool = False

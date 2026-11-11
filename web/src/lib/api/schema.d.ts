@@ -612,6 +612,155 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/analytics/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Channels Report
+         * @description What TikTok, Facebook and others report (imported or typed in), per channel.
+         */
+        get: operations["channels_report_api_admin_analytics_channels_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/shopee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Shopee Report */
+        get: operations["shopee_report_api_admin_analytics_shopee_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/ai": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ai Report */
+        get: operations["ai_report_api_admin_analytics_ai_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Imports */
+        get: operations["list_imports_api_admin_analytics_imports_get"];
+        put?: never;
+        /**
+         * Import File
+         * @description Import a CSV of numbers reported by other channels. A bad row refuses the whole file; the same file is refused twice.
+         */
+        post: operations["import_file_api_admin_analytics_imports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/manual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Manual */
+        post: operations["add_manual_api_admin_analytics_manual_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/imports/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Undo Import */
+        delete: operations["undo_import_api_admin_analytics_imports__batch_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/export/channels.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Channels
+         * @description Every stored channel number in the period, one row per value, in the same format the importer reads back.
+         */
+        get: operations["export_channels_api_admin_analytics_export_channels_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/export/overview.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Overview
+         * @description The funnel and the by-source table, as the dashboard shows them (empty cells = cannot be computed).
+         */
+        get: operations["export_overview_api_admin_analytics_export_overview_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/events": {
         parameters: {
             query?: never;
@@ -856,6 +1005,34 @@ export interface components {
             /** Sortorder */
             sortOrder: number;
         };
+        /** AiOut */
+        AiOut: {
+            /**
+             * Datefrom
+             * Format: date
+             */
+            dateFrom: string;
+            /**
+             * Dateto
+             * Format: date
+             */
+            dateTo: string;
+            /**
+             * Demo
+             * @enum {string}
+             */
+            demo: "exclude" | "include" | "only";
+            /** Chatquestions */
+            chatQuestions: number;
+            /** Chatsessions */
+            chatSessions: number;
+            /** Livejoins */
+            liveJoins: number;
+            /** Liveproductclicks */
+            liveProductClicks: number;
+            /** Collected */
+            collected: boolean;
+        };
         /**
          * AttributionIn
          * @description Where the buyer came from, sent with the checkout. It only labels the order; it never changes money.
@@ -878,6 +1055,43 @@ export interface components {
              * @default
              */
             contentCode?: string;
+        };
+        /** BatchOut */
+        BatchOut: {
+            /** Id */
+            id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "csv" | "manual";
+            /** Filename */
+            filename: string;
+            /** Isdemo */
+            isDemo: boolean;
+            /** Rowstotal */
+            rowsTotal: number;
+            /** Valuesimported */
+            valuesImported: number;
+            /** Valuesskipped */
+            valuesSkipped: number;
+            /** Createdbyemail */
+            createdByEmail: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+        };
+        /** Body_import_file_api_admin_analytics_imports_post */
+        Body_import_file_api_admin_analytics_imports_post: {
+            /** File */
+            file: string;
+            /**
+             * Isdemo
+             * @default false
+             */
+            isDemo?: boolean;
         };
         /** Body_upload_image_api_admin_catalog_products__product_id__images_post */
         Body_upload_image_api_admin_catalog_products__product_id__images_post: {
@@ -981,6 +1195,59 @@ export interface components {
             name?: string | null;
             /** Sortorder */
             sortOrder?: number | null;
+        };
+        /** ChannelRow */
+        ChannelRow: {
+            /** Channel */
+            channel: string;
+            /** Views */
+            views: number | null;
+            /** Impressions */
+            impressions: number | null;
+            /** Clicks */
+            clicks: number | null;
+            /** Orders */
+            orders: number | null;
+            /** Revenuevnd */
+            revenueVnd: number | null;
+            /** Costvnd */
+            costVnd: number | null;
+            /** Ctr */
+            ctr: number | null;
+            /**
+             * Ctrnote
+             * @enum {string}
+             */
+            ctrNote: "ok" | "no_data" | "no_denominator";
+            /** Costperordervnd */
+            costPerOrderVnd: number | null;
+            /**
+             * Costperordernote
+             * @enum {string}
+             */
+            costPerOrderNote: "ok" | "no_data" | "no_denominator";
+            /** Days */
+            days: number;
+        };
+        /** ChannelsOut */
+        ChannelsOut: {
+            /**
+             * Datefrom
+             * Format: date
+             */
+            dateFrom: string;
+            /**
+             * Dateto
+             * Format: date
+             */
+            dateTo: string;
+            /**
+             * Demo
+             * @enum {string}
+             */
+            demo: "exclude" | "include" | "only";
+            /** Rows */
+            rows: components["schemas"]["ChannelRow"][];
         };
         /** CheckoutIn */
         CheckoutIn: {
@@ -1178,6 +1445,38 @@ export interface components {
             /** Phone */
             phone: string;
         };
+        /** ManualIn */
+        ManualIn: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Channel */
+            channel: string;
+            /**
+             * Contentcode
+             * @default
+             */
+            contentCode?: string;
+            /** Views */
+            views?: number | null;
+            /** Impressions */
+            impressions?: number | null;
+            /** Clicks */
+            clicks?: number | null;
+            /** Orders */
+            orders?: number | null;
+            /** Revenuevnd */
+            revenueVnd?: number | null;
+            /** Costvnd */
+            costVnd?: number | null;
+            /**
+             * Isdemo
+             * @default false
+             */
+            isDemo?: boolean;
+        };
         /** MovementOut */
         MovementOut: {
             /** Id */
@@ -1341,6 +1640,11 @@ export interface components {
             variantCount: number;
             /** Isdemo */
             isDemo: boolean;
+            /**
+             * Soldout
+             * @default false
+             */
+            soldOut?: boolean;
         };
         /** ProductCardPage */
         ProductCardPage: {
@@ -1495,6 +1799,27 @@ export interface components {
             onlinePaymentIsSandbox?: boolean;
             /** Orderexpiryminutes */
             orderExpiryMinutes: number;
+        };
+        /** ShopeeOut */
+        ShopeeOut: {
+            /**
+             * Datefrom
+             * Format: date
+             */
+            dateFrom: string;
+            /**
+             * Dateto
+             * Format: date
+             */
+            dateTo: string;
+            /**
+             * Demo
+             * @enum {string}
+             */
+            demo: "exclude" | "include" | "only";
+            /** Webclicks */
+            webClicks: number;
+            reported: components["schemas"]["ChannelRow"] | null;
         };
         /** SourceRow */
         SourceRow: {
@@ -1665,6 +1990,16 @@ export interface components {
             compareAtVnd: number | null;
             /** Weightg */
             weightG: number | null;
+            /** Available */
+            available?: number | null;
+            /**
+             * Stockstatus
+             * @default ok
+             * @enum {string}
+             */
+            stockStatus?: "ok" | "low" | "out" | "unknown";
+            /** Stockupdatedat */
+            stockUpdatedAt?: string | null;
         };
         /**
          * VariantUpdate
@@ -2864,6 +3199,288 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Overview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    channels_report_api_admin_analytics_channels_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                demo?: "exclude" | "include" | "only";
+                channel?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    shopee_report_api_admin_analytics_shopee_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                demo?: "exclude" | "include" | "only";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShopeeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ai_report_api_admin_analytics_ai_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                demo?: "exclude" | "include" | "only";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_imports_api_admin_analytics_imports_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"][];
+                };
+            };
+        };
+    };
+    import_file_api_admin_analytics_imports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_file_api_admin_analytics_imports_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_manual_api_admin_analytics_manual_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    undo_import_api_admin_analytics_imports__batch_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_channels_api_admin_analytics_export_channels_csv_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                demo?: "exclude" | "include" | "only";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_overview_api_admin_analytics_export_overview_csv_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                demo?: "exclude" | "include" | "only";
+                source?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
