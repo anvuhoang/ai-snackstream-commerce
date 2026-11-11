@@ -168,6 +168,10 @@ class LiveMakeResultIn(LiveModel):
         return self
 
 
+class LiveMediaMetadataOut(LiveModel):
+    duration_seconds: float = Field(gt=0, le=300, allow_inf_nan=False)
+
+
 class LiveMakeResultAck(LiveModel):
     received: Literal[True] = True
     applied: bool

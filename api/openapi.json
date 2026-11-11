@@ -225,6 +225,44 @@
         }
       }
     },
+    "/api/live/media-metadata": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Measure Media Metadata",
+        "operationId": "measure_media_metadata_api_live_media_metadata_post",
+        "requestBody": {
+          "content": {
+            "video/mp4": {
+              "schema": {
+                "type": "string",
+                "maxLength": 26214400,
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveMediaMetadataOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
     "/api/live/make-result": {
       "post": {
         "tags": [
@@ -786,6 +824,22 @@
           "status"
         ],
         "title": "LiveMakeResultIn"
+      },
+      "LiveMediaMetadataOut": {
+        "properties": {
+          "durationSeconds": {
+            "type": "number",
+            "maximum": 300.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Durationseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "durationSeconds"
+        ],
+        "title": "LiveMediaMetadataOut"
       },
       "LivePinIn": {
         "properties": {

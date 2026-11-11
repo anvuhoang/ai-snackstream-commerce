@@ -146,6 +146,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/live/media-metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Measure Media Metadata */
+        post: operations["measure_media_metadata_api_live_media_metadata_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/live/make-result": {
         parameters: {
             query?: never;
@@ -354,6 +371,11 @@ export interface components {
             providerTalkId?: string | null;
             /** Errorcode */
             errorCode?: ("unsupported_intent" | "product_not_found" | "generation_failed" | "generation_timeout") | null;
+        };
+        /** LiveMediaMetadataOut */
+        LiveMediaMetadataOut: {
+            /** Durationseconds */
+            durationSeconds: number;
         };
         /** LivePinIn */
         LivePinIn: {
@@ -706,6 +728,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    measure_media_metadata_api_live_media_metadata_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "video/mp4": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveMediaMetadataOut"];
                 };
             };
         };

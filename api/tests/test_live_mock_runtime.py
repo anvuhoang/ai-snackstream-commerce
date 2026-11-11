@@ -136,7 +136,7 @@ def test_app_lifespan_runs_queue_automatically_and_stops_on_exit(settings, monke
                     "text": f"Question {index}",
                 },
             ).raise_for_status()
-        deadline = time.monotonic() + 5
+        deadline = time.monotonic() + 13  # Two shared 5s preparation windows plus tick margin.
         while time.monotonic() < deadline:
             state = client.get("/api/live/current").json()["session"]
             assert sum(q["status"] == "answering" for q in state["questions"]) <= 1

@@ -43,6 +43,59 @@ OpenAI 9. This records the user's confirmation of that entrance check. Downstrea
 branches, clock behavior across Sleep, callbacks and a newly generated D-ID video
 remain unverified in the real scenario. This does not complete N01–N04.
 
+## Measure the downloaded MP4
+
+`POST /api/live/media-metadata` accepts **raw binary MP4**, with
+`Content-Type: video/mp4` and the same private `X-Live-Make-Token` as callbacks.
+It is available only with Make enabled and mock disabled, on both the backend and
+the callback gateway (8010). Do not send multipart, a URL, Drive ID, JSON or a command.
+Success is HTTP 200 with `{"durationSeconds": 4.365011}` (illustrative fixture result).
+The value is the actual uploaded file's ffprobe **container `format.duration`**, a
+finite JSON number in `(0, 300]` seconds. No text, bitrate/frame-count estimate,
+demo duration or Google Drive metadata is used. At least one video stream is required.
+The endpoint never creates/claims a question or changes live/queue state.
+
+Limits are 25 MiB, including streamed/chunked input even with a false/missing
+Content-Length, a 15-second body-read deadline, and a 10-second ffprobe timeout.
+Uploads must have an MP4 `ftyp` header; malformed files still undergo ffprobe validation.
+The temporary file is closed before probing and removed on success, invalid media,
+missing executable and timeout. ffprobe runs in a worker thread, with no shell and
+only a fixed local input path; remote protocols and MOV external data references
+are disabled. Gateway forwarding also runs in a worker, sends exact raw bytes and
+token to its fixed backend URL, limits responses to 32 KiB and does not follow redirects.
+Its upstream timeout is 15 seconds. Existing `/make-result` forwarding is unchanged.
+
+Prerequisite: install/provide ffprobe on the backend's PATH, or set
+`LIVE_FFPROBE_PATH` to an executable path in the backend process environment.
+The application still starts without it; only inspection fails with 503
+`live_ffprobe_unavailable`. The code does not download/install executables.
+Windows portable builds can be obtained from providers linked by the
+[official FFmpeg download page](https://www.ffmpeg.org/download.html).
+The gateway itself does not need ffprobe. No Dockerfile or shared dependency changed.
+
+Errors use the existing `{ "error": { "code": ..., "message": ... } }` shape:
+403 for missing/wrong token; 503 `live_make_disabled` outside Make mode;
+415 `live_media_content_type`; 413 `live_media_too_large`;
+400 for invalid Content-Length/interrupted body; 408 `live_media_upload_timeout`;
+422 `live_media_invalid` or `live_media_duration_invalid` for corrupt/non-video MP4
+or missing/non-finite/non-positive/>300-second duration; 504 `live_ffprobe_timeout`.
+Gateway backend-connection failures return 502. Do not endlessly retry invalid media.
+
+Planned Make mapping: **HTTP 20 downloads MP4 → POST those same binary bytes to
+`/api/live/media-metadata` → map response `durationSeconds` into HTTP 30's existing
+ready callback**. Keep the original IDs/SKU and send a browser-playable HTTPS URL
+for that same MP4 as `videoUrl`; this endpoint does not host/upload video. Preserve
+`deadline_unix_ms` and check it before measuring, after measuring and before callback;
+measurement does not extend the claim deadline. On an unrecoverable inspection error,
+send the existing terminal failure before the deadline instead of inventing duration.
+
+The user reported D-ID `done` and successful MP4 download/upload, but Drive returned
+only ID/mimeType and five metadata reads ended in `failed/generation_failed`.
+Local verification uses the supplied MP4 fixture (container duration 4.365011 seconds).
+No new render or provider request was made for this implementation. Actual Make
+mapping, the full scenario/callback path and newly generated-video playback remain
+unaccepted; this does not complete N01–N04.
+
 ## Successful callback
 
 `POST /api/live/make-result`, JSON, authenticated with the configured
@@ -192,12 +245,12 @@ unmuted browser `playing` proves human hearing.
 
 1. Preserve webhook `session_id` as callback `liveId`, `question_id` as `questionId`,
    and `current_live_sku` as the original captured `sku` through every branch.
-2. Obtain the final MP4's measured duration. **A trustworthy duration field in the
-   D-ID response has not been verified.** No D-ID/Make field name is asserted here.
-   Verify a documented provider metadata field against produced media, or measure
-   the exact final asset with a trusted media-probe worker, such as ffprobe on that
-   file. This extraction/worker is not implemented in this repository package.
-3. Map numeric seconds to `durationSeconds`. If extraction fails, send
+2. Obtain the final MP4's measured duration using the raw-byte metadata endpoint
+   above. **A trustworthy duration field in the D-ID response has not been verified.**
+   No D-ID/Drive metadata field is required or asserted here. The probe worker is
+   implemented in code; ffprobe provisioning, service restart and Make mapping remain
+   integration work outside this repository change.
+3. Map the metadata response's numeric seconds to `durationSeconds`. If extraction fails, send
    `failed/generation_failed`; never guess or use 10.077007 seconds. Keep tokens
    server-side and ensure browser playback needs no exposed provider API credential.
 4. Wire all terminal branches above, including automatic provider-error and polling
@@ -218,9 +271,9 @@ unmuted browser `playing` proves human hearing.
    generated Vietnamese D-ID video, actual picture/audio, measured duration, return
    to script and two-viewer behavior.
 
-No Make scenario was edited by this repository implementation. The previously reported
-real provider result was HTTP 402 InsufficientCreditsError, which remains a blocker
-for real-video acceptance.
+No Make scenario was edited by this repository implementation. The earlier HTTP 402
+InsufficientCreditsError is historical evidence; the user's latest render reached
+`done`. Metadata mapping and end-to-end playback still require real-scenario verification.
 
 ## Verification and reproduction
 

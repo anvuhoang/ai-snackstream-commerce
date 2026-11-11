@@ -2,16 +2,19 @@ import asyncio
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import run_in_threadpool
 
 from app.core.errors import AppError
 from app.modules.auth.deps import require_csrf, require_role
 
 from .deps import require_make_callback
 from .dispatcher import dispatch_next_question
+from .media_metadata import MAX_MEDIA_BYTES, probe_mp4, read_mp4
 from .schemas import (
     LiveCurrentOut,
     LiveMakeResultAck,
     LiveMakeResultIn,
+    LiveMediaMetadataOut,
     LivePinIn,
     LiveQuestionIn,
     LiveQuestionOut,
@@ -174,6 +177,20 @@ def resume_live(
     session = live.resume_session(live_id)
     _schedule_make(request, background_tasks, live_id)
     return session
+
+@router.post(
+    "/media-metadata",
+    response_model=LiveMediaMetadataOut,
+    dependencies=[Depends(require_make_callback)],
+    openapi_extra={"requestBody": {"required": True, "content": {
+        "video/mp4": {"schema": {"type": "string", "format": "binary", "maxLength": MAX_MEDIA_BYTES}},
+    }}},
+)
+async def measure_media_metadata(request: Request) -> LiveMediaMetadataOut:
+    content = await read_mp4(request)
+    duration = await run_in_threadpool(probe_mp4, content, request.app.state.settings.live_ffprobe_path)
+    return LiveMediaMetadataOut(duration_seconds=duration)
+
 
 @router.post(
     "/make-result",

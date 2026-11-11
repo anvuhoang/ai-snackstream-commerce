@@ -5,12 +5,18 @@ type Playback = components["schemas"]["LivePlaybackOut"];
 export const REPLY_TAIL_SECONDS = 0.75;
 export const REPLY_TAIL_TIMEOUT_MS = 1000;
 
-export function playbackPosition(
+export function playbackOffset(
   playback: Playback, serverTime: string, receivedAtMs: number, nowMs: number,
 ) {
   const reference = playback.pausedAt ?? serverTime;
-  return Math.max(0, (Date.parse(reference) - Date.parse(playback.startedAt)) / 1000
-    + (playback.pausedAt ? 0 : Math.max(0, nowMs - receivedAtMs) / 1000));
+  return (Date.parse(reference) - Date.parse(playback.startedAt)) / 1000
+    + (playback.pausedAt ? 0 : Math.max(0, nowMs - receivedAtMs) / 1000);
+}
+
+export function playbackPosition(
+  playback: Playback, serverTime: string, receivedAtMs: number, nowMs: number,
+) {
+  return Math.max(0, playbackOffset(playback, serverTime, receivedAtMs, nowMs));
 }
 
 export type MediaProgress = {

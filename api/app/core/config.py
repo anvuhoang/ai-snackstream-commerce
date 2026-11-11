@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     live_make_enabled: bool = Field(False, alias="LIVE_MAKE_ENABLED")
     live_make_webhook_url: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_WEBHOOK_URL")
     live_make_callback_token: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_CALLBACK_TOKEN")
+    live_ffprobe_path: str = Field("ffprobe", min_length=1, alias="LIVE_FFPROBE_PATH")
     live_make_result_timeout_seconds: float = Field(
         180,
         gt=0,

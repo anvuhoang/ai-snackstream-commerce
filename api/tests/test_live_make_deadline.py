@@ -163,7 +163,7 @@ def test_http_accepted_duplicate_after_deadline_preserves_playback_and_slot(dead
         tick_playback(live, settings)
         assert live.get_current().questions[0].status == "answering"
         if phase == "answered":
-            clock.current += timedelta(seconds=5.25)
+            clock.current = live.get_current().playback.started_at + timedelta(seconds=5.25)
             tick_playback(live, settings)
         elif phase == "skipped":
             live.skip_question(payload["liveId"], payload["questionId"])

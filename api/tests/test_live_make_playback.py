@@ -119,7 +119,7 @@ def test_ready_while_paused_and_reply_pause_preserve_exact_position(make_live):
     live.resume_session(live_id)
     tick_playback(live, settings)
     reply = live.get_current().playback
-    clock.current += timedelta(seconds=2)
+    clock.current = reply.started_at + timedelta(seconds=2)
     live.pause_session(live_id)
     before = live.get_current()
     clock.current += timedelta(seconds=100)
@@ -140,7 +140,7 @@ def test_ready_while_paused_and_reply_pause_preserve_exact_position(make_live):
 def test_skip_make_reply_restores_script_and_next_question(paused, make_live):
     live, settings, clock, sender, live_id = make_live
     start_reply(live, settings, live_id)
-    clock.current += timedelta(seconds=1)
+    clock.current = live.get_current().playback.started_at + timedelta(seconds=1)
     if paused:
         live.pause_session(live_id)
     live.skip_question(live_id, "make-question-0")
@@ -337,7 +337,7 @@ def test_playback_and_deadlines_advance_while_webhook_ack_is_blocked(make_live, 
                     result(live_id), settings.live_make_result_timeout_seconds,
                 )
                 await wait_for(lambda: live.get_current().playback.kind == "reply")
-                clock.current += timedelta(seconds=5.25)
+                clock.current = live.get_current().playback.started_at + timedelta(seconds=5.25)
                 await wait_for(lambda: live.get_current().questions[0].status == "answered")
                 assert live.get_current().playback.kind == "script"
             else:
@@ -376,7 +376,7 @@ def test_make_lifespan_runs_authenticated_callbacks_to_completion_without_viewer
             client.post("/api/live/make-result", json=body, headers={
                 "X-Live-Make-Token": settings.live_make_callback_token.get_secret_value(),
             }).raise_for_status()
-        deadline = time.monotonic() + 4
+        deadline = time.monotonic() + 8  # Shared 5s preparation + 0.15s media + tick margin.
         observed_reply = False
         while time.monotonic() < deadline:
             current = client.get("/api/live/current").json()["session"]

@@ -14,6 +14,9 @@ from .schemas import (
     LiveSessionOut,
 )
 
+# One shared preload window; no viewer acknowledgement can extend the session.
+REPLY_PREPARATION_SECONDS = 5.0
+
 
 class LiveService:
     def __init__(self):
@@ -281,7 +284,7 @@ class LiveService:
             reply = LivePlaybackOut(
                 playback_id=uuid4().hex,
                 video_url=question.video_url,
-                started_at=now,
+                started_at=now + timedelta(seconds=REPLY_PREPARATION_SECONDS),
                 kind="reply",
                 media_source=question.media_source,
                 question_id=question.question_id,

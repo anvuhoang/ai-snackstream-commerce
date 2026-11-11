@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 import { Button } from "@/components/ui/button";
 import type { components } from "@/lib/api/schema";
 import type { LiveLogContext, LiveLogDetails, LivePlaybackLog } from "@/lib/live/playback-log";
-import { mediaTarget, playbackPosition } from "@/lib/live/playback-timing";
+import { mediaTarget, playbackOffset } from "@/lib/live/playback-timing";
 
 type Playback = components["schemas"]["LivePlaybackOut"];
 
@@ -28,9 +28,11 @@ export function SessionVideo({
 }: Props) {
   const replyEnded = useRef(false);
   const aligned = useRef(false);
+  const preparingLogged = useRef(false);
   const isReply = playback.kind === "reply";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [preparing, setPreparing] = useState(false);
   const record = useCallback((
     event: string, video: HTMLVideoElement, details: LiveLogDetails = {},
   ) => {
@@ -67,8 +69,19 @@ export function SessionVideo({
     // it to the deadline; the parent bounds this grace and never mounts two players.
     if (finishing) return;
 
-    const elapsed = playbackPosition(playback, serverTime, receivedAtMs, performance.now());
-    if (!Number.isFinite(elapsed)) return;
+    const offset = playbackOffset(playback, serverTime, receivedAtMs, performance.now());
+    if (!Number.isFinite(offset)) return;
+    if (isReply && offset < 0) {
+      video.pause();
+      setPreparing(true);
+      if (!preparingLogged.current) {
+        preparingLogged.current = true;
+        record("live_reply_preparing", video, { startsInSeconds: -offset });
+      }
+      return;
+    }
+    setPreparing(false);
+    const elapsed = Math.max(0, offset);
 
     if (video.readyState >= 1 && Number.isFinite(video.duration) && video.duration > 0) {
       const duration = video.duration;
@@ -95,7 +108,8 @@ export function SessionVideo({
       }
     }
 
-    if (allowPlay && !playback.pausedAt && video.paused && !video.ended && !video.seeking) {
+    if (allowPlay && !playback.pausedAt && video.readyState >= 2
+      && video.paused && !video.ended && !video.seeking) {
       void video.play().catch((cause) => {
         if (video !== videoRef.current || !video.isConnected) return;
         if (cause instanceof DOMException && cause.name === "AbortError") return;
@@ -115,13 +129,17 @@ export function SessionVideo({
 
   useEffect(() => {
     const first = setTimeout(() => sync(), 0);
+    const offset = playbackOffset(playback, serverTime, receivedAtMs, performance.now());
+    const start = isReply && !playback.pausedAt && Number.isFinite(offset) && offset < 0
+      ? setTimeout(() => sync(), -offset * 1000 + 5) : null;
     const timer = setInterval(() => sync(), 2000);
 
     return () => {
       clearTimeout(first);
+      if (start !== null) clearTimeout(start);
       clearInterval(timer);
     };
-  }, [sync]);
+  }, [sync, isReply, playback, serverTime, receivedAtMs]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -150,7 +168,7 @@ export function SessionVideo({
           sync();
         }}
         onLoadStart={() => setLoading(true)}
-        onCanPlay={() => setLoading(false)}
+        onCanPlay={() => { setLoading(false); sync(); }}
         onWaiting={(event) => {
           setLoading(true);
           record("live_playback_waiting", event.currentTarget);
@@ -210,9 +228,9 @@ export function SessionVideo({
         </p>
       )}
 
-      {loading && !playback.pausedAt && (
+      {(loading || preparing) && !playback.pausedAt && (
         <p role="status" className="text-sm text-muted">
-          Đang tải video…
+          {preparing ? "Đang chuẩn bị video trả lời…" : "Đang tải video…"}
         </p>
       )}
 

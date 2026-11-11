@@ -72,7 +72,7 @@ def test_finish_waits_for_deadline_and_restores_exact_script_position(answering_
 
 def test_pause_does_not_count_toward_reply_duration(answering_live):
     service, live_id, clock = answering_live
-    clock.current += timedelta(seconds=3)
+    clock.current = service.get_current().playback.started_at + timedelta(seconds=3)
     service.pause_session(live_id)
     clock.current += timedelta(seconds=100)
     before = service.get_current()
@@ -87,7 +87,7 @@ def test_pause_does_not_count_toward_reply_duration(answering_live):
 
 def test_skipping_playing_reply_restores_script_and_releases_queue(answering_live):
     service, live_id, clock = answering_live
-    clock.current += timedelta(seconds=2)
+    clock.current = service.get_current().playback.started_at + timedelta(seconds=2)
     skipped = service.skip_question(live_id, "finish-question-0")
     assert skipped.status == "skipped"
     current = service.get_current()
@@ -99,7 +99,7 @@ def test_skipping_playing_reply_restores_script_and_releases_queue(answering_liv
 
 def test_skipping_paused_reply_keeps_script_paused_at_saved_position(answering_live):
     service, live_id, clock = answering_live
-    clock.current += timedelta(seconds=2)
+    clock.current = service.get_current().playback.started_at + timedelta(seconds=2)
     service.pause_session(live_id)
     clock.current += timedelta(seconds=50)
     service.skip_question(live_id, "finish-question-0")
