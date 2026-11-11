@@ -1,14 +1,47 @@
 # Make reply playback contract — 2026-11-11
 
 The code supports an authenticated Make `ready` callback through shared reply playback,
-completion, FIFO queue release and exact script-position restoration. Verification uses
-fake providers; no Make scenario, paid webhook or new D-ID render was used. A real newly
+completion, FIFO queue release and exact script-position restoration. Code verification uses
+fake providers; the user-confirmed Make entrance-filter check is recorded below. A real newly
 generated Vietnamese D-ID video has **not** been accepted end to end. This does not
 complete N01–N04.
 
 The preceding prerecorded diagnostics package was accepted by the user and committed
 as `2f14052`. Its evidence remains in [LIVE_MOCK_PLAYBACK.md](LIVE_MOCK_PLAYBACK.md);
 the original independent-player smoke evidence is unchanged.
+
+## Outbound webhook deadline
+
+The backend-to-Make JSON keeps `session_id`, `question_id`, `question`,
+`current_live_sku` and `source`, and adds `deadline_unix_ms`: a JSON **integer**
+count of milliseconds since the Unix epoch in UTC, not a string or a duration.
+It is calculated from the question's `processing_started_at` assigned at claim
+plus `LIVE_MAKE_RESULT_TIMEOUT_SECONDS`, using the same `timedelta` arithmetic as
+backend expiry/callback admission, then rounded **down** to whole milliseconds.
+For example, claim `2026-11-11T00:00:00.123999Z` with timeout 180 seconds produces
+`"deadline_unix_ms": 1794355380123`. Fractional configured seconds are supported.
+Queue waiting and delayed webhook delivery do not move this deadline. A missing
+or timezone-naive/invalid claim timestamp prevents webhook I/O; there is no fallback
+to the current time. No public callback/OpenAPI field changes are needed.
+
+Make must preserve this value through every branch and compare its current UTC
+Unix milliseconds with it: **stop further processing when `now_ms >= deadline_unix_ms`**.
+Check before starting provider work, after each Sleep, before each poll/retry and
+before sending a new result; do not derive a budget from Repeater counts or total
+Sleep alone. This floor can stop Make less than one millisecond earlier than the
+backend's precise deadline. Network transit can still make a callback arrive late;
+the backend remains authoritative and rejects a never-accepted expired result.
+Previously accepted identical callback retries remain idempotent after deadline.
+
+A deadline check stops subsequent scenario steps; it does **not** cancel provider
+work already running. Clock alignment, render/poll/retry budgets and actual Make
+mapping still require verification outside this repository.
+
+On 2026-11-11, the user confirmed importing the deadline blueprint into Make and
+observing a payload with `deadline_unix_ms = 1` blocked by the entrance filter before
+OpenAI 9. This records the user's confirmation of that entrance check. Downstream
+branches, clock behavior across Sleep, callbacks and a newly generated D-ID video
+remain unverified in the real scenario. This does not complete N01–N04.
 
 ## Successful callback
 
@@ -185,8 +218,9 @@ unmuted browser `playing` proves human hearing.
    generated Vietnamese D-ID video, actual picture/audio, measured duration, return
    to script and two-viewer behavior.
 
-No Make scenario was edited. The previously reported real provider result was HTTP
-402 InsufficientCreditsError, which remains a blocker for real-video acceptance.
+No Make scenario was edited by this repository implementation. The previously reported
+real provider result was HTTP 402 InsufficientCreditsError, which remains a blocker
+for real-video acceptance.
 
 ## Verification and reproduction
 

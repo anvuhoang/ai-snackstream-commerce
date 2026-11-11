@@ -1,4 +1,5 @@
 import json
+from datetime import UTC, datetime, timedelta
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
@@ -9,13 +10,25 @@ from app.core.errors import AppError
 from .schemas import LiveQuestionOut
 
 
-def build_make_payload(question: LiveQuestionOut) -> dict[str, str]:
+def build_make_payload(question: LiveQuestionOut, timeout_seconds: float) -> dict[str, str | int]:
+    claimed_at = question.processing_started_at
+    if not isinstance(claimed_at, datetime) or claimed_at.utcoffset() is None:
+        raise AppError(
+            503,
+            "live_make_missing_claim",
+            "A timezone-aware processing claim timestamp is required.",
+        )
+
+    # Match service expiry arithmetic, then floor to milliseconds without floats.
+    deadline = claimed_at + timedelta(seconds=timeout_seconds)
+    deadline_unix_ms = (deadline - datetime(1970, 1, 1, tzinfo=UTC)) // timedelta(milliseconds=1)
     return {
         "session_id": question.live_id,
         "question_id": question.question_id,
         "question": question.text,
         "current_live_sku": question.sku,
         "source": question.source,
+        "deadline_unix_ms": deadline_unix_ms,
     }
 
 
@@ -47,7 +60,10 @@ def send_make_question(question: LiveQuestionOut, settings: Settings) -> int:
 
     request = Request(
         url,
-        data=json.dumps(build_make_payload(question), ensure_ascii=False).encode("utf-8"),
+        data=json.dumps(
+            build_make_payload(question, settings.live_make_result_timeout_seconds),
+            ensure_ascii=False,
+        ).encode("utf-8"),
         headers={"Content-Type": "application/json; charset=utf-8"},
         method="POST",
     )
