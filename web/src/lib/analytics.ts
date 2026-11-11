@@ -41,3 +41,35 @@ export function addDays(date: string, days: number): string {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
+
+export type ChannelRow = Schemas["ChannelRow"];
+export type ChannelsOut = Schemas["ChannelsOut"];
+export type ShopeeOut = Schemas["ShopeeOut"];
+export type AiOut = Schemas["AiOut"];
+export type BatchOut = Schemas["BatchOut"];
+
+export type TabKey = "overview" | "channels" | "shopee" | "ai" | "data";
+export const TABS: { key: TabKey; label: string }[] = [
+  { key: "overview", label: "Tổng quan" },
+  { key: "channels", label: "Kênh ngoài" },
+  { key: "shopee", label: "Shopee" },
+  { key: "ai", label: "Chatbot và Live" },
+  { key: "data", label: "Dữ liệu" },
+];
+export const isTab = (s: string | undefined): s is TabKey => TABS.some((t) => t.key === s);
+
+/** A number that may not have been reported: "—" means "not reported", never 0. */
+export const orDash = (n: number | null | undefined, fmt: (n: number) => string = (x) => x.toLocaleString("vi-VN")) => (n === null || n === undefined ? "—" : fmt(n));
+
+export const RATIO_NOTE: Record<"ok" | "no_data" | "no_denominator", string> = {
+  ok: "",
+  no_data: "Chưa đủ dữ liệu",
+  no_denominator: "Không tính được",
+};
+
+export const CSV_TEMPLATE = [
+  "date,channel,content,views,impressions,clicks,orders,revenue,cost",
+  "2026-11-02,tiktok,clip-01,1200,,90,6,540000,200000",
+  "2026-11-02,shopee,,,,,4,380000,",
+  "",
+].join("\n");

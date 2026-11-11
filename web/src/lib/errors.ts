@@ -31,6 +31,16 @@ const MESSAGES: Record<string, string> = {
   below_reserved: "Các đơn đang mở đã giữ nhiều hơn số này. Hãy hủy bớt đơn hoặc nhập số lớn hơn.",
   managed_by_odoo: "Số tồn này lấy từ Odoo. Hãy đổi trong Odoo rồi đồng bộ lại.",
   odoo_not_configured: "Chưa cấu hình kết nối Odoo.",
+  stock_unknown: "Shop chưa xác nhận được tồn kho của món này. Vui lòng liên hệ shop.",
+  import_duplicate: "File hoặc dòng nhập này đã được thêm trước đó. Muốn thêm lại, hãy xóa lần nhập cũ trước.",
+  csv_invalid_rows: "Có dòng bị lỗi nên chưa có gì được nhập. Sửa file rồi thử lại.",
+  csv_columns: "Dòng đầu của file phải ghi tên cột: date, channel và ít nhất một số liệu (views, clicks, orders, revenue, cost).",
+  csv_empty: "File không có dòng dữ liệu nào.",
+  csv_unreadable: "Không đọc được file. Hãy lưu thành CSV (UTF-8) rồi thử lại.",
+  too_many_rows: "File quá nhiều dòng (tối đa 5.000). Hãy tách nhỏ rồi nhập từng phần.",
+  no_values: "Hãy nhập ít nhất một số liệu.",
+  invalid_channel: "Tên kênh chỉ gồm chữ không dấu, số, dấu - và _.",
+  batch_not_found: "Không tìm thấy lần nhập này.",
 };
 
 /** What a product still needs before it can be put on sale (the API's `details.missing` values). */
@@ -44,7 +54,7 @@ export const PUBLISH_MISSING: Record<string, string> = {
 
 export const GENERIC_ERROR = "Có lỗi xảy ra. Vui lòng thử lại.";
 
-type ApiError = { error?: { code?: string; details?: { missing?: string[]; skus?: string[] } } };
+type ApiError = { error?: { code?: string; details?: { missing?: string[]; skus?: string[]; problems?: { line: number; problem: string }[]; total?: number } } };
 
 /** Turn an API error body (or anything thrown) into text for the visitor. */
 export function errorText(body: unknown): string {

@@ -105,9 +105,14 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
   counts, shipping only ends the reservation (Odoo's own delivery lowers on-hand), and the count cannot be edited in the web. Web: `/admin/inventory`
   (list, filters, receive / correct, sync panel) and a movement history per variant. Settings: `ODOO_URL`, `ODOO_DB`, `ODOO_API_KEY`, `ODOO_TIMEOUT_S`.
 - **Decisions taken:** D1 → the real Odoo Online instance (no throw-away Docker service). D2 (Shopee quota) is still open.
-- **Still to do:** a `@postgres` concurrency test (the guard is tested on SQLite only); schedule `sync-odoo` (Render cron); a "stale after N minutes" rule when
-  Odoo is unreachable (today the web keeps selling from the last synced numbers); write deliveries back to Odoo, so web orders are visible there and
-  the web count is exact between syncs; an "out of stock" badge on the storefront product page (the cart already marks such lines unavailable).
+- **Added later:** the public catalog now says what stock a variant has (`available`, `stockStatus` = ok / low / out / unknown, `stockUpdatedAt`; a card has
+  `soldOut`), the product page shows "Hết hàng" / "Chỉ còn N" and disables the button, and the cart refuses an item that is out (`out_of_stock`). A count copied
+  from Odoo that is older than `STOCK_STALE_MINUTES` (default 0 = never) is `unknown`: the shop shows "contact the shop" and refuses to add it (`stock_unknown`).
+  The free-shipping threshold on the pages comes from the shop settings. `render.yaml` lists the VNPay and Odoo variables and has the two cron jobs
+  (`expire-orders`, `sync-odoo`) ready to uncomment (Render cron is a paid feature); `docs/DEPLOY.md` section 3 explains them.
+  A concurrency test for the last unit is in `api/tests/test_inventory_postgres.py`: it runs only with `POSTGRES_TEST_URL` pointing at a **throw-away** database.
+- **Still to do:** run that PostgreSQL test (it has only been checked to skip without a database); write deliveries back to Odoo, so web orders are visible there and
+  the web count is exact between syncs.
 - **Accept:** two simultaneous requests for the last unit → exactly one succeeds (`@postgres` test); cancelling twice
   releases once; one real or test Odoo SKU syncs; admin sees sync status and can resync.
 
@@ -126,6 +131,17 @@ what cost — and what evidence is missing?"
   source, duplicate protection, real vs. demo, export).
 - **Rules:** never sum views into "unique people"; never add an order that appears in two reports; show "cannot be
   computed" for a zero or missing denominator; CAC only when new customers are identifiable, otherwise cost per order.
+- **What shipped:** events (`event`), the attribution rule (docs/ARCHITECTURE.md), and the dashboard at `/admin/analytics` with five tabs.
+  **Tổng quan**: funnel, sources, products. **Kênh ngoài**: numbers that TikTok, Facebook and others report. **Shopee**: web "buy on Shopee" clicks and
+  Shopee's own report side by side (never added). **Chatbot và Live**: counts from the events P5 and P6 will send; until they do the tab says "not collected"
+  instead of showing 0. **Dữ liệu**: CSV import (`POST /api/admin/analytics/imports`), manual entry, history with undo (admins), and CSV export of the channel numbers
+  and of the funnel. Tables `import_batch` and `channel_metric` (migration `0006`). CSV columns: `date`, `channel`, optional `content`, and at least one of
+  `views`, `impressions`, `clicks`, `orders`, `revenue`, `cost` (Vietnamese names and `;` separators are read too, `1.250.000đ` is a number).
+  Rules enforced: an empty cell is "not reported" and stored as nothing, never 0; a file with any bad row is refused whole; the same file (SHA-256) or the same
+  value for the same day/channel/content/metric/demo flag is never stored twice (a repeat is skipped and counted, never overwritten); a ratio uses only the days
+  that report both numbers; CTR and cost per order say "cannot be computed" for a zero denominator; reported orders are kept apart from the web's own.
+- **Still to do for P4:** Excel (`.xlsx`) import (CSV only today); the AI-versus-human comparison needs the chat and live logs from P5 and P6 (content type,
+  auto-resolved); CAC needs identifiable new customers, so only cost per order is shown.
 - **Accept:** each filter changes tables and charts consistently; missing steps are labelled, not bridged; importing the
   same file twice is rejected; a unit test per formula.
 - *The earlier dashboard prototype lives on branch `legacy-dashboard`; use it as a reference for formulas and screens, not as a dependency.*
