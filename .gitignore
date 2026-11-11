@@ -2,6 +2,12 @@
 *.db
 *.log
 .venv/
+.venv312/
+.env.*
+!.env.example
+*.db-*
+*.sqlite
+*.sqlite3
 __pycache__/
 .pytest_cache/
 .ruff_cache/

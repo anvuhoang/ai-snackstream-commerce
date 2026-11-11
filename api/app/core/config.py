@@ -34,6 +34,16 @@ class Settings(BaseSettings):
     # Browser origin(s) allowed to call the API directly (the web app normally proxies, so this is empty).
     cors_origins: list[str] = Field(default_factory=list, alias="CORS_ORIGINS")
 
+    odoo_url: str = "https://edu-anvatuit.odoo.com"
+    odoo_database: str = "edu-anvatuit"
+    odoo_login: str = ""
+    odoo_api_key: str = ""
+    chat_public_skus: list[str] = Field(default_factory=list)
+    chat_all_sale_products: bool = False
+    gemini_api_key: str = ""
+    gemini_model: Literal["gemini-3.1-flash-lite"] = "gemini-3.1-flash-lite"
+    gemini_free_tier_confirmed: bool = False
+
     @model_validator(mode="after")
     def _finalize(self) -> Settings:
         self.database_url = normalize_db_url(self.database_url)

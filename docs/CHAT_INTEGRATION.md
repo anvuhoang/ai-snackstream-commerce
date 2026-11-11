@@ -1,25 +1,24 @@
-# Nút chat trên web chính
+# Chatbot tích hợp trong dự án chính
 
-Web chính chỉ thêm `ChatLauncher` trong layout cửa hàng, kèm CSS module riêng.
-Trang chủ, admin, catalog và backend cũ không bị thay thế.
+- Backend: `api/app/modules/chat` (FAQ, cấu hình bot, hỗ trợ, log).
+- Catalog Odoo đọc qua service, chỉ gồm các trường công khai được phép tư vấn.
+- Giao diện: `web/src/components/chat-widget.tsx` và CSS module riêng.
+- `ChatLauncher` gắn component trực tiếp trong layout cửa hàng; không dùng iframe.
+- Quản trị dùng chung đăng nhập admin hiện có tại `/admin/chat` và `/admin/chat/manage`.
+- API chạy cổng 8000, web cổng 3000; browser dùng proxy `/api/*` sẵn có.
+- Key đặt trong `api/.env`, không dùng NEXT_PUBLIC_CHAT_URL hoặc CHAT_FRAME_ORIGINS.
 
-Nút góc phải mở `/embed` của dự án chat riêng trong iframe. Giao diện nhúng chỉ
-có phần chat, không có điều hướng/admin. Đóng rồi mở lại vẫn giữ hội thoại trong
-phiên trang hiện tại. Màu nút dùng các token của web chính.
+Các dữ liệu thiếu từ bản chat riêng đã được nhập vào database chính theo mã câu hỏi,
+SKU/câu FAQ và mã hội thoại; không ghi đè bản ghi sẵn có. Bản dự phòng trước hợp nhất
+nằm ngoài repository tại `chatbot-merge-backup-20261111`.
 
-## Chạy trên máy
+Xem README ở gốc repository để chạy bằng hai terminal.
 
-1. `snackstream-chat/api`: `.venv312\Scripts\python.exe -m uvicorn app.main:app --port 8001`
-2. `snackstream-chat/web`: `npm.cmd run dev` (cổng 3001).
-3. `ai-snackstream-commerce/web`: `npm.cmd run dev -- --webpack` (cổng 3000).
+## Thành phần trong ghi chú Odoo
 
-## Cấu hình khi triển khai
-
-Web chính: đặt `NEXT_PUBLIC_CHAT_URL` thành URL web chat riêng và build lại.
-Web chat riêng: đặt `CHAT_FRAME_ORIGINS` là các origin web chính được phép nhúng,
-cách nhau bằng dấu cách; khởi động/build lại. Mặc định chỉ cho phép localhost:3000
-và 127.0.0.1:3000. `/embed` dùng CSP frame-ancestors; admin và các trang còn lại
-vẫn chặn iframe bằng X-Frame-Options DENY. Hai web nên cùng miền/site khi triển
-khai để cookie hội thoại không bị trình duyệt chặn như cookie bên thứ ba.
-
-API key vẫn chỉ nằm ở backend chat. Web chính không giữ key Odoo/Gemini.
+Ưu tiên Sales Description. Khi trường đó trống, backend đọc Internal Notes nhưng
+chỉ trích các mục có nhãn Ingredients/Thành phần, Storage/Bảo quản và
+Flavor and texture/Hương vị. Không đưa phần ghi chú thô vào Product hoặc prompt.
+Nhãn khác được dùng làm ranh giới để loại giá vốn, nhà cung cấp và các mục nội bộ.
+Nội dung không có nhãn được xem là chưa có dữ liệu; không đoán từ tên hoặc ảnh.
+Thay đổi backend yêu cầu khởi động lại API nếu không chạy với --reload.

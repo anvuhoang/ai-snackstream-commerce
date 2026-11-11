@@ -24,7 +24,7 @@ const NAV = [
   { href: "/admin/orders", label: "Đơn hàng", Icon: ClipboardList, phase: 2 },
   { href: "/admin/inventory", label: "Kho", Icon: Boxes, phase: 3 },
   { href: "/admin/analytics", label: "Dashboard", Icon: ChartNoAxesCombined, phase: 4 },
-  { href: "/admin/chat", label: "Chatbot", Icon: MessagesSquare, phase: 5 },
+  { href: "/admin/chat", label: "Chatbot", Icon: MessagesSquare },
   { href: "/admin/live", label: "Live", Icon: Radio, phase: 6 },
 ] as const;
 

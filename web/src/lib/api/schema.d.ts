@@ -95,6 +95,230 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chat/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send Message */
+        post: operations["send_message_api_chat_messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/questions/{question_id}/click": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Click */
+        post: operations["record_click_api_chat_questions__question_id__click_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public Status */
+        get: operations["public_status_api_chat_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/support": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask Support */
+        post: operations["ask_support_api_chat_support_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/chat/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Logs */
+        get: operations["get_logs_api_admin_chat_logs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/chat/logs/{question_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Review Log */
+        patch: operations["review_log_api_admin_chat_logs__question_id__patch"];
+        trace?: never;
+    };
+    "/api/admin/chat/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Bot Settings */
+        get: operations["get_bot_settings_api_admin_chat_settings_get"];
+        /** Put Bot Settings */
+        put: operations["put_bot_settings_api_admin_chat_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/chat/faqs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Faqs */
+        get: operations["get_faqs_api_admin_chat_faqs_get"];
+        put?: never;
+        /** Add Faq */
+        post: operations["add_faq_api_admin_chat_faqs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/chat/faqs/{faq_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Faq */
+        put: operations["update_faq_api_admin_chat_faqs__faq_id__put"];
+        post?: never;
+        /** Remove Faq */
+        delete: operations["remove_faq_api_admin_chat_faqs__faq_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/chat/support": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Support */
+        get: operations["get_support_api_admin_chat_support_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/chat/support/{support_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Support */
+        patch: operations["update_support_api_admin_chat_support__support_id__patch"];
+        trace?: never;
+    };
+    "/api/catalog/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Products */
+        get: operations["products_api_catalog_products_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/products/{sku}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Product */
+        get: operations["product_api_catalog_products__sku__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -111,10 +335,109 @@ export interface components {
              */
             role: "admin" | "staff";
         };
+        /** BotConfig */
+        BotConfig: {
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Contacttext
+             * @default Vui lòng liên hệ cửa hàng qua kênh hỗ trợ đã công bố.
+             */
+            contactText: string;
+        };
+        /** CardClick */
+        CardClick: {
+            /** Sku */
+            sku: string;
+        };
+        /** ChatRequest */
+        ChatRequest: {
+            /** Message */
+            message: string;
+            /** History */
+            history?: components["schemas"]["Message"][];
+            /** Sku */
+            sku?: string | null;
+        };
+        /** ChatResponse */
+        ChatResponse: {
+            /** Answer */
+            answer: string;
+            /** Products */
+            products: components["schemas"]["Product"][];
+            /** Questionid */
+            questionId?: string | null;
+        };
+        /** FAQEntry */
+        FAQEntry: {
+            /** Question */
+            question: string;
+            /** Answer */
+            answer: string;
+            /**
+             * Approved
+             * @default false
+             */
+            approved: boolean;
+            /** Id */
+            id: number;
+        };
+        /** FAQInput */
+        FAQInput: {
+            /** Question */
+            question: string;
+            /** Answer */
+            answer: string;
+            /**
+             * Approved
+             * @default false
+             */
+            approved: boolean;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** LogEntry */
+        LogEntry: {
+            /** Questionid */
+            questionId: string;
+            /** Conversationid */
+            conversationId: string;
+            /** Question */
+            question: string;
+            /** Answer */
+            answer: string | null;
+            /** Sku */
+            sku: string | null;
+            /**
+             * Receivedat
+             * Format: date-time
+             */
+            receivedAt: string;
+            /** Answeredat */
+            answeredAt: string | null;
+            /** Durationms */
+            durationMs: number | null;
+            /** Outcome */
+            outcome: string;
+            /** Errorcode */
+            errorCode: string | null;
+            /** Reviewedcorrect */
+            reviewedCorrect: boolean | null;
+            /** Cardclicked */
+            cardClicked: boolean;
+        };
+        /** LogPage */
+        LogPage: {
+            /** Items */
+            items: components["schemas"]["LogEntry"][];
+            /** Total */
+            total: number;
         };
         /** LoginIn */
         LoginIn: {
@@ -122,6 +445,61 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** Message */
+        Message: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+            /** Content */
+            content: string;
+        };
+        /** Product */
+        Product: {
+            /** Sku */
+            sku: string;
+            /** Name */
+            name: string;
+            /** Price */
+            price: number;
+            /** Currency */
+            currency: string;
+            /** Image Url */
+            image_url?: string | null;
+            /** Product Url */
+            product_url?: string | null;
+            /** Sales Description */
+            sales_description?: string | null;
+            /** On Hand */
+            on_hand?: number | null;
+            /** Available */
+            available?: number | null;
+            /** Stock Unit */
+            stock_unit?: string | null;
+            /** Stock Checked At */
+            stock_checked_at?: string | null;
+        };
+        /** PublicStatus */
+        PublicStatus: {
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Contacttext
+             * @default Vui lòng liên hệ cửa hàng qua kênh hỗ trợ đã công bố.
+             */
+            contactText: string;
+            /** Supportstate */
+            supportState?: ("requested" | "active" | "resolved") | null;
+        };
+        /** ReviewRequest */
+        ReviewRequest: {
+            /** Reviewedcorrect */
+            reviewedCorrect: boolean | null;
         };
         /**
          * SessionOut
@@ -131,6 +509,33 @@ export interface components {
             user: components["schemas"]["AdminOut"];
             /** Csrf */
             csrf: string;
+        };
+        /** SupportEntry */
+        SupportEntry: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "requested" | "active" | "resolved";
+            /** Id */
+            id: number;
+            /** Conversationid */
+            conversationId: string;
+            /** Message */
+            message: string;
+        };
+        /** SupportInput */
+        SupportInput: {
+            /** Message */
+            message: string;
+        };
+        /** SupportState */
+        SupportState: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "requested" | "active" | "resolved";
         };
         /** ValidationError */
         ValidationError: {
@@ -267,6 +672,481 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+        };
+    };
+    send_message_api_chat_messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_click_api_chat_questions__question_id__click_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CardClick"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_status_api_chat_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicStatus"];
+                };
+            };
+        };
+    };
+    ask_support_api_chat_support_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupportInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_logs_api_admin_chat_logs_get: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+                needs_review?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_log_api_admin_chat_logs__question_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_bot_settings_api_admin_chat_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BotConfig"];
+                };
+            };
+        };
+    };
+    put_bot_settings_api_admin_chat_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BotConfig"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BotConfig"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_faqs_api_admin_chat_faqs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FAQEntry"][];
+                };
+            };
+        };
+    };
+    add_faq_api_admin_chat_faqs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FAQInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FAQEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_faq_api_admin_chat_faqs__faq_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                faq_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FAQInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FAQEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_faq_api_admin_chat_faqs__faq_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                faq_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_support_api_admin_chat_support_get: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_support_api_admin_chat_support__support_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                support_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupportState"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    products_api_catalog_products_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Product"][];
+                };
+            };
+        };
+    };
+    product_api_catalog_products__sku__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sku: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Product"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

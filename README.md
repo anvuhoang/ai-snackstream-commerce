@@ -74,3 +74,29 @@ cd web; npm run typecheck; npm run lint; npm run build
 - **Pull request checklist.** Tests added; model change has a migration; contract regenerated; loading / empty / error / out-of-stock
   states and phone width checked; no secrets, no real customer data, no `.env`.
 - **Earlier prototype.** The first dashboard (Shopee-era) is kept on branch `legacy-dashboard` for reference.
+
+
+## Chatbot tích hợp
+
+Chatbot dùng chung backend `api/` và frontend `web/`, như các module sẵn có.
+Không cần web chat riêng, iframe hoặc cổng 3001/8001.
+
+Terminal backend từ thư mục gốc repository:
+```powershell
+cd api
+.\.venv312\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Terminal frontend:
+```powershell
+cd web
+npm.cmd run dev -- --webpack
+```
+
+Web: http://127.0.0.1:3000 — bấm nút chat ở góc phải.
+Quản trị chatbot: http://127.0.0.1:3000/admin/chat
+FAQ và hỗ trợ: http://127.0.0.1:3000/admin/chat/manage
+
+Máy mới cần Python 3.12+, cài dependency trong `api/` (`uv sync` hoặc môi trường
+Python tương đương) và `npm ci` trong `web/`. Copy `api/.env.example` thành `.env`
+và điền Odoo/Gemini. Không đưa key, database và môi trường Python lên Git.

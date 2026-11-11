@@ -137,6 +137,660 @@
           }
         }
       }
+    },
+    "/api/chat/messages": {
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Send Message",
+        "operationId": "send_message_api_chat_messages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/questions/{question_id}/click": {
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Record Click",
+        "operationId": "record_click_api_chat_questions__question_id__click_post",
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardClick"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/status": {
+      "get": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Public Status",
+        "operationId": "public_status_api_chat_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/support": {
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Ask Support",
+        "operationId": "ask_support_api_chat_support_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportEntry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/chat/logs": {
+      "get": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Get Logs",
+        "operationId": "get_logs_api_admin_chat_logs_get",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "needs_review",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Needs Review"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/chat/logs/{question_id}": {
+      "patch": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Review Log",
+        "operationId": "review_log_api_admin_chat_logs__question_id__patch",
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogEntry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/chat/settings": {
+      "get": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Get Bot Settings",
+        "operationId": "get_bot_settings_api_admin_chat_settings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BotConfig"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Put Bot Settings",
+        "operationId": "put_bot_settings_api_admin_chat_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BotConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BotConfig"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/chat/faqs": {
+      "get": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Get Faqs",
+        "operationId": "get_faqs_api_admin_chat_faqs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FAQEntry"
+                  },
+                  "type": "array",
+                  "title": "Response Get Faqs Api Admin Chat Faqs Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Add Faq",
+        "operationId": "add_faq_api_admin_chat_faqs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FAQInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FAQEntry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/chat/faqs/{faq_id}": {
+      "put": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Update Faq",
+        "operationId": "update_faq_api_admin_chat_faqs__faq_id__put",
+        "parameters": [
+          {
+            "name": "faq_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Faq Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FAQInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FAQEntry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Remove Faq",
+        "operationId": "remove_faq_api_admin_chat_faqs__faq_id__delete",
+        "parameters": [
+          {
+            "name": "faq_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Faq Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/chat/support": {
+      "get": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Get Support",
+        "operationId": "get_support_api_admin_chat_support_get",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupportEntry"
+                  },
+                  "title": "Response Get Support Api Admin Chat Support Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/chat/support/{support_id}": {
+      "patch": {
+        "tags": [
+          "chat-admin"
+        ],
+        "summary": "Update Support",
+        "operationId": "update_support_api_admin_chat_support__support_id__patch",
+        "parameters": [
+          {
+            "name": "support_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Support Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportState"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportEntry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalog/products": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Products",
+        "operationId": "products_api_catalog_products_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  },
+                  "type": "array",
+                  "title": "Response Products Api Catalog Products Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalog/products/{sku}": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Product",
+        "operationId": "product_api_catalog_products__sku__get",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -168,6 +822,165 @@
         ],
         "title": "AdminOut"
       },
+      "BotConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "contactText": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Contacttext",
+            "default": "Vui lòng liên hệ cửa hàng qua kênh hỗ trợ đã công bố."
+          }
+        },
+        "type": "object",
+        "title": "BotConfig"
+      },
+      "CardClick": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Sku"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku"
+        ],
+        "title": "CardClick"
+      },
+      "ChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "History"
+          },
+          "sku": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sku"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ChatRequest"
+      },
+      "ChatResponse": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "questionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questionid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer",
+          "products"
+        ],
+        "title": "ChatResponse"
+      },
+      "FAQEntry": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Answer"
+          },
+          "approved": {
+            "type": "boolean",
+            "title": "Approved",
+            "default": false
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "answer",
+          "id"
+        ],
+        "title": "FAQEntry"
+      },
+      "FAQInput": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Answer"
+          },
+          "approved": {
+            "type": "boolean",
+            "title": "Approved",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "title": "FAQInput"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -180,6 +993,139 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "LogEntry": {
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "title": "Questionid"
+          },
+          "conversationId": {
+            "type": "string",
+            "title": "Conversationid"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "sku": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sku"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Receivedat"
+          },
+          "answeredAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answeredat"
+          },
+          "durationMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationms"
+          },
+          "outcome": {
+            "type": "string",
+            "title": "Outcome"
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errorcode"
+          },
+          "reviewedCorrect": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewedcorrect"
+          },
+          "cardClicked": {
+            "type": "boolean",
+            "title": "Cardclicked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "questionId",
+          "conversationId",
+          "question",
+          "answer",
+          "sku",
+          "receivedAt",
+          "answeredAt",
+          "durationMs",
+          "outcome",
+          "errorCode",
+          "reviewedCorrect",
+          "cardClicked"
+        ],
+        "title": "LogEntry"
+      },
+      "LogPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LogEntry"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "LogPage"
       },
       "LoginIn": {
         "properties": {
@@ -203,6 +1149,190 @@
         ],
         "title": "LoginIn"
       },
+      "Message": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "Message"
+      },
+      "Product": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "product_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Url"
+          },
+          "sales_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sales Description"
+          },
+          "on_hand": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "On Hand"
+          },
+          "available": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available"
+          },
+          "stock_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stock Unit"
+          },
+          "stock_checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stock Checked At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "name",
+          "price",
+          "currency"
+        ],
+        "title": "Product"
+      },
+      "PublicStatus": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "contactText": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Contacttext",
+            "default": "Vui lòng liên hệ cửa hàng qua kênh hỗ trợ đã công bố."
+          },
+          "supportState": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "requested",
+                  "active",
+                  "resolved"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supportstate"
+          }
+        },
+        "type": "object",
+        "title": "PublicStatus"
+      },
+      "ReviewRequest": {
+        "properties": {
+          "reviewedCorrect": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewedcorrect"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reviewedCorrect"
+        ],
+        "title": "ReviewRequest"
+      },
       "SessionOut": {
         "properties": {
           "user": {
@@ -220,6 +1350,72 @@
         ],
         "title": "SessionOut",
         "description": "What the web app needs after login: who, and the CSRF token to send on every write."
+      },
+      "SupportEntry": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "active",
+              "resolved"
+            ],
+            "title": "State"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "conversationId": {
+            "type": "string",
+            "title": "Conversationid"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "id",
+          "conversationId",
+          "message"
+        ],
+        "title": "SupportEntry"
+      },
+      "SupportInput": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "SupportInput"
+      },
+      "SupportState": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "active",
+              "resolved"
+            ],
+            "title": "State"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "title": "SupportState"
       },
       "ValidationError": {
         "properties": {

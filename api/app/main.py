@@ -17,6 +17,8 @@ from app.core.errors import install_error_handlers
 from app.core.logging import RequestIdMiddleware, configure_logging
 from app.modules.auth import router as auth_router
 from app.modules.auth import service as auth_service
+from app.modules.catalog import router as catalog_router
+from app.modules.chat import router as chat_router
 from app.modules.health import router as health_router
 
 API_ROOT = Path(__file__).resolve().parent.parent
@@ -76,6 +78,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_error_handlers(app)
     for router in (health_router.router, auth_router.router):
         app.include_router(router)
+    app.include_router(chat_router.router)
+    app.include_router(chat_router.admin_router)
+    app.include_router(catalog_router.router)
     return app
 
 
