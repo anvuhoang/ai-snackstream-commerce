@@ -289,9 +289,6 @@ export function LiveSessionViewer() {
           Log kiểm thử chưa gửi về backend hoặc dashboard.
         </p>
       </section>
-      <Link href="/live/check" className="w-fit text-sm text-brand underline">
-        Mở bài kiểm tra video và âm thanh
-      </Link>
     </main>
   );
 }
