@@ -52,11 +52,16 @@ def test_make_payload_keeps_question_context_after_pin_changes():
     ],
 )
 def test_payload_deadline_uses_backend_timedelta_and_floors_milliseconds(
-    claimed_at, timeout, expected_ms,
+    claimed_at,
+    timeout,
+    expected_ms,
 ):
     question = LiveQuestionOut(
-        question_id="deadline-question-001", live_id="deadline-live-001",
-        text="Question", sku="BT-XIKE-01", received_at=claimed_at,
+        question_id="deadline-question-001",
+        live_id="deadline-live-001",
+        text="Question",
+        sku="BT-XIKE-01",
+        received_at=claimed_at,
         processing_started_at=claimed_at,
     )
     deadline_ms = build_make_payload(question, timeout)["deadline_unix_ms"]

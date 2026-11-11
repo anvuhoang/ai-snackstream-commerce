@@ -75,9 +75,7 @@ def test_paused_question_is_prepared_only_after_resume(mock_dispatch_live):
     service.pause_session(live_id)
     submit(client, live_id).raise_for_status()
     assert service.get_current().questions[0].status == "queued"
-    client.post(
-        f"/api/admin/live/{live_id}/resume", headers=admin_headers(client)
-    ).raise_for_status()
+    client.post(f"/api/admin/live/{live_id}/resume", headers=admin_headers(client)).raise_for_status()
     assert service.get_current().questions[0].status == "ready"
     sender.assert_not_called()
 

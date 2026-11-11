@@ -37,9 +37,7 @@ def question():
 
 
 @pytest.mark.parametrize("status", [200, 202])
-def test_send_posts_utf8_and_returns_ack(
-    monkeypatch, make_settings, question, status
-):
+def test_send_posts_utf8_and_returns_ack(monkeypatch, make_settings, question, status):
     response = MagicMock()
     response.__enter__.return_value.status = status
     opener = MagicMock(return_value=response)
@@ -70,9 +68,7 @@ def test_disabled_does_not_send(monkeypatch, make_settings, question):
 
 
 @pytest.mark.parametrize("url", ["", "http://example.invalid/test"])
-def test_missing_or_insecure_url_does_not_send(
-    monkeypatch, make_settings, question, url
-):
+def test_missing_or_insecure_url_does_not_send(monkeypatch, make_settings, question, url):
     opener = MagicMock()
     monkeypatch.setattr("app.modules.live.make_bridge.urlopen", opener)
     make_settings.live_make_webhook_url = SecretStr(url)
@@ -85,13 +81,9 @@ def test_missing_or_insecure_url_does_not_send(
 
 
 @pytest.mark.parametrize("status", [400, 429, 500])
-def test_http_error_does_not_retry(
-    monkeypatch, make_settings, question, status
-):
+def test_http_error_does_not_retry(monkeypatch, make_settings, question, status):
     url = make_settings.live_make_webhook_url.get_secret_value()
-    opener = MagicMock(
-        side_effect=HTTPError(url, status, "Error", None, None)
-    )
+    opener = MagicMock(side_effect=HTTPError(url, status, "Error", None, None))
     monkeypatch.setattr("app.modules.live.make_bridge.urlopen", opener)
 
     with pytest.raises(AppError) as caught:
@@ -117,7 +109,10 @@ def test_missing_or_invalid_claim_never_sends(monkeypatch, make_settings, questi
 @pytest.mark.parametrize("timeout", [180, 7.5, 0.001234, 1800])
 @pytest.mark.parametrize("send_delay", [0, 25, 181])
 def test_dispatch_deadline_stays_at_claim_despite_delayed_send(
-    monkeypatch, make_settings, timeout, send_delay,
+    monkeypatch,
+    make_settings,
+    timeout,
+    send_delay,
 ):
     class Clock(datetime):
         current = datetime(2026, 11, 11, microsecond=123_999, tzinfo=UTC)
@@ -130,14 +125,21 @@ def test_dispatch_deadline_stays_at_claim_despite_delayed_send(
     make_settings.live_make_result_timeout_seconds = timeout
     make_settings.live_mock_enabled = False
     service = LiveService()
-    session = service.create_session(LiveSessionCreate(
-        title="Payload deadline", scheduled_skus=["BT-XIKE-01", "KG-LC-250"],
-    ))
+    session = service.create_session(
+        LiveSessionCreate(
+            title="Payload deadline",
+            scheduled_skus=["BT-XIKE-01", "KG-LC-250"],
+        )
+    )
     service.start_session(session.live_id)
-    service.submit_question(session.live_id, LiveQuestionIn(
-        question_id="deadline-question-001", session_id="deadline-viewer-001",
-        text="Bánh tráng này có cay không?",
-    ))
+    service.submit_question(
+        session.live_id,
+        LiveQuestionIn(
+            question_id="deadline-question-001",
+            session_id="deadline-viewer-001",
+            text="Bánh tráng này có cay không?",
+        ),
+    )
     service.pin_sku(session.live_id, "KG-LC-250")
     Clock.current += timedelta(seconds=20)  # Waiting in queue is excluded.
     claimed_at = Clock.current
@@ -155,9 +157,9 @@ def test_dispatch_deadline_stays_at_claim_despite_delayed_send(
     dispatch_next_question(session.live_id, service, make_settings)
     opener.assert_called_once()
     payload = json.loads(opener.call_args.args[0].data)
-    expected_ms = (
-        claimed_at + timedelta(seconds=timeout) - datetime(1970, 1, 1, tzinfo=UTC)
-    ) // timedelta(milliseconds=1)
+    expected_ms = (claimed_at + timedelta(seconds=timeout) - datetime(1970, 1, 1, tzinfo=UTC)) // timedelta(
+        milliseconds=1
+    )
     assert type(payload["deadline_unix_ms"]) is int
     assert payload == {
         "session_id": session.live_id,
@@ -170,9 +172,7 @@ def test_dispatch_deadline_stays_at_claim_despite_delayed_send(
     assert service.get_current().questions[0].processing_started_at == claimed_at
 
 
-def test_network_failure_is_unknown_and_does_not_retry(
-    monkeypatch, make_settings, question
-):
+def test_network_failure_is_unknown_and_does_not_retry(monkeypatch, make_settings, question):
     url = make_settings.live_make_webhook_url.get_secret_value()
     opener = MagicMock(side_effect=URLError(url))
     monkeypatch.setattr("app.modules.live.make_bridge.urlopen", opener)

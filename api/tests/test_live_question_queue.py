@@ -75,14 +75,10 @@ def test_new_session_clears_previous_slot(queued_live):
     service, live_id = queued_live
     service.claim_next_question(live_id)
     service.end_session(live_id)
-    new_live = service.create_session(
-        LiveSessionCreate(title="New live", scheduled_skus=["BT-XIKE-01"])
-    )
+    new_live = service.create_session(LiveSessionCreate(title="New live", scheduled_skus=["BT-XIKE-01"]))
     service.start_session(new_live.live_id)
     service.submit_question(
         new_live.live_id,
-        LiveQuestionIn(
-            question_id="new-question-001", session_id="viewer-test-001", text="Câu hỏi mới"
-        ),
+        LiveQuestionIn(question_id="new-question-001", session_id="viewer-test-001", text="Câu hỏi mới"),
     )
     assert service.claim_next_question(new_live.live_id).question_id == "new-question-001"

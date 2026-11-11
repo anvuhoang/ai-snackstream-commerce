@@ -29,6 +29,7 @@ class LiveSessionCreate(LiveModel):
             raise ValueError("Scheduled SKUs must be unique.")
         return skus
 
+
 class LivePlaybackOut(LiveModel):
     playback_id: str
     video_url: str
@@ -43,6 +44,7 @@ class LivePlaybackOut(LiveModel):
         le=300,
         allow_inf_nan=False,
     )
+
 
 ClientId = Annotated[str, Field(pattern=r"^[A-Za-z0-9_-]{8,80}$")]
 
@@ -59,21 +61,18 @@ class LiveQuestionOut(LiveModel):
     text: str
     sku: str
     received_at: datetime
-    status: Literal[
-        "queued", "processing", "ready", "answering", "answered", "failed", "skipped"
-    ] = "queued"
+    status: Literal["queued", "processing", "ready", "answering", "answered", "failed", "skipped"] = "queued"
     processing_started_at: datetime | None = None
     result_received_at: datetime | None = None
     reply_text: str | None = None
     video_url: str | None = None
     media_source: Literal["prerecorded", "make"] | None = None
-    video_duration_seconds: float | None = Field(
-        default=None, gt=0, le=300, allow_inf_nan=False
-    )
+    video_duration_seconds: float | None = Field(default=None, gt=0, le=300, allow_inf_nan=False)
     provider_talk_id: str | None = None
     error_code: str | None = None
     is_demo: Literal[True] = True
     source: Literal["web_live"] = "web_live"
+
 
 class LiveSessionOut(LiveModel):
     live_id: str
@@ -90,9 +89,11 @@ class LiveSessionOut(LiveModel):
     playback: LivePlaybackOut | None = None
     questions: list[LiveQuestionOut] = Field(default_factory=list)
 
+
 class LiveCurrentOut(LiveModel):
     session: LiveSessionOut | None = None
     server_time: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
 
 class LivePinIn(LiveModel):
     sku: Sku
@@ -101,6 +102,7 @@ class LivePinIn(LiveModel):
     @classmethod
     def uppercase_sku(cls, value: str) -> str:
         return value.upper()
+
 
 class LiveMakeResultIn(LiveModel):
     live_id: ClientId
@@ -121,12 +123,15 @@ class LiveMakeResultIn(LiveModel):
         ),
     )
     provider_talk_id: str | None = Field(default=None, min_length=1, max_length=160)
-    error_code: Literal[
-        "unsupported_intent",
-        "product_not_found",
-        "generation_failed",
-        "generation_timeout",
-    ] | None = None
+    error_code: (
+        Literal[
+            "unsupported_intent",
+            "product_not_found",
+            "generation_failed",
+            "generation_timeout",
+        ]
+        | None
+    ) = None
 
     @field_validator("sku")
     @classmethod
@@ -137,9 +142,7 @@ class LiveMakeResultIn(LiveModel):
     @classmethod
     def https_video_url(cls, value: HttpUrl | None) -> HttpUrl | None:
         if value is not None and (
-            value.scheme != "https"
-            or value.username is not None
-            or value.password is not None
+            value.scheme != "https" or value.username is not None or value.password is not None
         ):
             raise ValueError("Video URL must use HTTPS without embedded credentials.")
         return value
@@ -157,14 +160,8 @@ class LiveMakeResultIn(LiveModel):
                     "Ready results require HTTPS video URL, measured durationSeconds, "
                     "reply text, and no error code."
                 )
-        elif (
-            self.error_code is None
-            or self.video_url is not None
-            or self.duration_seconds is not None
-        ):
-            raise ValueError(
-                "Failed or skipped results require an error code and no video URL or duration."
-            )
+        elif self.error_code is None or self.video_url is not None or self.duration_seconds is not None:
+            raise ValueError("Failed or skipped results require an error code and no video URL or duration.")
         return self
 
 

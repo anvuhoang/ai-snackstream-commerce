@@ -176,14 +176,9 @@ class LiveService:
                 )
 
             if question.status in ("queued", "processing", "ready", "answering"):
-                if question.status == "answering" and not self._restore_script(
-                    session, datetime.now(UTC)
-                ):
+                if question.status == "answering" and not self._restore_script(session, datetime.now(UTC)):
                     raise AppError(409, "live_invalid_state", "Cannot restore script playback.")
-                if (
-                    question.status in ("ready", "answering")
-                    and self._active_question_id == question_id
-                ):
+                if question.status in ("ready", "answering") and self._active_question_id == question_id:
                     self._active_question_id = None
                 question.status = "skipped"
             return question.model_copy(deep=True)
@@ -213,11 +208,7 @@ class LiveService:
             if session.status == "playing":
                 return session.model_copy(deep=True)
 
-            if (
-                session.status != "paused"
-                or session.playback is None
-                or session.playback.paused_at is None
-            ):
+            if session.status != "paused" or session.playback is None or session.playback.paused_at is None:
                 raise AppError(
                     409,
                     "live_invalid_state",
@@ -265,10 +256,7 @@ class LiveService:
                 return False
 
             question = next(
-                (
-                    item for item in session.questions
-                    if item.question_id == self._active_question_id
-                ),
+                (item for item in session.questions if item.question_id == self._active_question_id),
                 None,
             )
             if (
@@ -324,10 +312,7 @@ class LiveService:
                 return False
 
             question = next(
-                (
-                    item for item in session.questions
-                    if item.question_id == self._active_question_id
-                ),
+                (item for item in session.questions if item.question_id == self._active_question_id),
                 None,
             )
             if question is None or question.status != "answering":
@@ -344,9 +329,7 @@ class LiveService:
             self._active_question_id = None
             return True
 
-    def complete_mock_question(
-        self, live_id: str, question_id: str, duration_seconds: float
-    ) -> bool:
+    def complete_mock_question(self, live_id: str, question_id: str, duration_seconds: float) -> bool:
         with self._lock:
             session = self._current
             if (
@@ -481,7 +464,10 @@ class LiveService:
             return self._expire_make_question_locked(question, datetime.now(UTC), timeout_seconds)
 
     def _expire_make_question_locked(
-        self, question: LiveQuestionOut | None, now: datetime, timeout_seconds: float,
+        self,
+        question: LiveQuestionOut | None,
+        now: datetime,
+        timeout_seconds: float,
     ) -> bool:
         """Caller holds _lock; both callback admission and runtime use this rule.
 

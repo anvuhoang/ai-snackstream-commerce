@@ -51,9 +51,14 @@ async def run_playback(live: LiveService, settings: Settings) -> None:
                 # Advance deadlines and ready replies even while webhook I/O waits.
                 live_id = _advance_playback(live, settings)
                 if live_id is not None and dispatch_task is None:
-                    dispatch_task = asyncio.create_task(asyncio.to_thread(
-                        dispatch_next_question, live_id, live, settings,
-                    ))
+                    dispatch_task = asyncio.create_task(
+                        asyncio.to_thread(
+                            dispatch_next_question,
+                            live_id,
+                            live,
+                            settings,
+                        )
+                    )
             except Exception as error:
                 logger.error("Live playback tick failed: %s", type(error).__name__)
             await asyncio.sleep(0.25)

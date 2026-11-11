@@ -133,9 +133,7 @@ def test_ended_session_ignores_late_result(callback_live):
 def test_new_session_ignores_previous_session_result(callback_live):
     client, service, payload = callback_live
     service.end_session(payload["liveId"])
-    new_live = service.create_session(
-        LiveSessionCreate(title="New live", scheduled_skus=["BT-XIKE-01"])
-    )
+    new_live = service.create_session(LiveSessionCreate(title="New live", scheduled_skus=["BT-XIKE-01"]))
     response = client.post(CALLBACK_PATH, json=payload, headers=HEADERS)
     assert response.status_code == 200
     assert response.json()["reason"] == "stale_session"
@@ -170,7 +168,11 @@ def test_skipping_ready_question_releases_slot(callback_live):
 def test_non_video_result_releases_slot(callback_live, status):
     client, service, payload = callback_live
     payload.update(
-        status=status, videoUrl=None, durationSeconds=None, replyText=None, errorCode="generation_failed",
+        status=status,
+        videoUrl=None,
+        durationSeconds=None,
+        replyText=None,
+        errorCode="generation_failed",
     )
     response = client.post(CALLBACK_PATH, json=payload, headers=HEADERS)
     assert response.status_code == 200
@@ -193,9 +195,15 @@ def test_concurrent_results_are_applied_once(callback_live):
     client, service, payload = callback_live
     result = LiveMakeResultIn.model_validate(payload)
     with ThreadPoolExecutor(max_workers=8) as pool:
-        responses = list(pool.map(lambda _: service.receive_make_result(
-            result, client.app.state.settings.live_make_result_timeout_seconds,
-        ), range(8)))
+        responses = list(
+            pool.map(
+                lambda _: service.receive_make_result(
+                    result,
+                    client.app.state.settings.live_make_result_timeout_seconds,
+                ),
+                range(8),
+            )
+        )
     assert sum(response.applied for response in responses) == 1
     assert sum(response.reason == "duplicate" for response in responses) == 7
 

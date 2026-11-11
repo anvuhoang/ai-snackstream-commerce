@@ -208,9 +208,7 @@ def test_unexpected_error_is_recorded_without_leaking_details(dispatch_live, cap
 def test_stale_background_task_does_not_touch_new_session(dispatch_live):
     client, service, live_id, sender = dispatch_live
     service.end_session(live_id)
-    new_live = service.create_session(
-        LiveSessionCreate(title="New session", scheduled_skus=["BT-XIKE-01"])
-    )
+    new_live = service.create_session(LiveSessionCreate(title="New session", scheduled_skus=["BT-XIKE-01"]))
     dispatch_next_question(live_id, service, client.app.state.settings)
     sender.assert_not_called()
     assert service.get_current().live_id == new_live.live_id

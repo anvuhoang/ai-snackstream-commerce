@@ -31,6 +31,7 @@ admin_router = APIRouter(
     dependencies=[Depends(require_role("admin"))],
 )
 
+
 def _schedule_make(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -44,6 +45,7 @@ def _schedule_make(
             request.app.state.live,
             settings,
         )
+
 
 @router.get("/current", response_model=LiveCurrentOut)
 def get_current_live(request: Request) -> LiveCurrentOut:
@@ -87,6 +89,7 @@ def end_live(live_id: str, request: Request) -> LiveSessionOut:
     live: LiveService = request.app.state.live
     return live.end_session(live_id)
 
+
 @router.get("/events", response_class=StreamingResponse)
 async def live_events(request: Request):
     live: LiveService = request.app.state.live
@@ -116,6 +119,7 @@ async def live_events(request: Request):
         },
     )
 
+
 @admin_router.post(
     "/{live_id}/pin",
     response_model=LiveSessionOut,
@@ -124,6 +128,7 @@ async def live_events(request: Request):
 def pin_live(live_id: str, body: LivePinIn, request: Request) -> LiveSessionOut:
     live: LiveService = request.app.state.live
     return live.pin_sku(live_id, body.sku)
+
 
 @router.post("/{live_id}/questions", response_model=LiveQuestionOut)
 def submit_live_question(
@@ -136,6 +141,7 @@ def submit_live_question(
     question = live.submit_question(live_id, body)
     _schedule_make(request, background_tasks, live_id)
     return question
+
 
 @admin_router.post(
     "/{live_id}/questions/{question_id}/skip",
@@ -152,6 +158,7 @@ def skip_live_question(
     question = live.skip_question(live_id, question_id)
     _schedule_make(request, background_tasks, live_id)
     return question
+
 
 @admin_router.post(
     "/{live_id}/pause",
@@ -178,13 +185,19 @@ def resume_live(
     _schedule_make(request, background_tasks, live_id)
     return session
 
+
 @router.post(
     "/media-metadata",
     response_model=LiveMediaMetadataOut,
     dependencies=[Depends(require_make_callback)],
-    openapi_extra={"requestBody": {"required": True, "content": {
-        "video/mp4": {"schema": {"type": "string", "format": "binary", "maxLength": MAX_MEDIA_BYTES}},
-    }}},
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {
+                "video/mp4": {"schema": {"type": "string", "format": "binary", "maxLength": MAX_MEDIA_BYTES}},
+            },
+        }
+    },
 )
 async def measure_media_metadata(request: Request) -> LiveMediaMetadataOut:
     content = await read_mp4(request)
@@ -206,12 +219,11 @@ def receive_make_result(
         raise AppError(503, "live_make_disabled", "Make integration is disabled.")
     live: LiveService = request.app.state.live
     ack = live.receive_make_result(
-        body, timeout_seconds=request.app.state.settings.live_make_result_timeout_seconds,
+        body,
+        timeout_seconds=request.app.state.settings.live_make_result_timeout_seconds,
     )
 
-    if ack.reason == "question_skipped" or (
-        ack.applied and body.status in ("failed", "skipped")
-    ):
+    if ack.reason == "question_skipped" or (ack.applied and body.status in ("failed", "skipped")):
         _schedule_make(request, background_tasks, body.live_id)
 
     return ack

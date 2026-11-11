@@ -29,12 +29,21 @@ def preparing(request, settings, monkeypatch):
     live.start_session(session.live_id)
     Clock.current += timedelta(seconds=7)
     for i in range(2):
-        live.submit_question(session.live_id, LiveQuestionIn(
-            question_id=f"prepare-question-{i}", session_id="prepare-viewer-001", text="Question",
-        ))
+        live.submit_question(
+            session.live_id,
+            LiveQuestionIn(
+                question_id=f"prepare-question-{i}",
+                session_id="prepare-viewer-001",
+                text="Question",
+            ),
+        )
     result = LiveMakeResultIn(
-        live_id=session.live_id, question_id="prepare-question-0", sku="BT-XIKE-01",
-        status="ready", reply_text="Existing MP4", video_url="https://example.invalid/reply.mp4",
+        live_id=session.live_id,
+        question_id="prepare-question-0",
+        sku="BT-XIKE-01",
+        status="ready",
+        reply_text="Existing MP4",
+        video_url="https://example.invalid/reply.mp4",
         duration_seconds=5.108005,
     )
     tick_playback(live, settings)
@@ -52,8 +61,11 @@ def test_shared_preparation_and_full_duration_finish_without_any_viewer(preparin
     assert REPLY_PREPARATION_SECONDS == 5
     assert reply.duration_seconds == 5.108005
     assert live.claim_next_question(live_id) is None
-    for instant in [prepared_at + timedelta(seconds=3), reply.started_at,
-                    reply.started_at + timedelta(seconds=reply.duration_seconds, microseconds=-1)]:
+    for instant in [
+        prepared_at + timedelta(seconds=3),
+        reply.started_at,
+        reply.started_at + timedelta(seconds=reply.duration_seconds, microseconds=-1),
+    ]:
         clock.current = instant
         tick_playback(live, settings)
         assert live.get_current().playback == reply

@@ -29,8 +29,10 @@ media_urlopen = build_opener(_NoRedirect).open
 
 def _forward_media(content: bytes, token: str) -> Response:
     upstream_request = UrlRequest(
-        f"http://127.0.0.1:8000{MEDIA_PATH}", data=content,
-        headers={"Content-Type": "video/mp4", "X-Live-Make-Token": token}, method="POST",
+        f"http://127.0.0.1:8000{MEDIA_PATH}",
+        data=content,
+        headers={"Content-Type": "video/mp4", "X-Live-Make-Token": token},
+        method="POST",
     )
     try:
         try:

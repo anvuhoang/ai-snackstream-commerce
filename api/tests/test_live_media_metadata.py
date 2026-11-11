@@ -24,8 +24,10 @@ MP4 = b"\x00\x00\x00\x18ftypisom\x00\x00\x00\x00isommp42" + b"synthetic-test"
 
 
 def probe_output(duration="4.365011"):
-    return {"format": {"format_name": "mov,mp4,m4a,3gp,3g2,mj2", "duration": duration},
-            "streams": [{"codec_type": "video"}]}
+    return {
+        "format": {"format_name": "mov,mp4,m4a,3gp,3g2,mj2", "duration": duration},
+        "streams": [{"codec_type": "video"}],
+    }
 
 
 @pytest.fixture
@@ -90,9 +92,16 @@ def test_only_raw_mp4_content_type(media_client, content_type):
     assert files == []
 
 
-@pytest.mark.parametrize("content", [b"", b"broken", b"RIFF" + b"0" * 30,
-                                     b'{"url":"https://example.invalid/video.mp4"}',
-                                     b"\x00\x00\x00\x18ftypqt  " + b"0" * 16])
+@pytest.mark.parametrize(
+    "content",
+    [
+        b"",
+        b"broken",
+        b"RIFF" + b"0" * 30,
+        b'{"url":"https://example.invalid/video.mp4"}',
+        b"\x00\x00\x00\x18ftypqt  " + b"0" * 16,
+    ],
+)
 def test_not_mp4_never_probes(media_client, content):
     client, files = media_client
     assert client.post(PATH, content=content, headers=HEADERS).status_code == 422
@@ -103,8 +112,7 @@ def test_declared_and_streamed_size_limits(media_client, monkeypatch):
     client, files = media_client
     monkeypatch.setattr(media, "MAX_MEDIA_BYTES", len(MP4))
     assert client.post(PATH, content=MP4, headers=HEADERS).status_code == 200
-    for headers in [{**HEADERS, "Content-Length": str(len(MP4) + 1)},
-                    {**HEADERS, "Content-Length": "1"}]:
+    for headers in [{**HEADERS, "Content-Length": str(len(MP4) + 1)}, {**HEADERS, "Content-Length": "1"}]:
         assert client.post(PATH, content=MP4 + b"x", headers=headers).status_code == 413
     assert len(files) == 1
 
@@ -117,8 +125,9 @@ def test_invalid_content_length(media_client, length):
     assert not files
 
 
-@pytest.mark.parametrize("duration", [None, "N/A", "NaN", "inf", "-inf", "0", "-1", "300.001",
-                                      True, {}, [], 10**1000])
+@pytest.mark.parametrize(
+    "duration", [None, "N/A", "NaN", "inf", "-inf", "0", "-1", "300.001", True, {}, [], 10**1000]
+)
 def test_invalid_duration_is_rejected_and_cleaned(media_client, monkeypatch, duration):
     client, _ = media_client
     paths = []
@@ -134,21 +143,32 @@ def test_invalid_duration_is_rejected_and_cleaned(media_client, monkeypatch, dur
     assert not paths[0].parent.exists()
 
 
-@pytest.mark.parametrize("output", [b"garbage", b"{}", b"[]", b"x" * 32769,
-                                    b'{"format":{"duration":"5","format_name":"avi"},"streams":[]}',
-                                    b'{"format":{"duration":"5","format_name":"mp4"},"streams":[]}'])
+@pytest.mark.parametrize(
+    "output",
+    [
+        b"garbage",
+        b"{}",
+        b"[]",
+        b"x" * 32769,
+        b'{"format":{"duration":"5","format_name":"avi"},"streams":[]}',
+        b'{"format":{"duration":"5","format_name":"mp4"},"streams":[]}',
+    ],
+)
 def test_unusable_probe_output(media_client, monkeypatch, output):
     client, _ = media_client
     monkeypatch.setattr(media.subprocess, "run", lambda *a, **kw: SimpleNamespace(stdout=output))
     assert client.post(PATH, content=MP4, headers=HEADERS).status_code == 422
 
 
-@pytest.mark.parametrize(("failure", "status", "code"), [
-    (FileNotFoundError(), 503, "live_ffprobe_unavailable"),
-    (PermissionError(), 503, "live_ffprobe_unavailable"),
-    (subprocess.CalledProcessError(1, "private-command"), 422, "live_media_invalid"),
-    (subprocess.TimeoutExpired("private-command", 10), 504, "live_ffprobe_timeout"),
-])
+@pytest.mark.parametrize(
+    ("failure", "status", "code"),
+    [
+        (FileNotFoundError(), 503, "live_ffprobe_unavailable"),
+        (PermissionError(), 503, "live_ffprobe_unavailable"),
+        (subprocess.CalledProcessError(1, "private-command"), 422, "live_media_invalid"),
+        (subprocess.TimeoutExpired("private-command", 10), 504, "live_ffprobe_timeout"),
+    ],
+)
 def test_probe_failures_clean_temp_and_hide_details(media_client, monkeypatch, failure, status, code):
     client, _ = media_client
     paths = []
@@ -182,9 +202,14 @@ def test_measurement_does_not_change_live_or_queue(media_client):
     session = live.create_session(LiveSessionCreate(title="No mutation", scheduled_skus=["BT-XIKE-01"]))
     live.start_session(session.live_id)
     for i in range(2):
-        live.submit_question(session.live_id, LiveQuestionIn(
-            question_id=f"media-question-{i}", session_id="media-viewer-001", text="Question",
-        ))
+        live.submit_question(
+            session.live_id,
+            LiveQuestionIn(
+                question_id=f"media-question-{i}",
+                session_id="media-viewer-001",
+                text="Question",
+            ),
+        )
     live.claim_next_question(session.live_id)
     before = live.get_current().model_dump()
     assert client.post(PATH, content=MP4, headers=HEADERS).status_code == 200
@@ -196,8 +221,13 @@ def test_upload_timeout_disconnect_and_chunked_size(media_client, monkeypatch):
     client, _ = media_client
 
     async def exercise():
-        scope = {"type": "http", "method": "POST", "path": PATH, "app": client.app,
-                 "headers": [(b"content-type", b"video/mp4")]}
+        scope = {
+            "type": "http",
+            "method": "POST",
+            "path": PATH,
+            "app": client.app,
+            "headers": [(b"content-type", b"video/mp4")],
+        }
 
         async def slow():
             await asyncio.sleep(1)
@@ -239,8 +269,9 @@ def test_blocked_ffprobe_keeps_api_and_sse_responsive(media_client, monkeypatch)
     monkeypatch.setattr(media.subprocess, "run", blocked)
 
     async def exercise():
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=client.app),
-                                     base_url="http://test") as api:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=client.app), base_url="http://test"
+        ) as api:
             pending = asyncio.create_task(api.post(PATH, content=MP4, headers=HEADERS))
             try:
                 assert await asyncio.to_thread(started.wait, 2)

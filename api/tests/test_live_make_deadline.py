@@ -35,15 +35,22 @@ def deadline_live(client, monkeypatch):
     sender = MagicMock(return_value=202)
     monkeypatch.setattr("app.modules.live.dispatcher.send_make_question", sender)
     live = client.app.state.live
-    session = live.create_session(LiveSessionCreate(
-        title="HTTP callback deadline", scheduled_skus=["BT-XIKE-01", "KG-LC-250"],
-    ))
+    session = live.create_session(
+        LiveSessionCreate(
+            title="HTTP callback deadline",
+            scheduled_skus=["BT-XIKE-01", "KG-LC-250"],
+        )
+    )
     live.start_session(session.live_id)
     for index in range(2):
-        live.submit_question(session.live_id, LiveQuestionIn(
-            question_id=f"deadline-question-{index}",
-            session_id="deadline-viewer-001", text=f"Question {index}",
-        ))
+        live.submit_question(
+            session.live_id,
+            LiveQuestionIn(
+                question_id=f"deadline-question-{index}",
+                session_id="deadline-viewer-001",
+                text=f"Question {index}",
+            ),
+        )
     # Queue waiting time is not part of the processing deadline.
     Clock.current += timedelta(seconds=20)
     dispatch_next_question(session.live_id, live, settings)
@@ -209,8 +216,13 @@ def test_http_metadata_422_then_correction_uses_original_deadline(deadline_live,
 def test_http_uncached_terminal_result_at_deadline_is_also_rejected(deadline_live, status):
     client, live, settings, clock, claimed, payload, sender = deadline_live
     clock.current = claimed + timedelta(seconds=180)
-    terminal = {**payload, "status": status, "videoUrl": None,
-                "durationSeconds": None, "errorCode": "generation_failed"}
+    terminal = {
+        **payload,
+        "status": status,
+        "videoUrl": None,
+        "durationSeconds": None,
+        "errorCode": "generation_failed",
+    }
     assert post(client, terminal).status_code == 409
     assert_expired(client, live)
 
@@ -227,8 +239,9 @@ def test_http_skipped_inflight_callback_at_deadline_does_not_restore_question(de
     assert live.claim_next_question(payload["liveId"]).question_id == "deadline-question-1"
 
 
-@pytest.mark.parametrize("case,expected", [("sku", 409), ("token", 403), ("metadata", 422),
-                                         ("ended", 200), ("stale", 200)])
+@pytest.mark.parametrize(
+    "case,expected", [("sku", 409), ("token", 403), ("metadata", 422), ("ended", 200), ("stale", 200)]
+)
 def test_http_existing_guards_are_preserved_past_deadline(deadline_live, case, expected):
     client, live, settings, clock, claimed, payload, sender = deadline_live
     clock.current = claimed + timedelta(seconds=181)

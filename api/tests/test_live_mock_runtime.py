@@ -27,9 +27,7 @@ def runtime_live(settings, monkeypatch):
     sender = MagicMock(side_effect=AssertionError("Mock mode must not call Make"))
     monkeypatch.setattr("app.modules.live.dispatcher.send_make_question", sender)
     live = LiveService()
-    session = live.create_session(
-        LiveSessionCreate(title="Runtime test", scheduled_skus=["BT-XIKE-01"])
-    )
+    session = live.create_session(LiveSessionCreate(title="Runtime test", scheduled_skus=["BT-XIKE-01"]))
     live.start_session(session.live_id)
     Clock.current += timedelta(seconds=4)
     for index in range(2):
@@ -52,9 +50,7 @@ def test_ticks_process_queue_in_order_and_restore_script_without_viewers(runtime
         assert current.playback.kind == "reply"
         assert current.playback.question_id == f"runtime-question-{index}"
         assert sum(q.status == "answering" for q in current.questions) == 1
-        clock.current = current.playback.started_at + timedelta(
-            seconds=current.playback.duration_seconds
-        )
+        clock.current = current.playback.started_at + timedelta(seconds=current.playback.duration_seconds)
         tick_playback(live, settings)
         current = live.get_current()
         assert current.playback.kind == "script"

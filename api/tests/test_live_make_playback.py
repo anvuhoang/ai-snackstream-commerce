@@ -21,16 +21,18 @@ from app.modules.live.service import LiveService
 
 
 def result(live_id, index=0, **changes):
-    return LiveMakeResultIn.model_validate({
-        "liveId": live_id,
-        "questionId": f"make-question-{index}",
-        "sku": "BT-XIKE-01",
-        "status": "ready",
-        "replyText": "Synthetic provider reply; not generated speech.",
-        "videoUrl": "https://provider.example.invalid/reply.mp4",
-        "durationSeconds": 5.25,
-        **changes,
-    })
+    return LiveMakeResultIn.model_validate(
+        {
+            "liveId": live_id,
+            "questionId": f"make-question-{index}",
+            "sku": "BT-XIKE-01",
+            "status": "ready",
+            "replyText": "Synthetic provider reply; not generated speech.",
+            "videoUrl": "https://provider.example.invalid/reply.mp4",
+            "durationSeconds": 5.25,
+            **changes,
+        }
+    )
 
 
 @pytest.fixture
@@ -48,22 +50,31 @@ def make_live(settings, monkeypatch):
     sender = MagicMock(return_value=202)
     monkeypatch.setattr("app.modules.live.dispatcher.send_make_question", sender)
     live = LiveService()
-    session = live.create_session(LiveSessionCreate(
-        title="Make fake-provider playback", scheduled_skus=["BT-XIKE-01", "KG-LC-250"],
-    ))
+    session = live.create_session(
+        LiveSessionCreate(
+            title="Make fake-provider playback",
+            scheduled_skus=["BT-XIKE-01", "KG-LC-250"],
+        )
+    )
     live.start_session(session.live_id)
     Clock.current += timedelta(seconds=4)
     for index in range(3):
-        live.submit_question(session.live_id, LiveQuestionIn(
-            question_id=f"make-question-{index}", session_id="make-viewer-001", text=f"Question {index}",
-        ))
+        live.submit_question(
+            session.live_id,
+            LiveQuestionIn(
+                question_id=f"make-question-{index}",
+                session_id="make-viewer-001",
+                text=f"Question {index}",
+            ),
+        )
     return live, settings, Clock, sender, session.live_id
 
 
 def start_reply(live, settings, live_id, index=0):
     tick_playback(live, settings)
     assert live.receive_make_result(
-        result(live_id, index), settings.live_make_result_timeout_seconds,
+        result(live_id, index),
+        settings.live_make_result_timeout_seconds,
     ).applied
     tick_playback(live, settings)
     assert live.get_current().playback.kind == "reply"
@@ -83,9 +94,13 @@ def test_make_queue_finishes_without_viewers_and_duplicates_never_replay(make_li
         assert current.questions[index].sku == "BT-XIKE-01"
         assert sum(q.status == "answering" for q in current.questions) == 1
         assert sender.call_count == index + 1
-        assert live.receive_make_result(
-            result(live_id, index), settings.live_make_result_timeout_seconds,
-        ).reason == "duplicate"
+        assert (
+            live.receive_make_result(
+                result(live_id, index),
+                settings.live_make_result_timeout_seconds,
+            ).reason
+            == "duplicate"
+        )
         tick_playback(live, settings)
         assert live.get_current().playback.playback_id == reply.playback_id
         clock.current = reply.started_at + timedelta(seconds=5.25, microseconds=-1)
@@ -97,9 +112,13 @@ def test_make_queue_finishes_without_viewers_and_duplicates_never_replay(make_li
         assert current.questions[index].status == "answered"
         assert current.playback.kind == "script"
         assert (clock.current - current.playback.started_at).total_seconds() == 4
-        assert live.receive_make_result(
-            result(live_id, index), settings.live_make_result_timeout_seconds,
-        ).reason == "duplicate"
+        assert (
+            live.receive_make_result(
+                result(live_id, index),
+                settings.live_make_result_timeout_seconds,
+            ).reason
+            == "duplicate"
+        )
     tick_playback(live, settings)
     assert live.get_current().playback.kind == "script"
     assert sender.call_count == 3
@@ -110,7 +129,8 @@ def test_ready_while_paused_and_reply_pause_preserve_exact_position(make_live):
     tick_playback(live, settings)
     live.pause_session(live_id)
     assert live.receive_make_result(
-        result(live_id), settings.live_make_result_timeout_seconds,
+        result(live_id),
+        settings.live_make_result_timeout_seconds,
     ).applied
     clock.current += timedelta(seconds=100)
     tick_playback(live, settings)
@@ -148,9 +168,13 @@ def test_skip_make_reply_restores_script_and_next_question(paused, make_live):
     assert restored.playback.kind == "script"
     position = (restored.playback.paused_at or clock.current) - restored.playback.started_at
     assert position == timedelta(seconds=4)
-    assert live.receive_make_result(
-        result(live_id), settings.live_make_result_timeout_seconds,
-    ).reason == "duplicate"
+    assert (
+        live.receive_make_result(
+            result(live_id),
+            settings.live_make_result_timeout_seconds,
+        ).reason
+        == "duplicate"
+    )
     if paused:
         clock.current += timedelta(seconds=50)
         tick_playback(live, settings)
@@ -158,32 +182,46 @@ def test_skip_make_reply_restores_script_and_next_question(paused, make_live):
         live.resume_session(live_id)
     tick_playback(live, settings)
     assert live.get_current().questions[1].status == "processing"
-    assert live.receive_make_result(
-        result(live_id), settings.live_make_result_timeout_seconds,
-    ).reason == "duplicate"
+    assert (
+        live.receive_make_result(
+            result(live_id),
+            settings.live_make_result_timeout_seconds,
+        ).reason
+        == "duplicate"
+    )
     assert live.get_current().questions[1].status == "processing"
     assert sender.call_count == 2
 
 
-@pytest.mark.parametrize("status,code", [
-    ("skipped", "unsupported_intent"), ("failed", "product_not_found"),
-    ("failed", "generation_failed"), ("failed", "generation_timeout"),
-])
+@pytest.mark.parametrize(
+    "status,code",
+    [
+        ("skipped", "unsupported_intent"),
+        ("failed", "product_not_found"),
+        ("failed", "generation_failed"),
+        ("failed", "generation_timeout"),
+    ],
+)
 def test_terminal_callbacks_release_fifo_without_interrupting_script(make_live, status, code):
     live, settings, clock, sender, live_id = make_live
     tick_playback(live, settings)
     script = live.get_current().playback
     terminal = result(live_id, status=status, errorCode=code, videoUrl=None, durationSeconds=None)
     assert live.receive_make_result(
-        terminal, settings.live_make_result_timeout_seconds,
+        terminal,
+        settings.live_make_result_timeout_seconds,
     ).applied
     tick_playback(live, settings)
     assert live.get_current().playback == script
     assert live.get_current().questions[0].status == status
     assert live.get_current().questions[1].status == "processing"
-    assert live.receive_make_result(
-        terminal, settings.live_make_result_timeout_seconds,
-    ).reason == "duplicate"
+    assert (
+        live.receive_make_result(
+            terminal,
+            settings.live_make_result_timeout_seconds,
+        ).reason
+        == "duplicate"
+    )
     assert live.get_current().questions[1].status == "processing"
     assert sender.call_count == 2
 
@@ -207,7 +245,8 @@ def test_callback_deadline_releases_slot_and_late_result_cannot_reclaim(make_liv
     assert current.questions[0].result_received_at is None
     with pytest.raises(AppError, match="not being processed"):
         live.receive_make_result(
-            result(live_id), settings.live_make_result_timeout_seconds,
+            result(live_id),
+            settings.live_make_result_timeout_seconds,
         )
     if state == "paused":
         assert current.questions[1].status == "queued"
@@ -238,7 +277,8 @@ def test_duration_conflict_and_end_or_stale_results_do_not_restart_playback(make
     before = live.get_current()
     with pytest.raises(AppError) as conflict:
         live.receive_make_result(
-            result(live_id, durationSeconds=6), settings.live_make_result_timeout_seconds,
+            result(live_id, durationSeconds=6),
+            settings.live_make_result_timeout_seconds,
         )
     assert conflict.value.code == "live_make_result_conflict"
     assert live.get_current() == before
@@ -246,13 +286,21 @@ def test_duration_conflict_and_end_or_stale_results_do_not_restart_playback(make
     clock.current += timedelta(seconds=100)
     tick_playback(live, settings)
     assert live.get_current().playback is None
-    assert live.receive_make_result(
-        result(live_id), settings.live_make_result_timeout_seconds,
-    ).reason == "session_ended"
+    assert (
+        live.receive_make_result(
+            result(live_id),
+            settings.live_make_result_timeout_seconds,
+        ).reason
+        == "session_ended"
+    )
     new = live.create_session(LiveSessionCreate(title="Next", scheduled_skus=["BT-XIKE-01"]))
-    assert live.receive_make_result(
-        result(live_id), settings.live_make_result_timeout_seconds,
-    ).reason == "stale_session"
+    assert (
+        live.receive_make_result(
+            result(live_id),
+            settings.live_make_result_timeout_seconds,
+        ).reason
+        == "stale_session"
+    )
     assert live.get_current().live_id == new.live_id
     sender.assert_called_once()
 
@@ -288,10 +336,16 @@ def test_blocked_runtime_webhook_does_not_block_sse_event_loop(make_live):
             async def receive():
                 return {"type": "http.request", "body": b""}
 
-            request = Request({
-                "type": "http", "method": "GET", "path": "/api/live/events", "headers": [],
-                "app": SimpleNamespace(state=SimpleNamespace(live=live)),
-            }, receive)
+            request = Request(
+                {
+                    "type": "http",
+                    "method": "GET",
+                    "path": "/api/live/events",
+                    "headers": [],
+                    "app": SimpleNamespace(state=SimpleNamespace(live=live)),
+                },
+                receive,
+            )
             response = await live_events(request)
             payload = await asyncio.wait_for(anext(response.body_iterator), timeout=0.5)
             assert "event: state" in payload and live_id in payload
@@ -334,7 +388,8 @@ def test_playback_and_deadlines_advance_while_webhook_ack_is_blocked(make_live, 
             await wait_for(started.is_set)
             if outcome == "ready":
                 live.receive_make_result(
-                    result(live_id), settings.live_make_result_timeout_seconds,
+                    result(live_id),
+                    settings.live_make_result_timeout_seconds,
                 )
                 await wait_for(lambda: live.get_current().playback.kind == "reply")
                 clock.current = live.get_current().playback.started_at + timedelta(seconds=5.25)
@@ -365,17 +420,36 @@ def test_make_lifespan_runs_authenticated_callbacks_to_completion_without_viewer
         session = live.create_session(LiveSessionCreate(title="Lifecycle", scheduled_skus=["BT-XIKE-01"]))
         live.start_session(session.live_id)
         for index in range(3):
-            client.post(f"/api/live/{session.live_id}/questions", json={
-                "questionId": f"make-question-{index}",
-                "sessionId": "make-viewer-001", "text": "Fake provider",
-            }).raise_for_status()
+            client.post(
+                f"/api/live/{session.live_id}/questions",
+                json={
+                    "questionId": f"make-question-{index}",
+                    "sessionId": "make-viewer-001",
+                    "text": "Fake provider",
+                },
+            ).raise_for_status()
         for index, status in enumerate(["failed", "skipped", "ready"]):
-            body = result(session.live_id, index, **({
-                "status": status, "videoUrl": None, "durationSeconds": None, "errorCode": "generation_failed",
-            } if status != "ready" else {"durationSeconds": 0.15})).model_dump(mode="json", by_alias=True)
-            client.post("/api/live/make-result", json=body, headers={
-                "X-Live-Make-Token": settings.live_make_callback_token.get_secret_value(),
-            }).raise_for_status()
+            body = result(
+                session.live_id,
+                index,
+                **(
+                    {
+                        "status": status,
+                        "videoUrl": None,
+                        "durationSeconds": None,
+                        "errorCode": "generation_failed",
+                    }
+                    if status != "ready"
+                    else {"durationSeconds": 0.15}
+                ),
+            ).model_dump(mode="json", by_alias=True)
+            client.post(
+                "/api/live/make-result",
+                json=body,
+                headers={
+                    "X-Live-Make-Token": settings.live_make_callback_token.get_secret_value(),
+                },
+            ).raise_for_status()
         deadline = time.monotonic() + 8  # Shared 5s preparation + 0.15s media + tick margin.
         observed_reply = False
         while time.monotonic() < deadline:

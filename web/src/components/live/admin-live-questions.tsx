@@ -137,7 +137,7 @@ export function AdminLiveQuestions({ liveId }: { liveId: string }) {
                     <p className="text-sm text-muted">
                       Video mô phỏng: dùng clip có sẵn để kiểm tra luồng phát, chưa tạo câu trả lời AI cho câu hỏi này.
                     </p>
-                  )}                  
+                  )}
                   {["queued", "processing", "ready", "answering"].includes(question.status) &&
                     user.role === "admin" && (
                     <Button

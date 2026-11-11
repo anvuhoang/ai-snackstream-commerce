@@ -49,10 +49,12 @@ def test_mock_result_has_explicit_provenance_and_keeps_script_and_sku(mock_live)
 def test_concurrent_completion_is_applied_once(mock_live):
     service, live_id = mock_live
     with ThreadPoolExecutor(max_workers=8) as pool:
-        applied = list(pool.map(
-            lambda _: service.complete_mock_question(live_id, "mock-question-0", 10.077007),
-            range(8),
-        ))
+        applied = list(
+            pool.map(
+                lambda _: service.complete_mock_question(live_id, "mock-question-0", 10.077007),
+                range(8),
+            )
+        )
     assert sum(applied) == 1
     before = service.get_current()
     assert not service.complete_mock_question(live_id, "mock-question-0", 10.077007)
@@ -99,12 +101,14 @@ def test_invalid_mock_duration_does_not_partially_update_question(mock_live, dur
 
 def test_make_callback_still_rejects_relative_video_url():
     with pytest.raises(ValidationError):
-        LiveMakeResultIn.model_validate({
-            "liveId": "live-test-001",
-            "questionId": "question-test-001",
-            "sku": "BT-XIKE-01",
-            "status": "ready",
-            "replyText": "Test",
-            "videoUrl": "/live-demo/avatar.mp4",
-            "durationSeconds": 10.077007,
-        })
+        LiveMakeResultIn.model_validate(
+            {
+                "liveId": "live-test-001",
+                "questionId": "question-test-001",
+                "sku": "BT-XIKE-01",
+                "status": "ready",
+                "replyText": "Test",
+                "videoUrl": "/live-demo/avatar.mp4",
+                "durationSeconds": 10.077007,
+            }
+        )

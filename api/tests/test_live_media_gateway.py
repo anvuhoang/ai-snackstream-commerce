@@ -69,12 +69,15 @@ def test_gateway_make_mode_only(gateway, make, mock):
 def test_gateway_upload_limits_and_invalid_body(gateway, monkeypatch):
     client, opener, _ = gateway
     monkeypatch.setattr(media, "MAX_MEDIA_BYTES", len(MP4))
-    for headers in [{**HEADERS, "Content-Length": str(len(MP4) + 1)},
-                    {**HEADERS, "Content-Length": "1"}]:
+    for headers in [{**HEADERS, "Content-Length": str(len(MP4) + 1)}, {**HEADERS, "Content-Length": "1"}]:
         assert client.post(PATH, content=MP4 + b"x", headers=headers).status_code == 413
     assert client.post(PATH, content=b"not mp4", headers=HEADERS).status_code == 422
-    assert client.post(PATH, json={"url": "https://example.invalid/video.mp4"},
-                       headers={"X-Live-Make-Token": TOKEN}).status_code == 415
+    assert (
+        client.post(
+            PATH, json={"url": "https://example.invalid/video.mp4"}, headers={"X-Live-Make-Token": TOKEN}
+        ).status_code
+        == 415
+    )
     opener.assert_not_called()
 
 
