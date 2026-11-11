@@ -109,6 +109,17 @@ class LiveMakeResultIn(LiveModel):
     status: Literal["ready", "failed", "skipped"]
     reply_text: str | None = Field(default=None, max_length=1500)
     video_url: HttpUrl | None = None
+    duration_seconds: float | None = Field(
+        default=None,
+        strict=True,
+        gt=0,
+        le=300,
+        allow_inf_nan=False,
+        description=(
+            "Measured duration of the actual rendered video in seconds. Required for ready; "
+            "must be absent or null for failed/skipped. Never infer from text or demo media."
+        ),
+    )
     provider_talk_id: str | None = Field(default=None, min_length=1, max_length=160)
     error_code: Literal[
         "unsupported_intent",
@@ -136,13 +147,23 @@ class LiveMakeResultIn(LiveModel):
     @model_validator(mode="after")
     def check_result_fields(self) -> Self:
         if self.status == "ready":
-            if self.video_url is None or not self.reply_text or self.error_code is not None:
+            if (
+                self.video_url is None
+                or self.duration_seconds is None
+                or not self.reply_text
+                or self.error_code is not None
+            ):
                 raise ValueError(
-                    "Ready results require video URL, reply text, and no error code."
+                    "Ready results require HTTPS video URL, measured durationSeconds, "
+                    "reply text, and no error code."
                 )
-        elif self.error_code is None or self.video_url is not None:
+        elif (
+            self.error_code is None
+            or self.video_url is not None
+            or self.duration_seconds is not None
+        ):
             raise ValueError(
-                "Failed or skipped results require an error code and no video URL."
+                "Failed or skipped results require an error code and no video URL or duration."
             )
         return self
 

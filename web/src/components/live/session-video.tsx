@@ -136,7 +136,7 @@ export function SessionVideo({
         {isReply
           ? playback.mediaSource === "prerecorded"
             ? "Video trả lời mô phỏng — dùng clip có sẵn."
-            : "Video trả lời của avatar."
+            : "Video trả lời qua Make."
           : "Video nội dung live."}
       </p>
       <video ref={videoRef} src={playback.videoUrl} loop={!isReply} playsInline preload="auto"

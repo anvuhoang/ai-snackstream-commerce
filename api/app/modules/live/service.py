@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from threading import Lock
 from uuid import uuid4
 
@@ -271,7 +271,7 @@ class LiveService:
             if (
                 question is None
                 or question.status != "ready"
-                or question.media_source != "prerecorded"
+                or question.media_source not in ("prerecorded", "make")
                 or question.video_url is None
                 or question.video_duration_seconds is None
             ):
@@ -283,7 +283,7 @@ class LiveService:
                 video_url=question.video_url,
                 started_at=now,
                 kind="reply",
-                media_source="prerecorded",
+                media_source=question.media_source,
                 question_id=question.question_id,
                 duration_seconds=question.video_duration_seconds,
             )
@@ -383,7 +383,7 @@ class LiveService:
             session.questions[session.questions.index(question)] = prepared
             return True
 
-    def receive_make_result(self, data: LiveMakeResultIn) -> LiveMakeResultAck:
+    def receive_make_result(self, data: LiveMakeResultIn, timeout_seconds: float) -> LiveMakeResultAck:
         with self._lock:
             session = self._current
 
@@ -433,8 +433,16 @@ class LiveService:
                     "Result SKU differs from the question SKU.",
                 )
 
+            now = datetime.now(UTC)
+            if self._expire_make_question_locked(question, now, timeout_seconds):
+                raise AppError(
+                    409,
+                    "live_question_not_active",
+                    "Question is not being processed.",
+                )
+
             self._make_results[data.question_id] = data.model_copy(deep=True)
-            question.result_received_at = datetime.now(UTC)
+            question.result_received_at = now
             question.provider_talk_id = data.provider_talk_id
 
             if question.status == "skipped":
@@ -445,12 +453,52 @@ class LiveService:
             question.reply_text = data.reply_text
             question.video_url = str(data.video_url) if data.video_url is not None else None
             question.media_source = "make" if data.status == "ready" else None
+            question.video_duration_seconds = data.duration_seconds
             question.error_code = data.error_code
 
             if data.status != "ready":
                 self._active_question_id = None
 
             return LiveMakeResultAck(applied=True, reason="accepted")
+
+    def expire_make_question(self, live_id: str, timeout_seconds: float) -> bool:
+        """Release a missing/invalid callback, including an abandoned skipped request.
+
+        Rendering is external work: its deadline continues during a session pause.
+        Ready/playing results must never expire, and late results cannot reclaim a slot.
+        """
+        with self._lock:
+            session = self._current
+            if session is None or session.live_id != live_id or session.status == "ended":
+                return False
+            question = next(
+                (item for item in session.questions if item.question_id == self._active_question_id),
+                None,
+            )
+            return self._expire_make_question_locked(question, datetime.now(UTC), timeout_seconds)
+
+    def _expire_make_question_locked(
+        self, question: LiveQuestionOut | None, now: datetime, timeout_seconds: float,
+    ) -> bool:
+        """Caller holds _lock; both callback admission and runtime use this rule.
+
+        Do not acquire the non-reentrant lock again. A saved result is immutable,
+        so duplicate handling must precede this check in receive_make_result.
+        """
+        if (
+            question is None
+            or question.question_id != self._active_question_id
+            or question.status not in ("processing", "skipped")
+            or question.processing_started_at is None
+            or question.question_id in self._make_results
+            or now < question.processing_started_at + timedelta(seconds=timeout_seconds)
+        ):
+            return False
+        if question.status == "processing":
+            question.status = "failed"
+        question.error_code = "generation_timeout"
+        self._active_question_id = None
+        return True
 
     def record_make_dispatch_error(
         self,

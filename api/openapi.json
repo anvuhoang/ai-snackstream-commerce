@@ -732,6 +732,20 @@
             ],
             "title": "Videourl"
           },
+          "durationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationseconds",
+            "description": "Measured duration of the actual rendered video in seconds. Required for ready; must be absent or null for failed/skipped. Never infer from text or demo media."
+          },
           "providerTalkId": {
             "anyOf": [
               {

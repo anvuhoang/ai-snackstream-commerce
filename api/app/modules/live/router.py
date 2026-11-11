@@ -3,6 +3,7 @@ import asyncio
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from fastapi.responses import StreamingResponse
 
+from app.core.errors import AppError
 from app.modules.auth.deps import require_csrf, require_role
 
 from .deps import require_make_callback
@@ -184,8 +185,12 @@ def receive_make_result(
     request: Request,
     background_tasks: BackgroundTasks,
 ) -> LiveMakeResultAck:
+    if not request.app.state.settings.live_make_enabled or request.app.state.settings.live_mock_enabled:
+        raise AppError(503, "live_make_disabled", "Make integration is disabled.")
     live: LiveService = request.app.state.live
-    ack = live.receive_make_result(body)
+    ack = live.receive_make_result(
+        body, timeout_seconds=request.app.state.settings.live_make_result_timeout_seconds,
+    )
 
     if ack.reason == "question_skipped" or (
         ack.applied and body.status in ("failed", "skipped")

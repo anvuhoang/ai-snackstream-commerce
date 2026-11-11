@@ -14,7 +14,7 @@ def dispatch_next_question(
     live: LiveService,
     settings: Settings,
 ) -> None:
-    if not (settings.live_make_enabled or settings.live_mock_enabled):
+    if settings.live_make_enabled == settings.live_mock_enabled:
         return
 
     try:

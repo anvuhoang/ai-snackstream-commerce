@@ -2,6 +2,11 @@
 
 Branch: `feat/live-playback-log`.
 
+The user subsequently accepted the prerecorded diagnostics package, committed as
+`2f14052`. The next code package supports Make reply playback with a measured-duration
+contract and fake-provider verification; see [LIVE_MAKE_PLAYBACK.md](LIVE_MAKE_PLAYBACK.md).
+The prerecorded evidence below remains the earlier checkpoint.
+
 ## Current result
 
 The web can receive questions, prepare a prerecorded reply, interrupt the shared script,
@@ -74,7 +79,9 @@ Restart the API after changing environment configuration, then create a new test
 
 ## Verification
 
-Executed on 2026-11-11 against this checkout:
+Executed on 2026-11-11 for the prerecorded checkpoint committed as `2f14052`, before
+the Make runtime change. New Make-package checks are recorded in
+[LIVE_MAKE_PLAYBACK.md](LIVE_MAKE_PLAYBACK.md):
 
 | Check | Result |
 | --- | --- |
@@ -204,9 +211,10 @@ connection. Do not put them in source files, this document, or browser-side conf
 ## Remaining work and limits
 
 - Restore sufficient D-ID API credit and verify a newly generated Vietnamese reply end to end.
-- Real Make results do not yet provide verified reply duration metadata. The current automatic
-  playback runtime and `start_ready_reply` are intentionally limited to prerecorded mock replies.
-  Switching environment flags alone does not complete real generated-reply playback.
+- The code now accepts Make replies with validated measured `durationSeconds` and runs
+  them through the shared playback runtime. Real duration extraction and Make callback
+  mapping remain unverified; switching environment flags alone does not supply that
+  metadata or complete real generated-reply acceptance. See the new contract above.
 - Add and test callbacks for Make branches that currently stop without a result, including
   unsupported intent, missing product rows, render failure and polling timeout. Required
   terminal results to `/api/live/make-result` are:
@@ -224,8 +232,9 @@ connection. Do not put them in source files, this document, or browser-side conf
   rejected. Verify automatic error-route execution, queue release and late/stale
   callbacks with mocked providers before spending credit. Make scenarios were not
   edited during this checkpoint. Ready results also need `replyText`, an HTTPS
-  `videoUrl` and optional `providerTalkId`; verified duration metadata and the real
-  playback runtime still require a reviewed live-module schema/runtime change.
+  `videoUrl`, measured `durationSeconds` and optional `providerTalkId`. The code path
+  now supports these results; external metadata extraction/mapping still needs
+  verification under the new contract.
 - Finish shared catalog/script integration and any remaining admin/comment controls against
   the agreed project requirements.
 - Implement the agreed persistent event/answer logs and measure viewer-side send-to-audible-answer

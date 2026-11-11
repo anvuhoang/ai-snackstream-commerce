@@ -19,6 +19,7 @@ PAYLOAD = {
     "status": "ready",
     "replyText": "Thông tin chưa được xác minh.",
     "videoUrl": "https://example.invalid/avatar.mp4",
+    "durationSeconds": 12.5,
 }
 
 
@@ -46,6 +47,7 @@ def test_only_valid_callback_is_forwarded(gateway_client):
     assert forwarded.get_method() == "POST"
     assert forwarded.get_header("X-live-make-token") == TOKEN
     assert json.loads(forwarded.data)["replyText"] == PAYLOAD["replyText"]
+    assert json.loads(forwarded.data)["durationSeconds"] == 12.5
     assert opener.call_args.kwargs["timeout"] == 10
 
 

@@ -25,6 +25,7 @@ def settings(tmp_path) -> Settings:
         BOOTSTRAP_ADMIN_EMAIL=ADMIN_EMAIL,
         BOOTSTRAP_ADMIN_PASSWORD=ADMIN_PASSWORD,
         LIVE_MOCK_ENABLED=False,
+        LIVE_MAKE_ENABLED=False,
         LIVE_MAKE_WEBHOOK_URL="",
         LIVE_MAKE_CALLBACK_TOKEN="",
     )

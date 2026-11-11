@@ -82,6 +82,12 @@ async function page(port) {
   const pending = new Map();
   ws.onmessage = ({ data }) => {
     const response = JSON.parse(data);
+    if (response.method === "Fetch.requestPaused") {
+      // Substitute media locally before any request reaches the synthetic provider.
+      void command("Fetch.continueRequest", {
+        requestId: response.params.requestId, url: `${baseUrl}/live-demo/avatar.mp4`,
+      }).catch((error) => { console.error(error); process.exitCode = 1; });
+    }
     const request = pending.get(response.id);
     if (request) {
       clearTimeout(request.timer);
@@ -104,6 +110,7 @@ async function page(port) {
     return result.result.value;
   }
   await command("Page.enable");
+  await command("Fetch.enable", { patterns: [{ urlPattern: "https://provider.example.invalid/*" }] });
   await command("Page.addScriptToEvaluateOnNewDocument", { source: injection });
   await command("Page.navigate", { url: `${baseUrl}/live` });
   await until(() => evaluate("window.streams?.length > 0"), "viewer subscribes to SSE");
@@ -124,14 +131,17 @@ async function page(port) {
 const duration = 10.077007;
 function state(kind = "script", options = {}) {
   const now = Date.now();
-  const { id = `${kind}-${crypto.randomUUID()}`, elapsed = 0, status = "playing", questions = [] } = options;
+  const {
+    id = `${kind}-${crypto.randomUUID()}`, elapsed = 0, status = "playing", questions = [],
+    mediaSource = "prerecorded", videoUrl = "/live-demo/avatar.mp4",
+  } = options;
   return {
     serverTime: new Date(now).toISOString(),
     session: {
       liveId: "browser-live-001", title: "Browser playback regression", isDemo: true,
       scheduledSkus: ["BT-XIKE-01", "KG-LC-250"], pinnedSku: "KG-LC-250", status, questions,
       playback: status === "ended" ? null : {
-        playbackId: id, videoUrl: "/live-demo/avatar.mp4", kind, mediaSource: "prerecorded",
+        playbackId: id, videoUrl, kind, mediaSource,
         questionId: kind === "reply" ? questions.at(-1)?.questionId : null,
         durationSeconds: kind === "reply" ? duration : null,
         startedAt: new Date(now - elapsed * 1000).toISOString(),
@@ -340,6 +350,43 @@ try {
     const terminal = (await a.log()).questionSummaries.find(item => item.questionId === "terminal-first-snapshot");
     assert.equal(terminal.serverObservations[0].details.observation, "snapshot");
     assert.equal(terminal.sendToFirstReplyPlaybackMs, null);
+  });
+  await check("Make reply label, HTTPS source, duplicate snapshot, late join and diagnostics", async () => {
+    const q = { ...question("browser-make-reply"), mediaSource: "make" };
+    const make = state("reply", {
+      elapsed: 0.3, questions: [q], mediaSource: "make",
+      videoUrl: "https://provider.example.invalid/reply.mp4",
+    });
+    await a.emit(make);
+    await a.ready();
+    await a.playing();
+    assert.equal(await a.evaluate("document.querySelector('video').src"), make.session.playback.videoUrl);
+    assert.ok(await a.evaluate("document.body.textContent.includes('Video trả lời qua Make.')"));
+    assert.equal(await a.evaluate("document.querySelector('video').loop"), false);
+    await a.evaluate("void (window.makeVideo = document.querySelector('video'))");
+    await a.emit({ ...make, serverTime: new Date().toISOString() });
+    assert.equal(await a.evaluate("document.querySelector('video') === makeVideo"), true);
+    const b = await page(port);
+    await b.emit({ ...make, serverTime: new Date().toISOString() });
+    await b.ready();
+    await b.click("Bật hình và tiếng");
+    await b.playing();
+    const [logA, logB] = await Promise.all([a.log(), b.log()]);
+    for (const log of [logA, logB]) {
+      const summary = log.questionSummaries.find(item => item.questionId === q.questionId);
+      assert.equal(summary.firstReplyPlayback.mediaSource, "make");
+      assert.equal(summary.firstReplyPlayback.playbackId, make.session.playback.playbackId);
+      assert.equal(summary.playbacks.length, 1);
+      assert.equal(summary.playbacks[0].mediaSource, "make");
+      assert.equal(summary.sendToFirstReplyPlaybackMs, null);
+    }
+    await b.emit(state("script", { status: "ended", questions: [{ ...q, status: "skipped" }] }));
+    await until(() => b.evaluate("document.querySelector('video') === null"), "Make viewer end");
+    await a.evaluate("makeVideo.currentTime = makeVideo.duration - 0.5");
+    await until(() => a.evaluate("!makeVideo.seeking && !makeVideo.paused"), "Make reply tail");
+    await a.emit(state("script", { questions: [{ ...q, status: "answered" }] }));
+    await until(() => a.evaluate("document.querySelector('video') !== makeVideo"), "Make reply returns to script");
+    assert.equal(await a.evaluate("makeVideo.ended && makeVideo.paused && document.querySelector('video').loop"), true);
   });
   await check("JSON accounting caps events, counts eviction and keeps IDs unique", async () => {
     const ended = state("script", { status: "ended" });

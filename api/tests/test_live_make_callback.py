@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from unittest.mock import MagicMock
 
 import pytest
 from pydantic import SecretStr
@@ -11,7 +12,9 @@ HEADERS = {"X-Live-Make-Token": TEST_TOKEN}
 
 
 @pytest.fixture
-def callback_live(client):
+def callback_live(client, monkeypatch):
+    client.app.state.settings.live_make_enabled = True
+    monkeypatch.setattr("app.modules.live.dispatcher.send_make_question", MagicMock(return_value=202))
     client.app.state.settings.live_make_callback_token = SecretStr(TEST_TOKEN)
     service = client.app.state.live
     live = service.create_session(
@@ -35,6 +38,7 @@ def callback_live(client):
         "status": "ready",
         "replyText": "Thông tin này chưa được xác minh.",
         "videoUrl": "https://example.invalid/video.mp4",
+        "durationSeconds": 12.5,
         "providerTalkId": "talk-test-001",
     }
     return client, service, payload
@@ -72,6 +76,8 @@ def test_ready_result_keeps_question_context_and_playback(callback_live):
     assert question.reply_text == payload["replyText"]
     assert str(question.video_url) == payload["videoUrl"]
     assert question.provider_talk_id == "talk-test-001"
+    assert question.video_duration_seconds == 12.5
+    assert question.media_source == "make"
     assert question.result_received_at is not None
     assert current.playback == before
     assert service.claim_next_question(payload["liveId"]) is None
@@ -98,6 +104,12 @@ def test_duplicate_is_stable_and_conflicting_result_is_rejected(callback_live):
         ({"questionId": "callback-question-1"}, 409),
         ({"questionId": "unknown-question-001"}, 404),
         ({"videoUrl": "http://example.invalid/video.mp4"}, 422),
+        ({"durationSeconds": None}, 422),
+        ({"durationSeconds": 0}, 422),
+        ({"durationSeconds": -1}, 422),
+        ({"durationSeconds": 301}, 422),
+        ({"durationSeconds": "12.5"}, 422),
+        ({"durationSeconds": True}, 422),
     ],
 )
 def test_invalid_result_does_not_change_active_question(callback_live, changes, expected_status):
@@ -140,7 +152,7 @@ def test_skipped_result_releases_slot_but_duplicate_cannot_release_next_slot(cal
     assert not response.json()["applied"]
     assert service.get_current().questions[0].video_url is None
 
-    assert service.claim_next_question(payload["liveId"]).question_id == "callback-question-1"
+    assert service.get_current().questions[1].status == "processing"
     assert client.post(CALLBACK_PATH, json=payload, headers=HEADERS).json()["reason"] == "duplicate"
     assert service.claim_next_question(payload["liveId"]) is None
 
@@ -157,12 +169,14 @@ def test_skipping_ready_question_releases_slot(callback_live):
 @pytest.mark.parametrize("status", ["failed", "skipped"])
 def test_non_video_result_releases_slot(callback_live, status):
     client, service, payload = callback_live
-    payload.update(status=status, videoUrl=None, replyText=None, errorCode="generation_failed")
+    payload.update(
+        status=status, videoUrl=None, durationSeconds=None, replyText=None, errorCode="generation_failed",
+    )
     response = client.post(CALLBACK_PATH, json=payload, headers=HEADERS)
     assert response.status_code == 200
     assert response.json()["applied"]
     assert service.get_current().questions[0].status == status
-    assert service.claim_next_question(payload["liveId"]).question_id == "callback-question-1"
+    assert service.get_current().questions[1].status == "processing"
 
 
 def test_paused_session_stores_ready_result_without_resuming_video(callback_live):
@@ -176,9 +190,32 @@ def test_paused_session_stores_ready_result_without_resuming_video(callback_live
 
 
 def test_concurrent_results_are_applied_once(callback_live):
-    _, service, payload = callback_live
+    client, service, payload = callback_live
     result = LiveMakeResultIn.model_validate(payload)
     with ThreadPoolExecutor(max_workers=8) as pool:
-        responses = list(pool.map(lambda _: service.receive_make_result(result), range(8)))
+        responses = list(pool.map(lambda _: service.receive_make_result(
+            result, client.app.state.settings.live_make_result_timeout_seconds,
+        ), range(8)))
     assert sum(response.applied for response in responses) == 1
     assert sum(response.reason == "duplicate" for response in responses) == 7
+
+
+@pytest.mark.parametrize("mode", ["disabled", "mock", "conflict"])
+def test_callback_cannot_inject_make_results_in_other_modes(callback_live, mode):
+    client, service, payload = callback_live
+    settings = client.app.state.settings
+    settings.live_make_enabled = mode == "conflict"
+    settings.live_mock_enabled = mode != "disabled"
+    before = service.get_current()
+    response = client.post(CALLBACK_PATH, json=payload, headers=HEADERS)
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "live_make_disabled"
+    assert service.get_current() == before
+
+
+def test_missing_metadata_is_rejected_then_corrected_callback_is_accepted(callback_live):
+    client, service, payload = callback_live
+    legacy = {key: value for key, value in payload.items() if key != "durationSeconds"}
+    assert client.post(CALLBACK_PATH, json=legacy, headers=HEADERS).status_code == 422
+    assert service.get_current().questions[0].status == "processing"
+    assert client.post(CALLBACK_PATH, json=payload, headers=HEADERS).json()["applied"]

@@ -45,6 +45,7 @@ def callback_payload(live_id, status="ready"):
         "status": status,
         "replyText": "Thông tin chưa được xác minh." if status == "ready" else None,
         "videoUrl": "https://example.invalid/video.mp4" if status == "ready" else None,
+        "durationSeconds": 12.5 if status == "ready" else None,
         "errorCode": None if status == "ready" else "generation_failed",
     }
 
@@ -107,7 +108,7 @@ def test_non_video_callback_dispatches_next_question(dispatch_live, status):
     assert [q.status for q in service.get_current().questions] == [status, "processing"]
 
 
-def test_ready_result_waits_until_admin_skips_it(dispatch_live):
+def test_ready_result_holds_slot_until_playback_or_skip(dispatch_live):
     client, service, live_id, sender = dispatch_live
     submit(client, live_id).raise_for_status()
     submit(client, live_id, 1).raise_for_status()
@@ -168,7 +169,10 @@ def test_late_send_error_does_not_overwrite_callback_result(dispatch_live):
     client, service, live_id, sender = dispatch_live
 
     def callback_then_error(question, settings):
-        service.receive_make_result(LiveMakeResultIn.model_validate(callback_payload(live_id)))
+        service.receive_make_result(
+            LiveMakeResultIn.model_validate(callback_payload(live_id)),
+            settings.live_make_result_timeout_seconds,
+        )
         raise AppError(502, "live_make_delivery_unknown", "Delivery unconfirmed.")
 
     sender.side_effect = callback_then_error

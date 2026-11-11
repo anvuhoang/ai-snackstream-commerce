@@ -106,4 +106,5 @@ def test_make_callback_still_rejects_relative_video_url():
             "status": "ready",
             "replyText": "Test",
             "videoUrl": "/live-demo/avatar.mp4",
+            "durationSeconds": 10.077007,
         })

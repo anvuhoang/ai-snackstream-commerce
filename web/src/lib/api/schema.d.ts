@@ -345,6 +345,11 @@ export interface components {
             replyText?: string | null;
             /** Videourl */
             videoUrl?: string | null;
+            /**
+             * Durationseconds
+             * @description Measured duration of the actual rendered video in seconds. Required for ready; must be absent or null for failed/skipped. Never infer from text or demo media.
+             */
+            durationSeconds?: number | null;
             /** Providertalkid */
             providerTalkId?: string | null;
             /** Errorcode */

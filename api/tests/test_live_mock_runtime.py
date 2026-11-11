@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.main import create_app
 from app.modules.live import service as service_module
-from app.modules.live.runtime import run_mock_playback, tick_mock_playback
+from app.modules.live.runtime import run_playback, tick_playback
 from app.modules.live.schemas import LiveQuestionIn, LiveSessionCreate
 from app.modules.live.service import LiveService
 
@@ -47,7 +47,7 @@ def runtime_live(settings, monkeypatch):
 def test_ticks_process_queue_in_order_and_restore_script_without_viewers(runtime_live):
     live, settings, clock, sender = runtime_live
     for index in range(2):
-        tick_mock_playback(live, settings)
+        tick_playback(live, settings)
         current = live.get_current()
         assert current.playback.kind == "reply"
         assert current.playback.question_id == f"runtime-question-{index}"
@@ -55,7 +55,7 @@ def test_ticks_process_queue_in_order_and_restore_script_without_viewers(runtime
         clock.current = current.playback.started_at + timedelta(
             seconds=current.playback.duration_seconds
         )
-        tick_mock_playback(live, settings)
+        tick_playback(live, settings)
         current = live.get_current()
         assert current.playback.kind == "script"
         assert (clock.current - current.playback.started_at).total_seconds() == 4
@@ -68,14 +68,14 @@ def test_paused_queue_and_paused_reply_do_not_advance(runtime_live):
     live_id = live.get_current().live_id
     live.pause_session(live_id)
     before = live.get_current()
-    tick_mock_playback(live, settings)
+    tick_playback(live, settings)
     assert live.get_current() == before
     live.resume_session(live_id)
-    tick_mock_playback(live, settings)
+    tick_playback(live, settings)
     live.pause_session(live_id)
     before = live.get_current()
     clock.current += timedelta(seconds=100)
-    tick_mock_playback(live, settings)
+    tick_playback(live, settings)
     assert live.get_current() == before
     sender.assert_not_called()
 
@@ -88,17 +88,17 @@ def test_runtime_never_calls_make_even_with_changed_settings(runtime_live, mode)
     else:
         settings.live_make_enabled = True
     before = live.get_current()
-    tick_mock_playback(live, settings)
+    tick_playback(live, settings)
     assert live.get_current() == before
     sender.assert_not_called()
 
 
 def test_empty_or_ended_session_is_ignored(runtime_live):
     live, settings, clock, sender = runtime_live
-    tick_mock_playback(LiveService(), settings)
+    tick_playback(LiveService(), settings)
     live.end_session(live.get_current().live_id)
     before = live.get_current()
-    tick_mock_playback(live, settings)
+    tick_playback(live, settings)
     assert live.get_current() == before
     sender.assert_not_called()
 
@@ -107,7 +107,7 @@ def test_runtime_task_cancels_cleanly(settings):
     settings.live_mock_enabled = True
 
     async def check():
-        task = asyncio.create_task(run_mock_playback(LiveService(), settings))
+        task = asyncio.create_task(run_playback(LiveService(), settings))
         await asyncio.sleep(0)
         task.cancel()
         with pytest.raises(asyncio.CancelledError):

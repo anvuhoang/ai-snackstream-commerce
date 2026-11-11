@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     live_make_enabled: bool = Field(False, alias="LIVE_MAKE_ENABLED")
     live_make_webhook_url: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_WEBHOOK_URL")
     live_make_callback_token: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_CALLBACK_TOKEN")
+    live_make_result_timeout_seconds: float = Field(
+        180,
+        gt=0,
+        le=1800,
+        allow_inf_nan=False,
+        alias="LIVE_MAKE_RESULT_TIMEOUT_SECONDS",
+    )
     live_mock_enabled: bool = Field(False, alias="LIVE_MOCK_ENABLED")
     live_mock_video_duration_seconds: float = Field(
         10.077007,

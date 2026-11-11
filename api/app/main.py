@@ -1,6 +1,6 @@
 from __future__ import annotations
-import asyncio
 
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -20,8 +20,8 @@ from app.modules.auth import router as auth_router
 from app.modules.auth import service as auth_service
 from app.modules.health import router as health_router
 from app.modules.live import router as live_router
+from app.modules.live.runtime import run_playback
 from app.modules.live.service import LiveService
-from app.modules.live.runtime import run_mock_playback
 
 API_ROOT = Path(__file__).resolve().parent.parent
 
@@ -44,8 +44,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with app.state.session_factory() as db:
             auth_service.ensure_bootstrap_admin(db, settings)
         playback_task = None
-        if settings.live_mock_enabled:
-            playback_task = asyncio.create_task(run_mock_playback(app.state.live, settings))
+        if settings.live_mock_enabled or settings.live_make_enabled:
+            playback_task = asyncio.create_task(run_playback(app.state.live, settings))
         try:
             yield
         finally:
