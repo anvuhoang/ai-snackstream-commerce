@@ -138,7 +138,18 @@ def test_public_detail_shape(signed_in, anon):
     assert d["isDemo"] is False
     # the public view never carries back-office fields
     assert "ingredientsVerified" not in d and "status" not in d and "publishBlockers" not in d
-    assert all(set(v) == {"id", "sku", "name", "priceVnd", "compareAtVnd", "weightG"} for v in d["variants"])
+    public = {
+        "id",
+        "sku",
+        "name",
+        "priceVnd",
+        "compareAtVnd",
+        "weightG",
+        "available",
+        "stockStatus",
+        "stockUpdatedAt",
+    }
+    assert all(set(v) == public for v in d["variants"])
 
 
 def test_the_category_name_is_searchable_too(signed_in, anon):

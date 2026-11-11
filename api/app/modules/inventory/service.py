@@ -7,6 +7,9 @@ those rows, so an order can only give back what it actually took, however many t
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
@@ -20,6 +23,47 @@ from app.modules.orders.models import Order
 from .models import StockLevel, StockMovement
 
 LOW_STOCK_AT = 5
+
+
+@dataclass(frozen=True)
+class StockInfo:
+    """What the shop may tell a customer about one variant. `available` is None when the variant is not tracked."""
+
+    available: int | None
+    updated_at: datetime | None
+    status: str  # ok | low | out | unknown
+
+
+def stock_info(
+    db: Session, variant_ids: list[int], stale_minutes: int = 0, now: datetime | None = None
+) -> dict[int, StockInfo]:
+    """Stock status per variant. A variant without a stock row is not tracked: sellable, `available` None.
+
+    A count that came from Odoo and has not been refreshed for `stale_minutes` is `unknown`: we no longer trust it.
+    """
+    if not variant_ids:
+        return {}
+    now = now or utcnow()
+    out: dict[int, StockInfo] = {}
+    for level in db.scalars(select(StockLevel).where(StockLevel.variant_id.in_(variant_ids))):
+        left = level.on_hand - level.reserved
+        stamp = level.synced_at or level.updated_at
+        if stamp is not None and stamp.tzinfo is None:
+            stamp = stamp.replace(tzinfo=now.tzinfo)
+        if (
+            level.source == "odoo"
+            and stale_minutes > 0
+            and (stamp is None or now - stamp > timedelta(minutes=stale_minutes))
+        ):
+            status = "unknown"
+        elif left <= 0:
+            status = "out"
+        elif left <= LOW_STOCK_AT:
+            status = "low"
+        else:
+            status = "ok"
+        out[level.variant_id] = StockInfo(available=max(left, 0), updated_at=stamp, status=status)
+    return out
 
 
 def _movement(
