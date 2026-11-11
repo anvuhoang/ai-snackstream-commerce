@@ -5,17 +5,27 @@ import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { cn } from "@/lib/cn";
 import type { ProductDetail } from "@/lib/catalog";
-import { formatVnd } from "@/lib/format";
+import { formatVnd, freeShipText } from "@/lib/format";
 import { track } from "@/lib/track";
 
 /** Choose a variant (size / pack) as cards, pick a quantity and put it in the cart. */
-export function VariantPicker({ variants, shopeeUrl }: { variants: ProductDetail["variants"]; shopeeUrl: string }) {
+export function VariantPicker({
+  variants,
+  shopeeUrl,
+  freeShipFromVnd,
+}: {
+  variants: ProductDetail["variants"];
+  shopeeUrl: string;
+  freeShipFromVnd: number;
+}) {
   const { add, busy, error } = useCart();
   const [selectedId, setSelectedId] = useState(variants[0]?.id);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
   if (!selected) return null;
+  // "out": nothing left. "unknown": the shop could not confirm its stock recently, so it asks the customer to get in touch.
+  const blocked = selected.stockStatus === "out" || selected.stockStatus === "unknown";
 
   const change = (next: number) => {
     setQty(Math.min(99, Math.max(1, next)));
@@ -64,6 +74,9 @@ export function VariantPicker({ variants, shopeeUrl }: { variants: ProductDetail
                 {v.sku}
                 {v.weightG ? ` · ${v.weightG} g` : ""}
               </span>
+              {v.stockStatus === "out" && <span className="text-[13px] font-semibold text-danger">Hết hàng</span>}
+              {v.stockStatus === "low" && <span className="text-[13px] font-semibold text-warn">Chỉ còn {v.available}</span>}
+              {v.stockStatus === "unknown" && <span className="text-[13px] font-semibold text-warn">Liên hệ shop để xác nhận</span>}
             </span>
             <span className="text-right text-[17px] font-extrabold">
               {formatVnd(v.priceVnd)}
@@ -88,14 +101,26 @@ export function VariantPicker({ variants, shopeeUrl }: { variants: ProductDetail
         <button
           type="button"
           onClick={addToCart}
-          disabled={busy}
+          disabled={busy || blocked}
           className={cn(
             "flex h-14 min-w-0 flex-1 items-center justify-between gap-4 rounded-xl border-2 px-6 text-base font-semibold transition-colors disabled:opacity-60",
-            added ? "border-ink bg-surface text-ink" : "border-accent bg-accent text-white hover:bg-accent-hover",
+            blocked
+              ? "border-line bg-canvas text-muted"
+              : added
+                ? "border-ink bg-surface text-ink"
+                : "border-accent bg-accent text-white hover:bg-accent-hover",
           )}
         >
-          <span>{added ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}</span>
-          <span>{formatVnd(selected.priceVnd * qty)}</span>
+          <span>
+            {selected.stockStatus === "out"
+              ? "Hết hàng"
+              : selected.stockStatus === "unknown"
+                ? "Liên hệ shop"
+                : added
+                  ? "Đã thêm vào giỏ"
+                  : "Thêm vào giỏ"}
+          </span>
+          {!blocked && <span>{formatVnd(selected.priceVnd * qty)}</span>}
         </button>
       </div>
 
@@ -111,7 +136,7 @@ export function VariantPicker({ variants, shopeeUrl }: { variants: ProductDetail
             Xem giỏ hàng và thanh toán →
           </Link>
         ) : (
-          <b className="font-semibold">Miễn phí giao từ 300.000đ</b>
+          <b className="font-semibold">{freeShipText(freeShipFromVnd)}</b>
         )}
         {shopeeUrl ? (
           <a

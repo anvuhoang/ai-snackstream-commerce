@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { CartLink } from "@/components/cart/cart-link";
 import { CartProvider } from "@/components/cart/cart-provider";
+import { freeShipText } from "@/lib/format";
+import { getShopConfig } from "@/lib/shop-config";
 
 const NAV: { href: string; label: string }[] = [
   { href: "/products", label: "Cửa hàng" },
@@ -9,12 +11,13 @@ const NAV: { href: string; label: string }[] = [
 
 const link = "rounded-[10px] px-3.5 py-2.5 text-[15px] font-medium transition-colors hover:bg-canvas";
 
-export default function StoreLayout({ children }: { children: React.ReactNode }) {
+export default async function StoreLayout({ children }: { children: React.ReactNode }) {
+  const { freeShipFromVnd } = await getShopConfig();
   return (
     <CartProvider>
       <div className="flex min-h-screen flex-col">
         <div className="bg-leaf px-4 py-2.5 text-center text-[13px] font-medium text-paper">
-          Miễn phí giao từ 300.000đ · Thanh toán khi nhận hàng · Tra cứu đơn không cần tài khoản
+          {freeShipText(freeShipFromVnd)} · Thanh toán khi nhận hàng · Tra cứu đơn không cần tài khoản
         </div>
         <header className="sticky top-0 z-20 border-b border-line bg-paper/95 backdrop-blur">
           <div className="mx-auto flex h-[72px] w-full max-w-[1200px] items-center gap-3 px-4 sm:gap-6 sm:px-8">

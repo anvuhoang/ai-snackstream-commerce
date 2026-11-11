@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { serverApi } from "@/lib/api/server";
 import { categoryStyle } from "@/lib/category-style";
 import { cn } from "@/lib/cn";
+import { getShopConfig } from "@/lib/shop-config";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
@@ -39,7 +40,7 @@ function Accordion({ title, defaultOpen, children }: { title: string; defaultOpe
 }
 
 export default async function ProductPage({ params }: Props) {
-  const p = await load((await params).slug);
+  const [p, { freeShipFromVnd }] = await Promise.all([load((await params).slug), getShopConfig()]);
   const prices = p.variants.map((v) => v.priceVnd);
   const style = categoryStyle(p.category?.slug);
 
@@ -102,7 +103,7 @@ export default async function ProductPage({ params }: Props) {
           </div>
 
           <TrackOnMount event="product_view" sku={p.variants[0]?.sku} />
-          <VariantPicker variants={p.variants} shopeeUrl={p.shopeeUrl} />
+          <VariantPicker variants={p.variants} shopeeUrl={p.shopeeUrl} freeShipFromVnd={freeShipFromVnd} />
 
           <div>
             <Accordion title="Thành phần" defaultOpen>

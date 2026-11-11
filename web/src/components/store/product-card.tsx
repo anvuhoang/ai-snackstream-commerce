@@ -20,11 +20,16 @@ export function ProductCard({ product, priority = false }: { product: Card; prio
           name={product.name}
           seed={product.id}
           priority={priority}
-          className="bg-transparent transition-transform duration-500 ease-out group-hover:scale-105"
+          className={cn("bg-transparent transition-transform duration-500 ease-out group-hover:scale-105", product.soldOut && "opacity-60 grayscale")}
         />
         {product.isDemo && (
           <span className="absolute bottom-3 left-3">
             <Badge tone="warn">Demo</Badge>
+          </span>
+        )}
+        {product.soldOut && (
+          <span className="absolute right-3 top-3">
+            <Badge tone="danger">Hết hàng</Badge>
           </span>
         )}
       </div>
