@@ -9,9 +9,10 @@ export const PAGE_SIZE = 12;
 
 export type Filters = { q: string; category: string; sort: SortKey; page: number };
 
-const tab = "flex h-10 shrink-0 items-center border-r border-line px-5 text-[11px] font-medium uppercase tracking-[0.04em] whitespace-nowrap transition-colors";
+const pill =
+  "inline-flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border-2 px-[18px] text-sm font-semibold transition-colors";
 
-/** Category row, sort and search cells, the ruled grid and paging. Async, so the page can stream it behind a skeleton. */
+/** Category pills, sort and search, the card grid and paging. Async, so the page can stream it behind a skeleton. */
 export async function Results({ q, category, sort, page }: Filters) {
   const api = await serverApi();
   const [list, cats] = await Promise.all([
@@ -26,26 +27,36 @@ export async function Results({ q, category, sort, page }: Filters) {
   const filtered = Boolean(q || category);
 
   return (
-    <>
-      <div className="flex flex-wrap border-b border-line">
-        <div className="flex min-w-0 flex-1 basis-[560px] overflow-x-auto" aria-label="Danh mục">
-          <Chip href={href({ category: "" })} active={!category}>
-            Tất cả
+    <div className="mx-auto grid w-full max-w-[1200px] gap-6 px-4 py-8 sm:px-8">
+      <div className="flex flex-wrap gap-2.5" aria-label="Danh mục">
+        <Chip href={href({ category: "" })} active={!category}>
+          Tất cả
+        </Chip>
+        {cats.data.map((c) => (
+          <Chip key={c.id} href={href({ category: c.slug })} active={category === c.slug}>
+            {c.name}
+            <span className="text-xs font-medium opacity-70">{c.productCount}</span>
           </Chip>
-          {cats.data.map((c) => (
-            <Chip key={c.id} href={href({ category: c.slug })} active={category === c.slug}>
-              {c.name}
-              <span className="ml-1.5 opacity-50">{c.productCount}</span>
-            </Chip>
-          ))}
-        </div>
-        <div className="ml-auto flex border-l border-line">
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="text-[15px] text-muted">{total === 0 ? "Không có sản phẩm nào" : `${total} sản phẩm`}</span>
+        <div className="flex flex-wrap items-center gap-2.5">
           {SORTS.map((s) => (
-            <Chip key={s.key} href={href({ sort: s.key === "newest" ? "" : s.key })} active={sort === s.key}>
+            <Link
+              key={s.key}
+              href={href({ sort: s.key === "newest" ? "" : s.key })}
+              aria-current={sort === s.key ? "true" : undefined}
+              className={cn(
+                "inline-flex h-10 items-center rounded-full px-4 text-sm font-medium transition-colors",
+                sort === s.key ? "bg-ink text-paper" : "text-muted hover:bg-canvas hover:text-ink",
+              )}
+            >
               {s.label}
-            </Chip>
+            </Link>
           ))}
-          <form action="/products" role="search" className="flex w-full min-w-56 sm:w-60">
+          <form action="/products" role="search" className="flex">
             {category && <input type="hidden" name="category" value={category} />}
             {sort !== "newest" && <input type="hidden" name="sort" value={sort} />}
             <input
@@ -54,7 +65,7 @@ export async function Results({ q, category, sort, page }: Filters) {
               maxLength={100}
               placeholder="Tìm sản phẩm"
               aria-label="Tìm sản phẩm"
-              className="h-10 w-full bg-transparent px-4 text-[11px] font-medium uppercase tracking-[0.04em] placeholder:text-muted focus:bg-canvas focus:outline-none"
+              className="h-11 w-full min-w-48 rounded-xl border-2 border-line bg-surface px-4 text-[15px] placeholder:text-muted/70 focus:border-accent focus:outline-none sm:w-60"
             />
           </form>
         </div>
@@ -66,17 +77,17 @@ export async function Results({ q, category, sort, page }: Filters) {
       </p>
 
       {items.length === 0 ? (
-        <div className="border-b border-line px-4 py-20 text-center">
-          <p className="text-base font-medium">{filtered ? "Không tìm thấy sản phẩm phù hợp" : "Chưa có sản phẩm nào đang bán"}</p>
-          <p className="mt-1.5 text-xs text-muted">{filtered ? "Thử từ khóa khác hoặc bỏ bớt bộ lọc." : "Vui lòng quay lại sau."}</p>
+        <div className="rounded-[20px] border-2 border-dashed border-line px-4 py-20 text-center">
+          <p className="text-lg font-semibold">{filtered ? "Không tìm thấy sản phẩm phù hợp" : "Chưa có sản phẩm nào đang bán"}</p>
+          <p className="mt-1.5 text-sm text-muted">{filtered ? "Thử từ khóa khác hoặc bỏ bớt bộ lọc." : "Vui lòng quay lại sau."}</p>
           {filtered && (
-            <Link href="/products" className="mt-5 inline-block border-b border-current text-xs font-medium">
+            <Link href="/products" className="mt-5 inline-block border-b-2 border-accent text-sm font-semibold">
               Xóa bộ lọc
             </Link>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 border-l-0 lg:grid-cols-4 [&>*:nth-child(2n)]:border-r-0 lg:[&>*:nth-child(2n)]:border-r lg:[&>*:nth-child(4n)]:border-r-0">
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
           {items.map((p, i) => (
             <ProductCard key={p.id} product={p} priority={i < 4} />
           ))}
@@ -84,13 +95,17 @@ export async function Results({ q, category, sort, page }: Filters) {
       )}
 
       <Pagination page={page} pageSize={PAGE_SIZE} total={total} hrefFor={(n) => href({ page: n })} />
-    </>
+    </div>
   );
 }
 
 function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
   return (
-    <Link href={href} aria-current={active ? "true" : undefined} className={cn(tab, active ? "bg-ink text-white" : "hover:bg-canvas")}>
+    <Link
+      href={href}
+      aria-current={active ? "true" : undefined}
+      className={cn(pill, active ? "border-accent bg-accent text-white" : "border-ink hover:bg-canvas")}
+    >
       {children}
     </Link>
   );

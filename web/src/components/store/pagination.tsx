@@ -15,25 +15,25 @@ export function Pagination({
 }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
-  const cell = "flex h-12 items-center px-6 text-[11px] font-medium uppercase tracking-[0.04em]";
+  const cell = "inline-flex h-11 items-center rounded-full border-2 border-ink px-5 text-sm font-semibold";
   return (
-    <nav aria-label="Phân trang" className="flex items-stretch justify-center border-b border-line">
+    <nav aria-label="Phân trang" className="flex items-center justify-center gap-3 py-2">
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className={cn(cell, "border-r border-line hover:bg-canvas")} rel="prev">
+        <Link href={hrefFor(page - 1)} className={cn(cell, "transition-colors hover:bg-canvas")} rel="prev">
           ← Trước
         </Link>
       ) : (
-        <span className={cn(cell, "border-r border-line opacity-30")}>← Trước</span>
+        <span className={cn(cell, "opacity-30")}>← Trước</span>
       )}
-      <span className={cn(cell, "text-muted")}>
+      <span className="px-2 text-sm font-medium text-muted">
         Trang {page} / {pages}
       </span>
       {page < pages ? (
-        <Link href={hrefFor(page + 1)} className={cn(cell, "border-l border-line hover:bg-canvas")} rel="next">
+        <Link href={hrefFor(page + 1)} className={cn(cell, "transition-colors hover:bg-canvas")} rel="next">
           Sau →
         </Link>
       ) : (
-        <span className={cn(cell, "border-l border-line opacity-30")}>Sau →</span>
+        <span className={cn(cell, "opacity-30")}>Sau →</span>
       )}
     </nav>
   );

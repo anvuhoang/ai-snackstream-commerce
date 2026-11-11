@@ -12,22 +12,22 @@ export function OrderSummary({ order }: { order: OrderOut }) {
   return (
     <div className="bg-surface">
       {cancelled ? (
-        <div className="flex items-center justify-between border-b border-line bg-ink px-6 py-4 text-[11px] font-medium uppercase tracking-[0.04em] text-white">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-danger-soft px-6 py-4 text-sm font-semibold text-danger">
           <span>{ORDER_STATUS_LABEL.cancelled}</span>
-          {order.history.at(-1)?.note && <span className="font-normal normal-case tracking-normal opacity-80">{order.history.at(-1)?.note}</span>}
+          {order.history.at(-1)?.note && <span className="font-normal">{order.history.at(-1)?.note}</span>}
         </div>
       ) : (
-        <ol className="grid grid-cols-4 border-b border-line bg-surface" aria-label="Tiến trình đơn hàng">
+        <ol className="grid grid-cols-4 gap-2 border-b border-line p-4 sm:p-5" aria-label="Tiến trình đơn hàng">
           {ORDER_STEPS.map((s, i) => (
             <li
               key={s}
               aria-current={i === reached ? "step" : undefined}
               className={cn(
-                "border-r border-line px-3 py-3.5 text-[10px] font-medium uppercase tracking-[0.04em] last:border-r-0 sm:px-6",
-                i === reached ? "bg-ink text-white" : i < reached ? "text-ink" : "text-[#a8a8a4]",
+                "rounded-xl px-3 py-3 text-xs font-semibold sm:px-4",
+                i === reached ? "bg-accent text-white" : i < reached ? "bg-leaf-soft text-leaf" : "bg-canvas text-muted",
               )}
             >
-              <b className="mb-1.5 block text-[11px] font-medium">0{i + 1}</b>
+              <b className="mb-1 block text-[11px] font-semibold opacity-80">0{i + 1}</b>
               {ORDER_STATUS_LABEL[s]}
             </li>
           ))}
@@ -35,18 +35,18 @@ export function OrderSummary({ order }: { order: OrderOut }) {
       )}
 
       {order.items.map((i) => (
-        <div key={i.sku} className="flex items-center justify-between gap-4 border-b border-line px-6 py-4 text-xs">
-          <div>
-            <b className="block text-[13px] font-medium">{i.productName}</b>
-            <span className="text-[11px] text-muted">
+        <div key={i.sku} className="flex items-center justify-between gap-4 border-b border-line px-6 py-4">
+          <div className="grid gap-0.5">
+            <b className="text-[15px] font-semibold">{i.productName}</b>
+            <span className="text-[13px] text-muted">
               {i.variantName} · SL {i.qty} · {formatVnd(i.unitPriceVnd)}
             </span>
           </div>
-          <b className="font-medium">{formatVnd(i.lineTotalVnd)}</b>
+          <b className="font-extrabold">{formatVnd(i.lineTotalVnd)}</b>
         </div>
       ))}
 
-      <dl className="grid grid-cols-[130px_1fr] text-xs">
+      <dl className="grid grid-cols-[120px_1fr] text-sm">
         {[
           ["Người nhận", `${order.customerName} · ${order.customerPhone}`],
           ["Giao đến", address],
@@ -57,12 +57,12 @@ export function OrderSummary({ order }: { order: OrderOut }) {
           ["Đặt lúc", formatDateTime(order.createdAt)],
         ].map(([k, v]) => (
           <div key={k} className="contents">
-            <dt className="border-b border-line px-6 py-3.5 text-muted">{k}</dt>
-            <dd className={cn("border-b border-line px-6 py-3.5", k === "Tổng tiền" && "font-medium")}>{v}</dd>
+            <dt className="border-b border-line px-6 py-3.5 text-muted last-of-type:border-b-0">{k}</dt>
+            <dd className={cn("border-b border-line px-6 py-3.5", k === "Tổng tiền" && "text-lg font-extrabold")}>{v}</dd>
           </div>
         ))}
       </dl>
-      {order.note && <p className="border-b border-line px-6 py-3.5 text-xs text-muted">Ghi chú: {order.note}</p>}
+      {order.note && <p className="border-t border-line px-6 py-3.5 text-sm text-muted">Ghi chú: {order.note}</p>}
     </div>
   );
 }
