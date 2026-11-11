@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Inter_Tight } from "next/font/google";
+import { Be_Vietnam_Pro } from "next/font/google";
 import { UtmCapture } from "@/components/analytics/tracker";
 import "./globals.css";
 
-const interTight = Inter_Tight({ subsets: ["latin", "vietnamese"], variable: "--font-inter-tight", display: "swap" });
+// Designed for Vietnamese: every tone mark sits correctly at every weight.
+const beVietnam = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "800"],
+  variable: "--font-be-vietnam",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: { default: "SnackStream · Đặc sản ăn vặt", template: "%s · SnackStream" },
@@ -12,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={interTight.variable}>
+    <html lang="vi" className={beVietnam.variable}>
       <body className="min-h-screen">
         <UtmCapture />
         {children}
