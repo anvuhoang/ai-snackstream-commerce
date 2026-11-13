@@ -56,7 +56,7 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
 - **Accept:** a customer sees only published items; unaccented search finds "banh trang"; a `@postgres` test covers search.
 - **Unblocks:** Phong and Nguyen — the catalog API is the shared source of products and prices.
 
-## P2 · Cart, checkout, orders — A03, A04 (size L) · An
+## P2 · Cart, checkout, orders — A03, A04 (size L) · An — **built** (branch `feat/orders`)
 
 **Goal:** a guest can place a cash-on-delivery order; staff can process it.
 
@@ -74,6 +74,13 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
   Callbacks are idempotent (the same one may arrive twice). An unpaid order keeps its stock reserved only for N minutes, then the
   reservation is released and the order expires. Gateway keys live in server environment variables only. Every payment screen says
   "Sandbox — no real money is charged".
+- **What shipped:** module `app/modules/orders` (migration `0003`), cart cookie `ss_cart`, `POST /api/orders` with `Idempotency-Key`,
+  look-up by code + phone (rate limited), admin orders with guarded status changes, VNPay sandbox (signed URL, callback `GET /api/payments/vnpay/ipn`,
+  read-only return `GET /api/payments/vnpay/return`), unpaid-order expiry, stock seam `orders/stock.py` for P3. Web: cart + checkout, result page,
+  look-up page, admin orders. Settings: `SHIPPING_FEE_VND` (30.000), `FREE_SHIP_FROM_VND` (300.000), `ORDER_EXPIRY_MINUTES` (15), `VNPAY_*` (empty = COD only).
+- **Still to do for the online flow:** run `python -m app.cli expire-orders` every minute or so (Render cron job); the API also expires orders when
+  they are read, so it is housekeeping, not correctness. The VNPay callback was tested with signed test callbacks; a real sandbox payment needs the
+  public staging URL, which VNPay can reach.
 - **Accept:** submitting twice creates one order; a customer cannot guess another order; admin endpoints reject anonymous
   callers; totals match line items to the dong; a replayed or tampered gateway callback is rejected or ignored; an unpaid order
   expires and releases its stock exactly once.

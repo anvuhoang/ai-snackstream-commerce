@@ -972,6 +972,508 @@
           }
         }
       }
+    },
+    "/api/shop/config": {
+      "get": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Shop Config",
+        "operationId": "shop_config_api_shop_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cart": {
+      "get": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Get Cart",
+        "operationId": "get_cart_api_cart_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cart/items": {
+      "post": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Add Item",
+        "operationId": "add_item_api_cart_items_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemAdd"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cart/items/{variant_id}": {
+      "patch": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Set Item Qty",
+        "operationId": "set_item_qty_api_cart_items__variant_id__patch",
+        "parameters": [
+          {
+            "name": "variant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Variant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemSet"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Remove Item",
+        "operationId": "remove_item_api_cart_items__variant_id__delete",
+        "parameters": [
+          {
+            "name": "variant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Variant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders": {
+      "post": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Checkout",
+        "description": "Place an order from the cart. Safe to repeat: the same Idempotency-Key and request return the same order.",
+        "operationId": "checkout_api_orders_post",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 80,
+              "description": "A fresh random value per checkout attempt.",
+              "title": "Idempotency-Key"
+            },
+            "description": "A fresh random value per checkout attempt."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/lookup": {
+      "post": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Lookup",
+        "operationId": "lookup_api_orders_lookup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LookupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/vnpay/ipn": {
+      "get": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Vnpay Ipn",
+        "description": "The gateway calls this from its servers after a payment. It is the source of truth, not the browser return.",
+        "operationId": "vnpay_ipn_api_payments_vnpay_ipn_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/vnpay/return": {
+      "get": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Vnpay Return",
+        "description": "The customer's browser lands on the web page, which asks this what to show. It never changes anything.",
+        "operationId": "vnpay_return_api_payments_vnpay_return_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentReturnOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/orders": {
+      "get": {
+        "tags": [
+          "admin-orders"
+        ],
+        "summary": "List Orders",
+        "operationId": "list_orders_api_admin_orders_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Order code, customer name or phone.",
+              "default": "",
+              "title": "Q"
+            },
+            "description": "Order code, customer name or phone."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "new",
+                    "confirmed",
+                    "shipping",
+                    "completed",
+                    "cancelled"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Pagesize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "admin-orders"
+        ],
+        "summary": "Get Order",
+        "operationId": "get_order_api_admin_orders__order_id__get",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrder"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/orders/{order_id}/status": {
+      "post": {
+        "tags": [
+          "admin-orders"
+        ],
+        "summary": "Change Status",
+        "operationId": "change_status_api_admin_orders__order_id__status_post",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusChange"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrder"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1008,6 +1510,267 @@
           "productCount"
         ],
         "title": "AdminCategory"
+      },
+      "AdminOrder": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "confirmed",
+              "shipping",
+              "completed",
+              "cancelled"
+            ],
+            "title": "Status"
+          },
+          "customerName": {
+            "type": "string",
+            "title": "Customername"
+          },
+          "customerPhone": {
+            "type": "string",
+            "title": "Customerphone"
+          },
+          "shipAddress": {
+            "type": "string",
+            "title": "Shipaddress"
+          },
+          "shipWard": {
+            "type": "string",
+            "title": "Shipward"
+          },
+          "shipDistrict": {
+            "type": "string",
+            "title": "Shipdistrict"
+          },
+          "shipProvince": {
+            "type": "string",
+            "title": "Shipprovince"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "subtotalVnd": {
+            "type": "integer",
+            "title": "Subtotalvnd"
+          },
+          "shippingFeeVnd": {
+            "type": "integer",
+            "title": "Shippingfeevnd"
+          },
+          "totalVnd": {
+            "type": "integer",
+            "title": "Totalvnd"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "cod",
+              "vnpay"
+            ],
+            "title": "Paymentmethod"
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiresat"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentOut"
+            },
+            "type": "array",
+            "title": "Payments"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nextStatuses": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "new",
+                "confirmed",
+                "shipping",
+                "completed",
+                "cancelled"
+              ]
+            },
+            "type": "array",
+            "title": "Nextstatuses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "status",
+          "customerName",
+          "customerPhone",
+          "shipAddress",
+          "shipWard",
+          "shipDistrict",
+          "shipProvince",
+          "note",
+          "subtotalVnd",
+          "shippingFeeVnd",
+          "totalVnd",
+          "paymentMethod",
+          "expiresAt",
+          "createdAt",
+          "items",
+          "payments",
+          "history",
+          "id",
+          "nextStatuses"
+        ],
+        "title": "AdminOrder"
+      },
+      "AdminOrderPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderRow"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageSize": {
+            "type": "integer",
+            "title": "Pagesize"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "title": "AdminOrderPage"
+      },
+      "AdminOrderRow": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "confirmed",
+              "shipping",
+              "completed",
+              "cancelled"
+            ],
+            "title": "Status"
+          },
+          "customerName": {
+            "type": "string",
+            "title": "Customername"
+          },
+          "customerPhone": {
+            "type": "string",
+            "title": "Customerphone"
+          },
+          "totalVnd": {
+            "type": "integer",
+            "title": "Totalvnd"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "cod",
+              "vnpay"
+            ],
+            "title": "Paymentmethod"
+          },
+          "paymentStatus": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "paid",
+                  "failed",
+                  "expired"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymentstatus"
+          },
+          "itemCount": {
+            "type": "integer",
+            "title": "Itemcount"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "status",
+          "customerName",
+          "customerPhone",
+          "totalVnd",
+          "paymentMethod",
+          "paymentStatus",
+          "itemCount",
+          "createdAt"
+        ],
+        "title": "AdminOrderRow"
       },
       "AdminOut": {
         "properties": {
@@ -1321,6 +2084,156 @@
         ],
         "title": "Body_upload_image_api_admin_catalog_products__product_id__images_post"
       },
+      "CartItemAdd": {
+        "properties": {
+          "variantId": {
+            "type": "integer",
+            "title": "Variantid"
+          },
+          "qty": {
+            "type": "integer",
+            "maximum": 99.0,
+            "minimum": 1.0,
+            "title": "Qty",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "variantId"
+        ],
+        "title": "CartItemAdd"
+      },
+      "CartItemSet": {
+        "properties": {
+          "qty": {
+            "type": "integer",
+            "maximum": 99.0,
+            "minimum": 1.0,
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "qty"
+        ],
+        "title": "CartItemSet"
+      },
+      "CartLine": {
+        "properties": {
+          "variantId": {
+            "type": "integer",
+            "title": "Variantid"
+          },
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "productSlug": {
+            "type": "string",
+            "title": "Productslug"
+          },
+          "productName": {
+            "type": "string",
+            "title": "Productname"
+          },
+          "variantName": {
+            "type": "string",
+            "title": "Variantname"
+          },
+          "unitPriceVnd": {
+            "type": "integer",
+            "title": "Unitpricevnd"
+          },
+          "qty": {
+            "type": "integer",
+            "title": "Qty"
+          },
+          "lineTotalVnd": {
+            "type": "integer",
+            "title": "Linetotalvnd"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variantId",
+          "sku",
+          "productSlug",
+          "productName",
+          "variantName",
+          "unitPriceVnd",
+          "qty",
+          "lineTotalVnd",
+          "image",
+          "available"
+        ],
+        "title": "CartLine"
+      },
+      "CartOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CartLine"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "itemCount": {
+            "type": "integer",
+            "title": "Itemcount"
+          },
+          "subtotalVnd": {
+            "type": "integer",
+            "title": "Subtotalvnd"
+          },
+          "shippingFeeVnd": {
+            "type": "integer",
+            "title": "Shippingfeevnd"
+          },
+          "totalVnd": {
+            "type": "integer",
+            "title": "Totalvnd"
+          },
+          "freeShipFromVnd": {
+            "type": "integer",
+            "title": "Freeshipfromvnd"
+          },
+          "freeShipRemainingVnd": {
+            "type": "integer",
+            "title": "Freeshipremainingvnd"
+          },
+          "hasUnavailable": {
+            "type": "boolean",
+            "title": "Hasunavailable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "itemCount",
+          "subtotalVnd",
+          "shippingFeeVnd",
+          "totalVnd",
+          "freeShipFromVnd",
+          "freeShipRemainingVnd",
+          "hasUnavailable"
+        ],
+        "title": "CartOut"
+      },
       "CategoryIn": {
         "properties": {
           "name": {
@@ -1422,6 +2335,196 @@
         "type": "object",
         "title": "CategoryUpdate"
       },
+      "CheckoutIn": {
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/CustomerIn"
+          },
+          "shipping": {
+            "$ref": "#/components/schemas/ShippingIn"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "cod",
+              "vnpay"
+            ],
+            "title": "Paymentmethod",
+            "default": "cod"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer",
+          "shipping"
+        ],
+        "title": "CheckoutIn"
+      },
+      "CheckoutOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "confirmed",
+              "shipping",
+              "completed",
+              "cancelled"
+            ],
+            "title": "Status"
+          },
+          "customerName": {
+            "type": "string",
+            "title": "Customername"
+          },
+          "customerPhone": {
+            "type": "string",
+            "title": "Customerphone"
+          },
+          "shipAddress": {
+            "type": "string",
+            "title": "Shipaddress"
+          },
+          "shipWard": {
+            "type": "string",
+            "title": "Shipward"
+          },
+          "shipDistrict": {
+            "type": "string",
+            "title": "Shipdistrict"
+          },
+          "shipProvince": {
+            "type": "string",
+            "title": "Shipprovince"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "subtotalVnd": {
+            "type": "integer",
+            "title": "Subtotalvnd"
+          },
+          "shippingFeeVnd": {
+            "type": "integer",
+            "title": "Shippingfeevnd"
+          },
+          "totalVnd": {
+            "type": "integer",
+            "title": "Totalvnd"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "cod",
+              "vnpay"
+            ],
+            "title": "Paymentmethod"
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiresat"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentOut"
+            },
+            "type": "array",
+            "title": "Payments"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "paymentUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymenturl"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "status",
+          "customerName",
+          "customerPhone",
+          "shipAddress",
+          "shipWard",
+          "shipDistrict",
+          "shipProvince",
+          "note",
+          "subtotalVnd",
+          "shippingFeeVnd",
+          "totalVnd",
+          "paymentMethod",
+          "expiresAt",
+          "createdAt",
+          "items",
+          "payments",
+          "history"
+        ],
+        "title": "CheckoutOut"
+      },
+      "CustomerIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Phone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "phone"
+        ],
+        "title": "CustomerIn"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1434,6 +2537,67 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HistoryOut": {
+        "properties": {
+          "fromStatus": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "confirmed",
+                  "shipping",
+                  "completed",
+                  "cancelled"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fromstatus"
+          },
+          "toStatus": {
+            "type": "string",
+            "enum": [
+              "new",
+              "confirmed",
+              "shipping",
+              "completed",
+              "cancelled"
+            ],
+            "title": "Tostatus"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "actorEmail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actoremail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fromStatus",
+          "toStatus",
+          "note",
+          "createdAt"
+        ],
+        "title": "HistoryOut"
       },
       "ImageOut": {
         "properties": {
@@ -1508,6 +2672,269 @@
           "password"
         ],
         "title": "LoginIn"
+      },
+      "LookupIn": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 4,
+            "title": "Code"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Phone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "phone"
+        ],
+        "title": "LookupIn"
+      },
+      "OrderItemOut": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "productName": {
+            "type": "string",
+            "title": "Productname"
+          },
+          "variantName": {
+            "type": "string",
+            "title": "Variantname"
+          },
+          "unitPriceVnd": {
+            "type": "integer",
+            "title": "Unitpricevnd"
+          },
+          "qty": {
+            "type": "integer",
+            "title": "Qty"
+          },
+          "lineTotalVnd": {
+            "type": "integer",
+            "title": "Linetotalvnd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "productName",
+          "variantName",
+          "unitPriceVnd",
+          "qty",
+          "lineTotalVnd"
+        ],
+        "title": "OrderItemOut"
+      },
+      "OrderOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "confirmed",
+              "shipping",
+              "completed",
+              "cancelled"
+            ],
+            "title": "Status"
+          },
+          "customerName": {
+            "type": "string",
+            "title": "Customername"
+          },
+          "customerPhone": {
+            "type": "string",
+            "title": "Customerphone"
+          },
+          "shipAddress": {
+            "type": "string",
+            "title": "Shipaddress"
+          },
+          "shipWard": {
+            "type": "string",
+            "title": "Shipward"
+          },
+          "shipDistrict": {
+            "type": "string",
+            "title": "Shipdistrict"
+          },
+          "shipProvince": {
+            "type": "string",
+            "title": "Shipprovince"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "subtotalVnd": {
+            "type": "integer",
+            "title": "Subtotalvnd"
+          },
+          "shippingFeeVnd": {
+            "type": "integer",
+            "title": "Shippingfeevnd"
+          },
+          "totalVnd": {
+            "type": "integer",
+            "title": "Totalvnd"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "cod",
+              "vnpay"
+            ],
+            "title": "Paymentmethod"
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiresat"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentOut"
+            },
+            "type": "array",
+            "title": "Payments"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "status",
+          "customerName",
+          "customerPhone",
+          "shipAddress",
+          "shipWard",
+          "shipDistrict",
+          "shipProvince",
+          "note",
+          "subtotalVnd",
+          "shippingFeeVnd",
+          "totalVnd",
+          "paymentMethod",
+          "expiresAt",
+          "createdAt",
+          "items",
+          "payments",
+          "history"
+        ],
+        "title": "OrderOut"
+      },
+      "PaymentOut": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "cod",
+              "vnpay"
+            ],
+            "title": "Provider"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "failed",
+              "expired"
+            ],
+            "title": "Status"
+          },
+          "amountVnd": {
+            "type": "integer",
+            "title": "Amountvnd"
+          },
+          "paidAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paidat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "status",
+          "amountVnd",
+          "paidAt"
+        ],
+        "title": "PaymentOut"
+      },
+      "PaymentReturnOut": {
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": [
+              "paid",
+              "failed",
+              "pending",
+              "invalid"
+            ],
+            "title": "Result"
+          },
+          "orderCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ordercode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "PaymentReturnOut",
+        "description": "What the customer's browser shows after coming back from the gateway. Read-only: the gateway's callback decides."
       },
       "ProductCard": {
         "properties": {
@@ -1864,6 +3291,105 @@
         ],
         "title": "SessionOut",
         "description": "What the web app needs after login: who, and the CSRF token to send on every write."
+      },
+      "ShippingIn": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Address"
+          },
+          "ward": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Ward",
+            "default": ""
+          },
+          "district": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "District",
+            "default": ""
+          },
+          "province": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Province",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "address"
+        ],
+        "title": "ShippingIn"
+      },
+      "ShopConfig": {
+        "properties": {
+          "shippingFeeVnd": {
+            "type": "integer",
+            "title": "Shippingfeevnd"
+          },
+          "freeShipFromVnd": {
+            "type": "integer",
+            "title": "Freeshipfromvnd"
+          },
+          "paymentMethods": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "cod",
+                "vnpay"
+              ]
+            },
+            "type": "array",
+            "title": "Paymentmethods"
+          },
+          "onlinePaymentIsSandbox": {
+            "type": "boolean",
+            "title": "Onlinepaymentissandbox",
+            "default": true
+          },
+          "orderExpiryMinutes": {
+            "type": "integer",
+            "title": "Orderexpiryminutes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shippingFeeVnd",
+          "freeShipFromVnd",
+          "paymentMethods",
+          "orderExpiryMinutes"
+        ],
+        "title": "ShopConfig"
+      },
+      "StatusChange": {
+        "properties": {
+          "to": {
+            "type": "string",
+            "enum": [
+              "new",
+              "confirmed",
+              "shipping",
+              "completed",
+              "cancelled"
+            ],
+            "title": "To"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "to"
+        ],
+        "title": "StatusChange"
       },
       "ValidationError": {
         "properties": {

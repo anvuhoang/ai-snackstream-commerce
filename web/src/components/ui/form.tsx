@@ -2,7 +2,7 @@ import type { SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 const control =
-  "w-full rounded-lg border border-line bg-surface px-3 text-sm placeholder:text-muted/70 focus:border-brand disabled:bg-canvas disabled:text-muted";
+  "w-full border border-line bg-surface px-3 text-sm placeholder:text-muted/70 focus:bg-canvas focus:outline-none disabled:bg-canvas disabled:text-muted";
 
 export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea className={cn(control, "min-h-24 py-2.5", className)} {...props} />;
@@ -25,8 +25,8 @@ export function FormRow({
   children: React.ReactNode;
 }) {
   return (
-    <label className="grid gap-1.5 text-sm font-medium">
-      <span>{label}</span>
+    <label className="grid gap-1.5 text-sm">
+      <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">{label}</span>
       {children}
       {hint && !error && <span className="text-xs font-normal text-muted">{hint}</span>}
       {error && (
@@ -43,7 +43,7 @@ export function Status({ kind, children }: { kind: "ok" | "error"; children: Rea
   return (
     <p
       role={kind === "error" ? "alert" : "status"}
-      className={cn("rounded-lg px-3 py-2 text-sm", kind === "ok" ? "bg-ok/10 text-ok" : "bg-danger/10 text-danger")}
+      className={cn("border px-3 py-2 text-sm", kind === "ok" ? "border-ink bg-canvas text-ink" : "border-danger bg-danger/5 text-danger")}
     >
       {children}
     </p>

@@ -23,6 +23,8 @@ from app.modules.catalog import router_admin as catalog_admin
 from app.modules.catalog import router_public as catalog_public
 from app.modules.catalog import seed as catalog_seed
 from app.modules.health import router as health_router
+from app.modules.orders import router_admin as orders_admin
+from app.modules.orders import router_public as orders_public
 
 API_ROOT = Path(__file__).resolve().parent.parent
 
@@ -83,7 +85,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(RequestIdMiddleware)
 
     install_error_handlers(app)
-    for router in (health_router.router, auth_router.router, catalog_public.router, catalog_admin.router):
+    for router in (
+        health_router.router,
+        auth_router.router,
+        catalog_public.router,
+        catalog_admin.router,
+        orders_public.router,
+        orders_admin.router,
+    ):
         app.include_router(router)
     return app
 
