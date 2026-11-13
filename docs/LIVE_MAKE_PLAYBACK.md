@@ -296,3 +296,25 @@ The earlier provider timeout and Drive-metadata failure remain unsuccessful atte
 The fresh success is **n=1**; it does not establish stable latency, all real error
 routes, production readiness or completion of N01–N04. Automated provider/transport
 tests and manual human-audio acceptance cover different parts of the integration.
+
+### Local playlist listening acceptance on 2026-11-13
+
+At commit `c4951f9`, one listening run used the real backend, frontend and SSE with
+Make disabled and mock enabled. This records the log and listening confirmation
+supplied by the user; it is not an agent-run listening test. The videos were already
+available, and this was not a newly generated D-ID video run.
+
+Alpha transitioned to Beta with the corresponding SKU change, and one question was
+accepted with `SKU-BETA`. The user confirmed hearing the complete reply, no
+overlapping audio and Beta continuing afterward. The log contains 45 events with
+`droppedEvents=0`, no recorded playback errors or disconnections, and final session
+status `ended`.
+
+Send to first reply playing was **5.1109 seconds**, including the five-second shared
+preparation window; this is not AI video-generation latency. The reply played from
+0.012599 to 10.077007 seconds and ended naturally. Beta stopped on the client at
+about 6.926 seconds and resumed at about 7.915 seconds according to the shared clock
+and SSE. This does not establish seamless restoration of every spoken word.
+
+The user ended the session manually before Beta finished. This run did not verify
+automatic playlist exhaustion or draining multiple queued questions.
