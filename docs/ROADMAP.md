@@ -85,7 +85,7 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
   callers; totals match line items to the dong; a replayed or tampered gateway callback is rejected or ignored; an unpaid order
   expires and releases its stock exactly once.
 
-## P3 · Inventory and Odoo — A05 (size L) · An
+## P3 · Inventory and Odoo — A05 (size L) · An — **built** (branch `feat/inventory`)
 
 **Goal:** stock is correct under concurrency, and Odoo can be the source of on-hand quantity.
 
@@ -96,6 +96,18 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
 - **Policy to decide first:** how stock is shared with Shopee (fixed quota per channel vs. web-held reservations), and what
   the shop does when Odoo is unreachable (use cached stock up to N minutes, then show "contact us").
 - **Dev environment:** this phase adds a throw-away Odoo service to `docker-compose.yml`, so work never waits for real credentials.
+- **What shipped** (branch `feat/inventory`, migration `0004`): module `app/modules/inventory` with `stock_level` (`on_hand`, `reserved`, `source`),
+  an append-only `stock_movement` log and `stock_sync_run`. `orders/stock.py` is now the seam to it: `reserve` at checkout (one conditional `UPDATE`,
+  `409 out_of_stock` when short), `ship` when an order starts shipping, `release` once on cancel or expiry (a shipped parcel that is cancelled goes back on hand).
+  A variant with no `stock_level` row is **not tracked** and sells without limit; the demo seed gives each demo variant 100. Odoo: read-only client for
+  Odoo's JSON-2 API (`odoo.py`), `python -m app.cli sync-odoo` and `GET/POST /api/admin/inventory/sync` copy `qty_available` by SKU (Internal Reference)
+  into rows marked `source = odoo`; a sync never sets a count below what open orders hold, a failed sync changes nothing and is recorded. For Odoo-owned
+  counts, shipping only ends the reservation (Odoo's own delivery lowers on-hand), and the count cannot be edited in the web. Web: `/admin/inventory`
+  (list, filters, receive / correct, sync panel) and a movement history per variant. Settings: `ODOO_URL`, `ODOO_DB`, `ODOO_API_KEY`, `ODOO_TIMEOUT_S`.
+- **Decisions taken:** D1 → the real Odoo Online instance (no throw-away Docker service). D2 (Shopee quota) is still open.
+- **Still to do:** a `@postgres` concurrency test (the guard is tested on SQLite only); schedule `sync-odoo` (Render cron); a "stale after N minutes" rule when
+  Odoo is unreachable (today the web keeps selling from the last synced numbers); write deliveries back to Odoo, so web orders are visible there and
+  the web count is exact between syncs; an "out of stock" badge on the storefront product page (the cart already marks such lines unavailable).
 - **Accept:** two simultaneous requests for the last unit → exactly one succeeds (`@postgres` test); cancelling twice
   releases once; one real or test Odoo SKU syncs; admin sees sync status and can resync.
 

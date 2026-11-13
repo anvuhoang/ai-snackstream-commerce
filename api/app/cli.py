@@ -2,6 +2,7 @@
 
 python -m app.cli migrate
 python -m app.cli seed-catalog                              # labelled demo products (idempotent)
+python -m app.cli sync-odoo                                 # copy on-hand counts from Odoo (needs ODOO_* settings)
 python -m app.cli expire-orders                             # cancel unpaid online orders whose time ran out
 python -m app.cli create-admin you@example.com            # prompts for the password
 python -m app.cli create-admin you@example.com --role staff
@@ -19,6 +20,7 @@ from app.core.db import make_engine, make_session_factory
 from app.main import run_migrations
 from app.modules.auth import service as auth_service
 from app.modules.catalog import seed as catalog_seed
+from app.modules.inventory import sync as inventory_sync
 from app.modules.orders import service as orders_service
 
 
@@ -30,6 +32,9 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser(
         "expire-orders",
         help="cancel unpaid online orders whose payment time ran out (run every minute or so)",
+    )
+    sub.add_parser(
+        "sync-odoo", help="copy on-hand stock counts from Odoo, matched on SKU (run every few minutes)"
     )
     admin = sub.add_parser("create-admin", help="create a back-office user")
     admin.add_argument("email")
@@ -47,6 +52,23 @@ def main(argv: list[str] | None = None) -> int:
         with make_session_factory(make_engine(settings.database_url))() as db:
             print(catalog_seed.seed_catalog(db, Path(settings.media_dir)))
         return 0
+
+    if args.cmd == "sync-odoo":
+        if not settings.odoo_enabled:
+            print("Odoo is not configured: set ODOO_URL, ODOO_DB and ODOO_API_KEY", file=sys.stderr)
+            return 1
+        with make_session_factory(make_engine(settings.database_url))() as db:
+            run = inventory_sync.sync_from_odoo(db, settings)
+            print(
+                {
+                    "ok": run.ok,
+                    "matched": run.matched,
+                    "changed": run.changed,
+                    "missing": run.missing_skus,
+                    "error": run.error,
+                }
+            )
+        return 0 if run.ok else 1
 
     if args.cmd == "expire-orders":
         with make_session_factory(make_engine(settings.database_url))() as db:

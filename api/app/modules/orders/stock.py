@@ -1,20 +1,29 @@
-"""The seam where stock goes in Phase 3.
+"""The seam between orders and stock.
 
-P2 only needs two moments to exist: stock is reserved when an order is placed and released exactly once when it is cancelled
-or expires. Phase 3 replaces these two functions (own tables and/or Odoo) without touching the order code, which always
-calls them as `stock.reserve(...)` / `stock.release(...)` so tests can watch the calls.
+Order code only ever calls these three moments, as `stock.reserve(...)` / `stock.ship(...)` / `stock.release(...)`, so
+tests can watch the calls and a second stock source (Odoo) can be added without touching the order flow. The work itself
+lives in the inventory module.
 """
 
 from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
+from app.modules.inventory import service as inventory
+
 from .models import Order
 
 
 def reserve(db: Session, order: Order) -> None:
-    """Hold the quantities of `order` for the customer. No-op until P3."""
+    """Hold the quantities of a new order. Raises 409 `out_of_stock` when a tracked item is short."""
+    inventory.reserve(db, order)
+
+
+def ship(db: Session, order: Order) -> None:
+    """The order is on its way: the reserved units leave the stock room."""
+    inventory.ship(db, order)
 
 
 def release(db: Session, order: Order) -> None:
-    """Give the quantities of `order` back. Called once, when the order is cancelled or expires. No-op until P3."""
+    """Called once, when the order is cancelled or expires: give back what it holds or already took."""
+    inventory.release(db, order)

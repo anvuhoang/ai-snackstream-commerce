@@ -25,6 +25,7 @@ from app.core.errors import AppError
 from app.core.security import new_public_token
 from app.modules.auth.models import AdminUser
 from app.modules.catalog.models import Product, Variant
+from app.modules.inventory import service as inventory
 
 from . import stock, vnpay
 from .models import (
@@ -101,12 +102,15 @@ def cart_lines(db: Session, cart: Cart | None) -> list[CartLineData]:
             .options(selectinload(Variant.product).selectinload(Product.images))
         )
     }
+    left_in_stock = inventory.available_map(db, list(variants))
     lines = []
     for item in cart.items:
         v = variants.get(item.variant_id)
         if v is None:  # cannot happen (variants are never deleted) but a stale cart must not crash the page
             continue
-        lines.append(CartLineData(item, v, v.product, v.is_active and v.product.status == "published"))
+        sellable = v.is_active and v.product.status == "published"
+        left = left_in_stock.get(v.id)  # None = not tracked = unlimited
+        lines.append(CartLineData(item, v, v.product, sellable and (left is None or left >= item.qty)))
     return lines
 
 
@@ -357,6 +361,8 @@ def change_status(db: Session, order_id: int, to: str, note: str, actor: AdminUs
         for p in order.payments:
             if p.provider == "cod" and p.status == "pending":
                 p.status, p.paid_at = "paid", now
+    if to == "shipping":
+        stock.ship(db, order)
     if to == "cancelled":
         for p in order.payments:
             if p.status == "pending":

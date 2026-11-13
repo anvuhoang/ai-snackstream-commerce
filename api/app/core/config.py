@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     vnpay_url: str = Field("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html", alias="VNPAY_URL")
     # Where VNPay sends the customer's browser back to (a page of the web app).
     vnpay_return_url: str = Field("http://localhost:3000/checkout/result", alias="VNPAY_RETURN_URL")
+    # Odoo (stock source). Empty = stock is kept only in our own tables. Uses Odoo's JSON-2 API with an API key.
+    odoo_url: str = Field("", alias="ODOO_URL")
+    odoo_db: str = Field("", alias="ODOO_DB")
+    odoo_api_key: str = Field("", alias="ODOO_API_KEY")
+    odoo_timeout_s: float = Field(20.0, alias="ODOO_TIMEOUT_S", gt=0)
 
     @model_validator(mode="after")
     def _finalize(self) -> Settings:
@@ -61,6 +66,10 @@ class Settings(BaseSettings):
     @property
     def vnpay_enabled(self) -> bool:
         return bool(self.vnpay_tmn_code and self.vnpay_hash_secret)
+
+    @property
+    def odoo_enabled(self) -> bool:
+        return bool(self.odoo_url and self.odoo_db and self.odoo_api_key)
 
     @property
     def is_prod(self) -> bool:

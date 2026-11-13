@@ -520,6 +520,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Stock */
+        get: operations["list_stock_api_admin_inventory_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/inventory/{variant_id}/adjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adjust */
+        post: operations["adjust_api_admin_inventory__variant_id__adjust_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/inventory/{variant_id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Movements */
+        get: operations["movements_api_admin_inventory__variant_id__movements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/inventory/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sync Status */
+        get: operations["sync_status_api_admin_inventory_sync_get"];
+        put?: never;
+        /**
+         * Run Sync
+         * @description Pull the on-hand counts from Odoo now. A failure is recorded in `lastRun`, not raised.
+         */
+        post: operations["run_sync_api_admin_inventory_sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -973,6 +1045,28 @@ export interface components {
             /** Phone */
             phone: string;
         };
+        /** MovementOut */
+        MovementOut: {
+            /** Id */
+            id: number;
+            /** Kind */
+            kind: string;
+            /** Deltaonhand */
+            deltaOnHand: number;
+            /** Deltareserved */
+            deltaReserved: number;
+            /** Ordercode */
+            orderCode: string | null;
+            /** Actoremail */
+            actorEmail: string | null;
+            /** Note */
+            note: string;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+        };
         /** OrderItemOut */
         OrderItemOut: {
             /** Sku */
@@ -1236,6 +1330,88 @@ export interface components {
              * @default
              */
             note?: string;
+        };
+        /**
+         * StockAdjust
+         * @description `receive` adds new goods (positive). `adjust` corrects the count after checking the shelf (either sign).
+         */
+        StockAdjust: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "receive" | "adjust";
+            /** Delta */
+            delta: number;
+            /**
+             * Note
+             * @default
+             */
+            note?: string;
+        };
+        /** StockPage */
+        StockPage: {
+            /** Items */
+            items: components["schemas"]["StockRow"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Lowstockat */
+            lowStockAt: number;
+        };
+        /** StockRow */
+        StockRow: {
+            /** Variantid */
+            variantId: number;
+            /** Sku */
+            sku: string;
+            /** Productname */
+            productName: string;
+            /** Variantname */
+            variantName: string;
+            /** Tracked */
+            tracked: boolean;
+            /** Source */
+            source: ("own" | "odoo") | null;
+            /** Onhand */
+            onHand: number;
+            /** Reserved */
+            reserved: number;
+            /** Available */
+            available: number;
+            /** Updatedat */
+            updatedAt: string | null;
+            /** Syncedat */
+            syncedAt: string | null;
+        };
+        /** SyncRunOut */
+        SyncRunOut: {
+            /**
+             * Startedat
+             * Format: date-time
+             */
+            startedAt: string;
+            /** Finishedat */
+            finishedAt: string | null;
+            /** Ok */
+            ok: boolean;
+            /** Matched */
+            matched: number;
+            /** Changed */
+            changed: number;
+            /** Missingskus */
+            missingSkus: string[];
+            /** Error */
+            error: string;
+        };
+        /** SyncStatus */
+        SyncStatus: {
+            /** Enabled */
+            enabled: boolean;
+            lastRun: components["schemas"]["SyncRunOut"] | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -2314,6 +2490,147 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_stock_api_admin_inventory_get: {
+        parameters: {
+            query?: {
+                /** @description SKU or product name. */
+                q?: string;
+                state?: ("untracked" | "out" | "low") | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    adjust_api_admin_inventory__variant_id__adjust_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                variant_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockAdjust"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    movements_api_admin_inventory__variant_id__movements_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                variant_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sync_status_api_admin_inventory_sync_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncStatus"];
+                };
+            };
+        };
+    };
+    run_sync_api_admin_inventory_sync_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncStatus"];
                 };
             };
         };

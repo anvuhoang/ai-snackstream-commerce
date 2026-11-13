@@ -23,6 +23,7 @@ from app.modules.catalog import router_admin as catalog_admin
 from app.modules.catalog import router_public as catalog_public
 from app.modules.catalog import seed as catalog_seed
 from app.modules.health import router as health_router
+from app.modules.inventory import router_admin as inventory_admin
 from app.modules.orders import router_admin as orders_admin
 from app.modules.orders import router_public as orders_public
 
@@ -92,6 +93,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         catalog_admin.router,
         orders_public.router,
         orders_admin.router,
+        inventory_admin.router,
     ):
         app.include_router(router)
     return app
