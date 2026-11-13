@@ -61,6 +61,13 @@ class LivePlaybackOut(LiveModel):
     video_url: str
     started_at: datetime
     paused_at: datetime | None = None
+    resume_at: datetime | None = Field(
+        default=None,
+        description=(
+            "Shared script restore start. Before this instant the script stays at "
+            "resumeAt - startedAt seconds while clients preload/seek. Null uses the legacy clock."
+        ),
+    )
     kind: Literal["script", "reply"] = "script"
     media_source: Literal["prerecorded", "make", "playlist"] = "prerecorded"
     script_index: int | None = Field(default=None, ge=0)

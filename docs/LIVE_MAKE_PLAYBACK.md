@@ -246,6 +246,44 @@ not RTT-corrected and allow small viewer offsets. Normal completion permits only
 existing tail of at most 750 ms of media for at most one second; skip/pause/end or
 disconnect cancels it. Only one player is audible in a tab.
 
+### Preparing script restoration after a reply
+
+Finishing or skipping a selected reply now adds a **five-second shared script
+restoration window** before content time advances again. The budget covers one
+approximately one-second SSE publication interval, three seconds of media loading
+in the regression scenario and one second of margin. It is bounded, not a viewer
+acknowledgement or a guarantee for arbitrary network delays. The separate five-second
+reply preparation window and the claim-based Make deadline are unchanged.
+
+Restored script playback includes optional `resumeAt` (UTC datetime) and keeps the
+saved segment, URL, SKU and duration. `startedAt = resumeAt - saved content offset`.
+For scripts with `resumeAt`, compute position as
+`max(pausedAt or estimated server time, resumeAt) - startedAt` until/after that gate.
+During preparation the player preloads and seeks to the saved offset while paused,
+then starts on the common schedule. Even a segment with only a fraction of a second
+left keeps that remainder; backend boundaries include the preparation window.
+This applies to legacy looping demo scripts too; their media position still uses
+modulo actual media duration. Playback without `resumeAt` (or with null) retains the
+previous clock behavior. Backend and frontend must be updated together.
+
+Pause/resume shifts both timestamps by the pause interval, preserving remaining
+preparation and content position. Skip uses the same bounded restoration; end and
+disconnect cancel/disable pending playback. Reconnect and late/over-budget viewers
+align to the shared time rather than restarting at the saved offset. A ready next
+reply may preempt restoration preparation: its saved script offset does not count
+the unstarted window, its own reply preparation is still five seconds, and the old
+player/timer is released. Claims, callbacks and queue processing are not blocked by
+viewer acknowledgements. If the playlist has already completed and no script is
+saved, a reply finishes/skips to no script, with no restoration window.
+
+Diagnostics include `resumeAt` on playback selection and
+`live_script_restore_preparing` with remaining preparation and saved position.
+Normal reply tail grace remains bounded and never permits overlapping audio.
+SSE publication, network transit, decoding and browser scheduling can consume the
+window; a client loading too slowly can still miss content. The existing server-time
+estimate is not RTT-corrected, so viewer offsets remain approximate. This reduces
+the restoration gap; it does not establish word-perfect continuity or human hearing.
+
 ## Browser diagnostics
 
 `/live` retains at most 500 events in tab memory and exports schema version 2 with
@@ -272,6 +310,12 @@ The preparation regression runs via `node tests/live-reply-preparation.browser.m
 set `LIVE_REPLY_FIXTURE` to an external 5.108005-second fixture. It injects a 900 ms
 state-publication delay and 3-second media load, checks head/tail, restoration,
 pause/resume, skip/end, late join and loading beyond the preparation window.
+The restoration regression runs via `node tests/live-script-restore.browser.mjs`;
+set `LIVE_REPLY_FIXTURE` to the 5.108005-second MP4 and `LIVE_RESTORE_SCRIPT_FIXTURE`
+to the external 61.416440-second repeated script fixture. It tests one-second SSE
+publication delay, three-second media load and restoration edge cases. Set
+`LIVE_RESTORE_BASELINE=1` only when reproducing the old player without restoration
+metadata. These are controlled browser/decoder checks, not listening acceptance.
 No browser test creates a new avatar video or proves that a person heard it.
 
 Optional real-probe backend tests use `LIVE_MEDIA_TEST_FIXTURE` (the external

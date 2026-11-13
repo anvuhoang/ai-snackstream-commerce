@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createLivePlaybackLog, summarizeLiveQuestions } from "../src/lib/live/playback-log.ts";
-import { canFinishReplyTail, mediaTarget, playbackOffset, playbackPosition } from "../src/lib/live/playback-timing.ts";
+import { canFinishReplyTail, mediaTarget, playbackOffset, playbackPosition, preparationRemaining } from "../src/lib/live/playback-timing.ts";
 
 test("playlist media clamps at its end while legacy script continues looping", () => {
   const playlist = { kind: "script", mediaSource: "playlist" };
@@ -166,6 +166,28 @@ test("script loops whereas a reply clamps and never wraps to the beginning", () 
 });
 
 const nearEnd = { currentTime: 9.86354, duration: 10.077007, paused: false, ended: false };
+const restoredScript = { ...playback, kind: "script", mediaSource: "playlist",
+  resumeAt: "2026-11-11T00:00:05Z", startedAt: "2026-11-10T23:59:58.074Z" };
+test("restore preloads at saved offset and starts content clock only at the shared resume time", () => {
+  assert.equal(playbackPosition(restoredScript, "2026-11-11T00:00:01Z", 1000, 4000), 6.926);
+  assert.equal(preparationRemaining(restoredScript, "2026-11-11T00:00:01Z", 1000, 4000), 1);
+  assert.equal(playbackPosition(restoredScript, "2026-11-11T00:00:01Z", 1000, 6000), 7.926);
+  assert.equal(preparationRemaining(restoredScript, "2026-11-11T00:00:01Z", 1000, 6000), 0);
+});
+test("paused restoration freezes preparation; shifting both dates preserves offset on resume", () => {
+  const paused = {...restoredScript, pausedAt: "2026-11-11T00:00:02Z"};
+  assert.equal(playbackPosition(paused, "2026-11-11T00:01:00Z", 0, 90000), 6.926);
+  assert.equal(preparationRemaining(paused, "2026-11-11T00:01:00Z", 0, 90000), 3);
+  const resumed = {...restoredScript, resumeAt: "2026-11-11T00:01:05Z", startedAt: "2026-11-11T00:00:58.074Z"};
+  assert.equal(playbackPosition(resumed, "2026-11-11T00:01:03Z", 0, 0), 6.926);
+  assert.equal(preparationRemaining(resumed, "2026-11-11T00:01:03Z", 0, 0), 2);
+});
+test("script without restore metadata retains old clock and reply preparation still lasts five seconds", () => {
+  assert.equal(preparationRemaining({...playback, kind: "script"}, "2026-11-11T00:00:01Z", 0, 0), 0);
+  assert.equal(playbackPosition({...playback, kind: "script"}, "2026-11-11T00:00:01Z", 0, 0), 1);
+  assert.equal(preparationRemaining({...playback, startedAt: "2026-11-11T00:00:05Z"},
+    "2026-11-11T00:00:00Z", 0, 0), 5);
+});
 test("future reply start retains a signed preparation offset while visible position stays zero", () => {
   const upcoming = { ...playback, startedAt: "2026-11-11T00:00:04Z" };
   assert.equal(playbackOffset(upcoming, "2026-11-11T00:00:00Z", 1000, 4000), -1);

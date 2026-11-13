@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 import { Button } from "@/components/ui/button";
 import type { components } from "@/lib/api/schema";
 import type { LiveLogContext, LiveLogDetails, LivePlaybackLog } from "@/lib/live/playback-log";
-import { mediaTarget, playbackOffset } from "@/lib/live/playback-timing";
+import { mediaTarget, playbackOffset, preparationRemaining } from "@/lib/live/playback-timing";
 
 type Playback = components["schemas"]["LivePlaybackOut"];
 
@@ -71,14 +71,27 @@ export function SessionVideo({
     // it to the deadline; the parent bounds this grace and never mounts two players.
     if (finishing) return;
 
-    const offset = playbackOffset(playback, serverTime, receivedAtMs, performance.now());
+    const now = performance.now();
+    const offset = playbackOffset(playback, serverTime, receivedAtMs, now);
     if (!Number.isFinite(offset)) return;
-    if (isReply && offset < 0) {
+    const remaining = preparationRemaining(playback, serverTime, receivedAtMs, now);
+    if (remaining > 0) {
       video.pause();
       setPreparing(true);
+      // Seek the saved script offset while paused, before the common start.
+      if (!isReply && video.readyState >= 1 && Number.isFinite(video.duration) && video.duration > 0) {
+        const target = mediaTarget(playback, Math.max(0, offset), video.duration);
+        if (Math.abs(video.currentTime - target) > 0.01) {
+          video.currentTime = target;
+          record("live_playback_seek_requested", video, {targetSeconds: target, elapsedSeconds: offset});
+        }
+      }
       if (!preparingLogged.current) {
         preparingLogged.current = true;
-        record("live_reply_preparing", video, { startsInSeconds: -offset });
+        record(isReply ? "live_reply_preparing" : "live_script_restore_preparing", video, {
+          startsInSeconds: remaining, savedPositionSeconds: isReply ? 0 : offset,
+          resumeAt: playback.resumeAt ?? null,
+        });
       }
       return;
     }
@@ -131,9 +144,9 @@ export function SessionVideo({
 
   useEffect(() => {
     const first = setTimeout(() => sync(), 0);
-    const offset = playbackOffset(playback, serverTime, receivedAtMs, performance.now());
-    const start = isReply && !playback.pausedAt && Number.isFinite(offset) && offset < 0
-      ? setTimeout(() => sync(), -offset * 1000 + 5) : null;
+    const remaining = preparationRemaining(playback, serverTime, receivedAtMs, performance.now());
+    const start = !playback.pausedAt && Number.isFinite(remaining) && remaining > 0
+      ? setTimeout(() => sync(), remaining * 1000 + 5) : null;
     const timer = setInterval(() => sync(), 2000);
 
     return () => {
@@ -141,7 +154,7 @@ export function SessionVideo({
       if (start !== null) clearTimeout(start);
       clearInterval(timer);
     };
-  }, [sync, isReply, playback, serverTime, receivedAtMs]);
+  }, [sync, playback, serverTime, receivedAtMs]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -234,7 +247,9 @@ export function SessionVideo({
 
       {(loading || preparing) && !playback.pausedAt && (
         <p role="status" className="text-sm text-muted">
-          {preparing ? "Đang chuẩn bị video trả lời…" : "Đang tải video…"}
+          {preparing
+            ? isReply ? "Đang chuẩn bị video trả lời…" : "Đang chuẩn bị tiếp tục kịch bản…"
+            : "Đang tải video…"}
         </p>
       )}
 

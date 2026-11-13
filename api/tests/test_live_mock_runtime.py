@@ -54,7 +54,7 @@ def test_ticks_process_queue_in_order_and_restore_script_without_viewers(runtime
         tick_playback(live, settings)
         current = live.get_current()
         assert current.playback.kind == "script"
-        assert (clock.current - current.playback.started_at).total_seconds() == 4
+        assert (current.playback.resume_at - current.playback.started_at).total_seconds() == 4
     assert [q.status for q in current.questions] == ["answered", "answered"]
     sender.assert_not_called()
 

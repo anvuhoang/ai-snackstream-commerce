@@ -135,6 +135,7 @@ export function LiveSessionViewer() {
           if (playback && selectedPlaybackId.current !== playback.playbackId) {
             log.record("live_playback_selected", context, {
               startedAt: playback.startedAt,
+              resumeAt: playback.resumeAt ?? null,
               pausedAt: playback.pausedAt ?? null,
               durationSeconds: playback.durationSeconds ?? null,
             });

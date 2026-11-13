@@ -396,6 +396,11 @@ export interface components {
             /** Pausedat */
             pausedAt?: string | null;
             /**
+             * Resumeat
+             * @description Shared script restore start. Before this instant the script stays at resumeAt - startedAt seconds while clients preload/seek. Null uses the legacy clock.
+             */
+            resumeAt?: string | null;
+            /**
              * Kind
              * @default script
              * @enum {string}

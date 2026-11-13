@@ -133,6 +133,7 @@ def test_reply_restores_exact_segment_and_offset(running, action):
     assert current.playback.script_index == 1
     assert current.pinned_sku == "SKU-B"
     reference = current.playback.paused_at or clock.current
+    reference = max(reference, current.playback.resume_at or reference)
     assert (reference - current.playback.started_at).total_seconds() == pytest.approx(1.391995)
     assert live.receive_make_result(result, settings.live_make_result_timeout_seconds).reason == "duplicate"
     assert live.get_current() == current
@@ -152,7 +153,7 @@ def test_end_of_playlist_drains_queue_without_cutting_reply_or_reopening(running
             live.skip_question(live_id, q.question_id)
         else:
             assert live.finish_reply(live_id)
-        clock.current += timedelta(seconds=0.473016)
+        clock.current = live.get_current().playback.resume_at + timedelta(seconds=0.473016)
     else:
         settings.live_make_enabled = True
         live.claim_next_question(live_id)
@@ -233,7 +234,7 @@ def test_ready_on_script_boundary_saves_next_segment_or_completed_state(running,
         assert current.script_completed and current.playback is None
     else:
         assert current.playback.script_index == index
-        assert current.playback.started_at == clock.current
+        assert current.playback.started_at == current.playback.resume_at
     assert live.receive_make_result(result, settings.live_make_result_timeout_seconds).reason == "duplicate"
 
 

@@ -16,6 +16,8 @@ from .schemas import (
 
 # One shared preload window; no viewer acknowledgement can extend the session.
 REPLY_PREPARATION_SECONDS = 5.0
+# Budget: one SSE interval + three seconds of media load + one second margin.
+SCRIPT_RESTORE_PREPARATION_SECONDS = 5.0
 
 
 class LiveService:
@@ -92,6 +94,8 @@ class LiveService:
             and playback.script_index is not None
             and playback.duration_seconds is not None
         ):
+            if playback.resume_at is not None and now < playback.resume_at:
+                return
             boundary = playback.started_at + timedelta(seconds=playback.duration_seconds)
             if now < boundary:
                 return
@@ -277,6 +281,8 @@ class LiveService:
             if session.playback is not None and session.playback.paused_at is not None:
                 paused_duration = datetime.now(UTC) - session.playback.paused_at
                 session.playback.started_at += paused_duration
+                if session.playback.resume_at is not None:
+                    session.playback.resume_at += paused_duration
                 session.playback.paused_at = None
             session.status = "playing"
             return session.model_copy(deep=True)
@@ -342,6 +348,11 @@ class LiveService:
             )
             if session.playback is not None:
                 self._script_playback = session.playback.model_copy(deep=True)
+                # A second reply may preempt restore preparation. Preserve content
+                # position, not wall-clock time that has not started running yet.
+                reference = max(now, self._script_playback.resume_at or now)
+                self._script_playback.started_at += now - reference
+                self._script_playback.resume_at = None
                 self._script_playback.paused_at = now
             session.playback = reply
             question.status = "answering"
@@ -356,7 +367,9 @@ class LiveService:
             return False
 
         restored = script.model_copy(deep=True)
-        restored.started_at += now - script.paused_at
+        window = timedelta(seconds=SCRIPT_RESTORE_PREPARATION_SECONDS)
+        restored.started_at += now - script.paused_at + window
+        restored.resume_at = now + window
         restored.paused_at = now if session.status == "paused" else None
         restored.playback_id = uuid4().hex
         session.playback = restored

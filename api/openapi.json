@@ -883,6 +883,19 @@
             ],
             "title": "Pausedat"
           },
+          "resumeAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resumeat",
+            "description": "Shared script restore start. Before this instant the script stays at resumeAt - startedAt seconds while clients preload/seek. Null uses the legacy clock."
+          },
           "kind": {
             "type": "string",
             "enum": [

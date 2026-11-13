@@ -75,7 +75,7 @@ def test_shared_preparation_and_full_duration_finish_without_any_viewer(preparin
     current = live.get_current()
     assert current.questions[0].status == "answered"
     assert current.playback.kind == "script"
-    assert (clock.current - current.playback.started_at).total_seconds() == 7
+    assert (current.playback.resume_at - current.playback.started_at).total_seconds() == 7
     if settings.live_make_enabled:
         ack = live.receive_make_result(result, settings.live_make_result_timeout_seconds)
         assert ack.reason == "duplicate"
@@ -100,7 +100,8 @@ def test_pause_during_preparation_preserves_remaining_window_and_media_duration(
     clock.current = reply.started_at + timedelta(seconds=reply.duration_seconds)
     tick_playback(live, settings)
     assert live.get_current().questions[0].status == "answered"
-    assert (clock.current - live.get_current().playback.started_at).total_seconds() == 7
+    restored = live.get_current().playback
+    assert (restored.resume_at - restored.started_at).total_seconds() == 7
 
 
 @pytest.mark.parametrize("action", ["skip", "paused_skip", "end"])

@@ -8,9 +8,23 @@ export const REPLY_TAIL_TIMEOUT_MS = 1000;
 export function playbackOffset(
   playback: Playback, serverTime: string, receivedAtMs: number, nowMs: number,
 ) {
-  const reference = playback.pausedAt ?? serverTime;
-  return (Date.parse(reference) - Date.parse(playback.startedAt)) / 1000
-    + (playback.pausedAt ? 0 : Math.max(0, nowMs - receivedAtMs) / 1000);
+  const reference = playbackReference(playback, serverTime, receivedAtMs, nowMs);
+  const contentTime = playback.kind === "script" && playback.resumeAt
+    ? Math.max(reference, Date.parse(playback.resumeAt)) : reference;
+  return (contentTime - Date.parse(playback.startedAt)) / 1000;
+}
+
+function playbackReference(playback: Playback, serverTime: string, receivedAtMs: number, nowMs: number) {
+  return Date.parse(playback.pausedAt ?? serverTime)
+    + (playback.pausedAt ? 0 : Math.max(0, nowMs - receivedAtMs));
+}
+
+export function preparationRemaining(
+  playback: Playback, serverTime: string, receivedAtMs: number, nowMs: number,
+) {
+  const gate = playback.kind === "reply" ? playback.startedAt : playback.resumeAt;
+  return gate ? Math.max(0,
+    (Date.parse(gate) - playbackReference(playback, serverTime, receivedAtMs, nowMs)) / 1000) : 0;
 }
 
 export function playbackPosition(
