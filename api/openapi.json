@@ -896,10 +896,34 @@
             "type": "string",
             "enum": [
               "prerecorded",
-              "make"
+              "make",
+              "playlist"
             ],
             "title": "Mediasource",
             "default": "prerecorded"
+          },
+          "scriptIndex": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scriptindex"
+          },
+          "scriptName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scriptname"
           },
           "questionId": {
             "anyOf": [
@@ -916,7 +940,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 300.0,
+                "maximum": 3600.0,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -1120,6 +1144,43 @@
         ],
         "title": "LiveQuestionOut"
       },
+      "LiveScriptSegment": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          },
+          "videoUrl": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Videourl"
+          },
+          "durationSeconds": {
+            "type": "number",
+            "maximum": 3600.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Durationseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "sku",
+          "videoUrl",
+          "durationSeconds"
+        ],
+        "title": "LiveScriptSegment"
+      },
       "LiveSessionCreate": {
         "properties": {
           "title": {
@@ -1137,6 +1198,14 @@
             "maxItems": 6,
             "minItems": 1,
             "title": "Scheduledskus"
+          },
+          "scriptPlaylist": {
+            "items": {
+              "$ref": "#/components/schemas/LiveScriptSegment"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Scriptplaylist"
           }
         },
         "additionalProperties": false,
@@ -1167,6 +1236,18 @@
           "pinnedSku": {
             "type": "string",
             "title": "Pinnedsku"
+          },
+          "scriptPlaylist": {
+            "items": {
+              "$ref": "#/components/schemas/LiveScriptSegment"
+            },
+            "type": "array",
+            "title": "Scriptplaylist"
+          },
+          "scriptCompleted": {
+            "type": "boolean",
+            "title": "Scriptcompleted",
+            "default": false
           },
           "isDemo": {
             "type": "boolean",

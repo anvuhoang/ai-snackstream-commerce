@@ -406,7 +406,11 @@ export interface components {
              * @default prerecorded
              * @enum {string}
              */
-            mediaSource: "prerecorded" | "make";
+            mediaSource: "prerecorded" | "make" | "playlist";
+            /** Scriptindex */
+            scriptIndex?: number | null;
+            /** Scriptname */
+            scriptName?: string | null;
             /** Questionid */
             questionId?: string | null;
             /** Durationseconds */
@@ -471,12 +475,28 @@ export interface components {
              */
             source: "web_live";
         };
+        /** LiveScriptSegment */
+        LiveScriptSegment: {
+            /** Name */
+            name: string;
+            /** Sku */
+            sku: string;
+            /**
+             * Videourl
+             * Format: uri
+             */
+            videoUrl: string;
+            /** Durationseconds */
+            durationSeconds: number;
+        };
         /** LiveSessionCreate */
         LiveSessionCreate: {
             /** Title */
             title: string;
             /** Scheduledskus */
             scheduledSkus: string[];
+            /** Scriptplaylist */
+            scriptPlaylist?: components["schemas"]["LiveScriptSegment"][];
         };
         /** LiveSessionOut */
         LiveSessionOut: {
@@ -488,6 +508,13 @@ export interface components {
             scheduledSkus: string[];
             /** Pinnedsku */
             pinnedSku: string;
+            /** Scriptplaylist */
+            scriptPlaylist?: components["schemas"]["LiveScriptSegment"][];
+            /**
+             * Scriptcompleted
+             * @default false
+             */
+            scriptCompleted: boolean;
             /**
              * Isdemo
              * @default true

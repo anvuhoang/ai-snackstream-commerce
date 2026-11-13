@@ -4,7 +4,7 @@ export type LiveLogContext = {
   playbackId?: string;
   sku?: string;
   playbackKind?: "script" | "reply";
-  mediaSource?: "prerecorded" | "make";
+  mediaSource?: "prerecorded" | "make" | "playlist";
 };
 
 export type LiveLogDetails = Record<string, string | number | boolean | null>;

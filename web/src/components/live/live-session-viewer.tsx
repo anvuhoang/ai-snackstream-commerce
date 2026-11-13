@@ -210,6 +210,11 @@ export function LiveSessionViewer() {
             <p className="text-sm text-muted">
               SKU đang giới thiệu: {live.pinnedSku}
             </p>
+            {live.scriptCompleted && (
+              <p role="status" className="text-sm text-muted">
+                Đã hết danh sách video thử nghiệm. Đang xử lý các câu hỏi đã nhận; không nhận câu mới.
+              </p>
+            )}
             {(live.status === "playing" || live.status === "paused") && playback && videoSnapshot?.serverTime && (
               <SessionVideo
                 key={playback.playbackId}

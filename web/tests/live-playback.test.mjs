@@ -3,6 +3,13 @@ import { test } from "node:test";
 import { createLivePlaybackLog, summarizeLiveQuestions } from "../src/lib/live/playback-log.ts";
 import { canFinishReplyTail, mediaTarget, playbackOffset, playbackPosition } from "../src/lib/live/playback-timing.ts";
 
+test("playlist media clamps at its end while legacy script continues looping", () => {
+  const playlist = { kind: "script", mediaSource: "playlist" };
+  assert.equal(mediaTarget(playlist, 8, 5.108005), 5.108005);
+  assert.equal(mediaTarget(playlist, 1.391995, 4.365011), 1.391995);
+  assert.equal(mediaTarget({ kind: "script", mediaSource: "prerecorded" }, 8, 5), 3);
+});
+
 const context = { sessionId: "page-a", liveId: "live-a", questionId: "question-a" };
 function event(name, elapsedMs, extra = {}, details = {}) {
   return {

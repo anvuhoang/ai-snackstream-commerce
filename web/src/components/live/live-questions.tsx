@@ -37,7 +37,7 @@ export function LiveQuestions({ live, connected, onLog }: Props) {
   const pending = useRef<QuestionIn | null>(null);
   const sending = useRef(false);
 
-  const accepting = live.status === "playing" || live.status === "paused";
+  const accepting = !live.scriptCompleted && (live.status === "playing" || live.status === "paused");
   const questions = live.questions ?? [];
 
   async function submitQuestion(event: FormEvent<HTMLFormElement>) {

@@ -30,6 +30,8 @@ export function SessionVideo({
   const aligned = useRef(false);
   const preparingLogged = useRef(false);
   const isReply = playback.kind === "reply";
+  const isPlaylist = playback.mediaSource === "playlist";
+  const bounded = isReply || isPlaylist;
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [preparing, setPreparing] = useState(false);
@@ -60,7 +62,7 @@ export function SessionVideo({
       video.pause();
     }
 
-    if (isReply && replyEnded.current) {
+    if (bounded && replyEnded.current) {
       video.pause();
       return;
     }
@@ -86,15 +88,15 @@ export function SessionVideo({
     if (video.readyState >= 1 && Number.isFinite(video.duration) && video.duration > 0) {
       const duration = video.duration;
       // A late viewer must not replay a reply whose shared deadline has passed.
-      if (isReply && !aligned.current && elapsed >= (playback.durationSeconds ?? duration)) {
+      if (bounded && !aligned.current && elapsed >= (playback.durationSeconds ?? duration)) {
         replyEnded.current = true;
         video.pause();
-        record("live_reply_expired_before_start", video);
+        record(isReply ? "live_reply_expired_before_start" : "live_script_expired_before_start", video);
         return;
       }
       const target = mediaTarget(playback, elapsed, duration);
       const distance = Math.abs(video.currentTime - target);
-      const drift = isReply ? distance : Math.min(distance, duration - distance);
+      const drift = bounded ? distance : Math.min(distance, duration - distance);
       const tolerance = playback.pausedAt ? 0.05 : 0.75;
       // Always align the initial position, including sub-tolerance delivery delay.
       // Once running near the end, let native ended preserve the final syllable.
@@ -121,7 +123,7 @@ export function SessionVideo({
       });
     }
   }, [
-    connected, enabled, isReply,
+    connected, enabled, isReply, bounded,
     playback,
     serverTime, receivedAtMs, record,
     finishing, videoRef,
@@ -155,9 +157,11 @@ export function SessionVideo({
           ? playback.mediaSource === "prerecorded"
             ? "Video trả lời mô phỏng — dùng clip có sẵn."
             : "Video trả lời qua Make."
-          : "Video nội dung live."}
+          : isPlaylist
+            ? `Video kịch bản thử nghiệm: ${(playback.scriptIndex ?? 0) + 1}. ${playback.scriptName ?? ""}`
+            : "Video demo thử nghiệm — phát lặp clip cũ."}
       </p>
-      <video ref={videoRef} src={playback.videoUrl} loop={!isReply} playsInline preload="auto"
+      <video ref={videoRef} src={playback.videoUrl} loop={!bounded} playsInline preload="auto"
         className="aspect-video w-full rounded-card bg-black object-contain"
         aria-label="Video avatar của phiên"
         onLoadedMetadata={(event) => {
@@ -185,14 +189,14 @@ export function SessionVideo({
         onPause={(event) => record("live_playback_paused", event.currentTarget)}
         onVolumeChange={(event) => record("live_volume_changed", event.currentTarget)}
         onEnded={(event) => {
-          if (isReply) replyEnded.current = true;
+          if (bounded) replyEnded.current = true;
           setLoading(false);
           record("live_playback_ended", event.currentTarget);
           onEnded();
         }}
         onError={(event) => {
           setLoading(false);
-          setError("Không tải được video. Vui lòng thử lại.");
+          setError("Không tải được video. Có thể thử lại; đồng hồ phiên vẫn tiếp tục theo backend.");
           record("live_playback_error", event.currentTarget, {
             reason: "media_error",
             mediaErrorCode: event.currentTarget.error?.code ?? 0,

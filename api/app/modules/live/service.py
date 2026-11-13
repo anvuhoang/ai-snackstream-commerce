@@ -32,6 +32,7 @@ class LiveService:
             if self._current is None:
                 return None
 
+            self._advance_script_locked(self._current, datetime.now(UTC))
             return self._current.model_copy(deep=True)
 
     def create_session(self, data: LiveSessionCreate) -> LiveSessionOut:
@@ -48,6 +49,7 @@ class LiveService:
                 title=data.title,
                 scheduled_skus=list(data.scheduled_skus),
                 pinned_sku=data.scheduled_skus[0],
+                script_playlist=[segment.model_copy(deep=True) for segment in data.script_playlist],
             )
 
             self._current = session
@@ -67,6 +69,44 @@ class LiveService:
 
         return self._current
 
+    def _select_script_segment(self, session: LiveSessionOut, index: int, started_at: datetime) -> None:
+        segment = session.script_playlist[index]
+        session.pinned_sku = segment.sku
+        session.playback = LivePlaybackOut(
+            playback_id=uuid4().hex,
+            video_url=str(segment.video_url),
+            started_at=started_at,
+            media_source="playlist",
+            script_index=index,
+            script_name=segment.name,
+            duration_seconds=segment.duration_seconds,
+        )
+
+    def _advance_script_locked(self, session: LiveSessionOut, now: datetime) -> None:
+        """Caller holds the lock. Carry exact boundaries, including ticks that miss several clips."""
+        while (
+            session.status == "playing"
+            and (playback := session.playback) is not None
+            and playback.media_source == "playlist"
+            and playback.kind == "script"
+            and playback.script_index is not None
+            and playback.duration_seconds is not None
+        ):
+            boundary = playback.started_at + timedelta(seconds=playback.duration_seconds)
+            if now < boundary:
+                return
+            index = playback.script_index + 1
+            if index == len(session.script_playlist):
+                session.script_completed = True
+                session.playback = None
+                return
+            self._select_script_segment(session, index, boundary)
+
+    def advance_script(self) -> None:
+        with self._lock:
+            if self._current is not None:
+                self._advance_script_locked(self._current, datetime.now(UTC))
+
     def start_session(self, live_id: str) -> LiveSessionOut:
         with self._lock:
             session = self._require_current(live_id)
@@ -85,6 +125,8 @@ class LiveService:
             )
 
             session.status = "playing"
+            if session.script_playlist:
+                self._select_script_segment(session, 0, session.playback.started_at)
             return session.model_copy(deep=True)
 
     def end_session(self, live_id: str) -> LiveSessionOut:
@@ -104,6 +146,9 @@ class LiveService:
     def pin_sku(self, live_id: str, sku: str) -> LiveSessionOut:
         with self._lock:
             session = self._require_current(live_id)
+
+            if session.script_playlist:
+                raise AppError(409, "live_playlist_controls_sku", "Playlist controls the current SKU.")
 
             if session.status == "ended":
                 raise AppError(
@@ -141,6 +186,13 @@ class LiveService:
             if session.status not in ("playing", "paused"):
                 raise AppError(409, "live_not_running", "Session is not accepting questions.")
 
+            now = datetime.now(UTC)
+            self._advance_script_locked(session, now)
+            if session.script_completed:
+                raise AppError(
+                    409, "live_script_completed", "Playlist finished; existing questions will drain."
+                )
+
             if len(session.questions) >= 100:
                 raise AppError(429, "live_question_capacity", "Demo question capacity reached.")
 
@@ -152,7 +204,7 @@ class LiveService:
                 live_id=session.live_id,
                 text=data.text,
                 sku=session.pinned_sku,
-                received_at=datetime.now(UTC),
+                received_at=now,
                 is_demo=session.is_demo,
             )
 
@@ -190,14 +242,17 @@ class LiveService:
             if session.status == "paused":
                 return session.model_copy(deep=True)
 
-            if session.status != "playing" or session.playback is None:
+            now = datetime.now(UTC)
+            self._advance_script_locked(session, now)
+            if session.status != "playing" or (session.playback is None and not session.script_completed):
                 raise AppError(
                     409,
                     "live_invalid_state",
                     "Only a playing session can be paused.",
                 )
 
-            session.playback.paused_at = datetime.now(UTC)
+            if session.playback is not None:
+                session.playback.paused_at = now
             session.status = "paused"
             return session.model_copy(deep=True)
 
@@ -208,16 +263,21 @@ class LiveService:
             if session.status == "playing":
                 return session.model_copy(deep=True)
 
-            if session.status != "paused" or session.playback is None or session.playback.paused_at is None:
+            if (
+                session.status != "paused"
+                or (session.playback is None and not session.script_completed)
+                or (session.playback is not None and session.playback.paused_at is None)
+            ):
                 raise AppError(
                     409,
                     "live_invalid_state",
                     "Only a paused session can be resumed.",
                 )
 
-            paused_duration = datetime.now(UTC) - session.playback.paused_at
-            session.playback.started_at += paused_duration
-            session.playback.paused_at = None
+            if session.playback is not None and session.playback.paused_at is not None:
+                paused_duration = datetime.now(UTC) - session.playback.paused_at
+                session.playback.started_at += paused_duration
+                session.playback.paused_at = None
             session.status = "playing"
             return session.model_copy(deep=True)
 
@@ -245,12 +305,14 @@ class LiveService:
     def start_ready_reply(self, live_id: str) -> bool:
         with self._lock:
             session = self._current
+            if session is not None and session.live_id == live_id:
+                self._advance_script_locked(session, datetime.now(UTC))
             if (
                 session is None
                 or session.live_id != live_id
                 or session.status != "playing"
-                or session.playback is None
-                or session.playback.kind != "script"
+                or (session.playback is None and not session.script_completed)
+                or (session.playback is not None and session.playback.kind != "script")
                 or self._script_playback is not None
             ):
                 return False
@@ -278,14 +340,18 @@ class LiveService:
                 question_id=question.question_id,
                 duration_seconds=question.video_duration_seconds,
             )
-            self._script_playback = session.playback.model_copy(deep=True)
-            self._script_playback.paused_at = now
+            if session.playback is not None:
+                self._script_playback = session.playback.model_copy(deep=True)
+                self._script_playback.paused_at = now
             session.playback = reply
             question.status = "answering"
             return True
 
     def _restore_script(self, session: LiveSessionOut, now: datetime) -> bool:
         script = self._script_playback
+        if session.script_completed and script is None:
+            session.playback = None
+            return True
         if script is None or script.paused_at is None:
             return False
 

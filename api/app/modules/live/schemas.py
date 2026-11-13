@@ -17,9 +17,35 @@ class LiveModel(BaseModel):
 Sku = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$")]
 
 
+class LiveScriptSegment(LiveModel):
+    name: str = Field(min_length=1, max_length=160)
+    sku: Sku
+    video_url: HttpUrl
+    duration_seconds: float = Field(strict=True, gt=0, le=3600, allow_inf_nan=False)
+
+    @field_validator("sku")
+    @classmethod
+    def uppercase_sku(cls, value: str) -> str:
+        return value.upper()
+
+    @field_validator("video_url")
+    @classmethod
+    def no_credentials(cls, value: HttpUrl) -> HttpUrl:
+        if value.username is not None or value.password is not None:
+            raise ValueError("Video URL must not contain credentials.")
+        return value
+
+
 class LiveSessionCreate(LiveModel):
     title: str = Field(min_length=1, max_length=160)
     scheduled_skus: list[Sku] = Field(min_length=1, max_length=6)
+    script_playlist: list[LiveScriptSegment] = Field(default_factory=list, max_length=30)
+
+    @model_validator(mode="after")
+    def playlist_skus(self) -> Self:
+        if any(segment.sku not in self.scheduled_skus for segment in self.script_playlist):
+            raise ValueError("Every script SKU must be scheduled for this session.")
+        return self
 
     @field_validator("scheduled_skus")
     @classmethod
@@ -36,12 +62,14 @@ class LivePlaybackOut(LiveModel):
     started_at: datetime
     paused_at: datetime | None = None
     kind: Literal["script", "reply"] = "script"
-    media_source: Literal["prerecorded", "make"] = "prerecorded"
+    media_source: Literal["prerecorded", "make", "playlist"] = "prerecorded"
+    script_index: int | None = Field(default=None, ge=0)
+    script_name: str | None = None
     question_id: str | None = None
     duration_seconds: float | None = Field(
         default=None,
         gt=0,
-        le=300,
+        le=3600,
         allow_inf_nan=False,
     )
 
@@ -79,6 +107,8 @@ class LiveSessionOut(LiveModel):
     title: str
     scheduled_skus: list[str]
     pinned_sku: str
+    script_playlist: list[LiveScriptSegment] = Field(default_factory=list)
+    script_completed: bool = False
     is_demo: Literal[True] = True
     status: Literal[
         "not_started",

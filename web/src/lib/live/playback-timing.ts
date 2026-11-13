@@ -37,5 +37,6 @@ export function canFinishReplyTail(
 }
 
 export function mediaTarget(playback: Playback, elapsed: number, duration: number) {
-  return playback.kind === "reply" ? Math.min(elapsed, duration) : elapsed % duration;
+  return playback.kind === "reply" || playback.mediaSource === "playlist"
+    ? Math.min(elapsed, duration) : elapsed % duration;
 }

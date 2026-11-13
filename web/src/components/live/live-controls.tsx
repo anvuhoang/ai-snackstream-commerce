@@ -91,7 +91,7 @@ export function LiveControls({ live }: { live: LiveSession }) {
     <div className="mt-5 grid gap-3">
     <label className="grid gap-2 text-sm font-medium">
     SKU đang giới thiệu
-    <select value={live.pinnedSku} disabled={locked || live.status === "ended"}
+    <select value={live.pinnedSku} disabled={locked || live.status === "ended" || Boolean(live.scriptPlaylist?.length)}
       onChange={(event) => void pinSku(event.target.value)}
       className="w-full rounded-lg border border-line bg-surface p-3">
       {live.scheduledSkus.map((sku) => (
@@ -99,6 +99,9 @@ export function LiveControls({ live }: { live: LiveSession }) {
        ))}
       </select>
     </label>
+    {Boolean(live.scriptPlaylist?.length) && (
+      <p className="text-sm text-muted">SKU tự chuyển theo danh sách video thử nghiệm.</p>
+    )}
 
     {busyAction === "pin" && (
       <p role="status" className="text-sm text-muted">Đang cập nhật SKU…</p>

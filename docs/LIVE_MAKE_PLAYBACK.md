@@ -18,7 +18,68 @@ them. Durable storage and migrations require coordination with the migration own
 
 Start the API and web as described in [README](../README.md). Run the backend from
 `api` so its local `.env` is loaded. Supply a playable script MP4 at
-`web/public/live-demo/avatar.mp4`; this file is ignored by Git.
+`web/public/live-demo/avatar.mp4` for legacy sessions/mock replies; this file is ignored by Git.
+
+## Product script playlist (experimental)
+
+When creating a session, admins can add, remove and reorder up to 30 script clips.
+All content and avatars remain test data. This feature does not upload, render,
+generate scripts or fetch products from Odoo. A create request can include:
+
+```json
+{
+  "title": "Product introduction (test)",
+  "scheduledSkus": ["SKU-A", "SKU-B"],
+  "scriptPlaylist": [
+    {"name": "Product A", "sku": "SKU-A", "videoUrl": "https://example.invalid/a.mp4", "durationSeconds": 5.108005},
+    {"name": "Product B", "sku": "SKU-B", "videoUrl": "https://example.invalid/b.mp4", "durationSeconds": 4.365011}
+  ]
+}
+```
+
+The example durations illustrate measured seconds, not defaults. Supply the actual
+container duration of each exact file (for example from ffprobe). The backend
+validates a nonempty name, scheduled SKU, HTTP/HTTPS URL without embedded credentials,
+and a finite numeric duration in `(0, 3600]`; strings and booleans are rejected.
+It does not download or verify remote URLs/durations. Use HTTPS media on HTTPS pages;
+HTTP is accepted for local fixtures, subject to browser mixed-content rules.
+
+Playback exposes `mediaSource: "playlist"`, zero-based `scriptIndex`, `scriptName`
+and the measured `durationSeconds`. The server's UTC timeline decides each segment
+and offset, carries exact segment boundaries across delayed ticks, and updates
+`pinnedSku` automatically. Manual pinning returns 409 for playlist sessions.
+Question receipt and segment advancement share the lock and timestamp: a question
+captures that segment's SKU permanently, including at an exact boundary.
+When either Make or mock mode is enabled, the application starts the background
+runtime, which advances script segments without viewers. When both modes are off,
+there is no background worker: `get_current` and relevant service operations
+recalculate the position from the shared clock when called. Questions are not
+dispatched in that mode.
+
+A reply freezes the current script segment and offset at selection, including its
+shared five-second preparation window. Normal completion or skip restores that
+segment/offset; pause/resume preserves both script position and reply preparation.
+The Make claim deadline, queue limits and callback idempotency are unchanged.
+
+The playlist runs **once**. At its end `scriptCompleted` becomes true and script
+`playback` is null; new questions return 409 (`live_script_completed`). Retries of
+already received questions remain idempotent. The session stays active to drain
+previously accepted questions through the selected Make/mock mode. Pending callbacks
+still expire on their original deadline. Replies are never cut off by the end of
+the playlist: the script is frozen during a reply, and replies received after script
+completion still play once before returning to no script. Admin can then end the
+session. With provider modes disabled, question dispatch remains disabled as before;
+admin may skip pending questions or end the session.
+
+Late/reconnecting viewers align to the current segment's shared offset. Playlist
+clips do not loop, unlike the legacy demo. Media load/error/early native end never
+blocks the server clock; errors are shown in the player and the next segment still
+starts on schedule. Delivery is subject to the existing SSE interval and network
+delay, so late/slow clients can miss media at a boundary. No viewer acknowledgement
+extends a segment. Omitting `scriptPlaylist` or passing `[]` retains legacy demo
+looping, manual SKU pinning and question behavior.
+
+## Provider configuration
 
 Choose one mode in `api/.env`:
 
