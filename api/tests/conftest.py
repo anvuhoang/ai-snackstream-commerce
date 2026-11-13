@@ -33,12 +33,17 @@ def settings(tmp_path) -> Settings:
     # SQLite keeps unit tests dependency-free. Anything that relies on PostgreSQL features (row locks,
     # concurrency) is marked `@pytest.mark.postgres` and runs against POSTGRES_TEST_URL in CI.
     return Settings(
+        _env_file=None,
         APP_ENV="test",
         DATABASE_URL=f"sqlite:///{(tmp_path / 'test.db').as_posix()}",
         SECRET_KEY="test-secret",
         MEDIA_DIR=str(tmp_path / "media"),
         BOOTSTRAP_ADMIN_EMAIL=ADMIN_EMAIL,
         BOOTSTRAP_ADMIN_PASSWORD=ADMIN_PASSWORD,
+        LIVE_MOCK_ENABLED=False,
+        LIVE_MAKE_ENABLED=False,
+        LIVE_MAKE_WEBHOOK_URL="",
+        LIVE_MAKE_CALLBACK_TOKEN="",
         # A developer's own api/.env may hold real VNPay or Odoo keys; tests must never read or use them.
         VNPAY_TMN_CODE="",
         VNPAY_HASH_SECRET="",

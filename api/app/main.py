@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -26,6 +27,9 @@ from app.modules.catalog import router_public as catalog_public
 from app.modules.catalog import seed as catalog_seed
 from app.modules.health import router as health_router
 from app.modules.inventory import router_admin as inventory_admin
+from app.modules.live import router as live_router
+from app.modules.live.runtime import run_playback
+from app.modules.live.service import LiveService
 from app.modules.orders import router_admin as orders_admin
 from app.modules.orders import router_public as orders_public
 
@@ -51,8 +55,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             auth_service.ensure_bootstrap_admin(db, settings)
             if settings.seed_demo_catalog:
                 catalog_seed.seed_catalog(db, Path(settings.media_dir))
-        yield
-        app.state.engine.dispose()
+        playback_task = None
+        if settings.live_mock_enabled or settings.live_make_enabled:
+            playback_task = asyncio.create_task(run_playback(app.state.live, settings))
+        try:
+            yield
+        finally:
+            if playback_task is not None:
+                playback_task.cancel()
+                await asyncio.gather(playback_task, return_exceptions=True)
+            app.state.engine.dispose()
 
     app = FastAPI(
         title="SnackStream API",
@@ -65,6 +77,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.engine = make_engine(settings.database_url)
     app.state.session_factory = make_session_factory(app.state.engine)
+    app.state.live = LiveService()
     app.state.storage = LocalMediaStorage(Path(settings.media_dir))
     app.mount("/api/media", StaticFiles(directory=app.state.storage.root), name="media")
 
@@ -98,6 +111,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         inventory_admin.router,
         analytics_admin.router,
         analytics_public.router,
+        live_router.router,
+        live_router.admin_router,
     ):
         app.include_router(router)
     return app

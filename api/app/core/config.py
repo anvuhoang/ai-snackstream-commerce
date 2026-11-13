@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEV_SECRET = "dev-only-change-me"
@@ -37,6 +37,25 @@ class Settings(BaseSettings):
     seed_demo_catalog: bool = Field(False, alias="SEED_DEMO_CATALOG")
     # Browser origin(s) allowed to call the API directly (the web app normally proxies, so this is empty).
     cors_origins: list[str] = Field(default_factory=list, alias="CORS_ORIGINS")
+    live_make_enabled: bool = Field(False, alias="LIVE_MAKE_ENABLED")
+    live_make_webhook_url: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_WEBHOOK_URL")
+    live_make_callback_token: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_CALLBACK_TOKEN")
+    live_ffprobe_path: str = Field("ffprobe", min_length=1, alias="LIVE_FFPROBE_PATH")
+    live_make_result_timeout_seconds: float = Field(
+        180,
+        gt=0,
+        le=1800,
+        allow_inf_nan=False,
+        alias="LIVE_MAKE_RESULT_TIMEOUT_SECONDS",
+    )
+    live_mock_enabled: bool = Field(False, alias="LIVE_MOCK_ENABLED")
+    live_mock_video_duration_seconds: float = Field(
+        10.077007,
+        gt=0,
+        le=300,
+        allow_inf_nan=False,
+        alias="LIVE_MOCK_VIDEO_DURATION_SECONDS",
+    )
     # Shipping (decision D4): a flat fee, free from a threshold. Money is whole dong.
     shipping_fee_vnd: int = Field(30_000, alias="SHIPPING_FEE_VND", ge=0)
     free_ship_from_vnd: int = Field(300_000, alias="FREE_SHIP_FROM_VND", ge=0)
@@ -59,6 +78,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _finalize(self) -> Settings:
+        if self.live_make_enabled and self.live_mock_enabled:
+            raise ValueError("Enable only one of LIVE_MAKE_ENABLED and LIVE_MOCK_ENABLED")
         self.database_url = normalize_db_url(self.database_url)
         if self.run_migrations_on_start is None:
             self.run_migrations_on_start = self.env != "production"

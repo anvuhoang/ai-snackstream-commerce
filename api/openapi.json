@@ -2425,6 +2425,489 @@
           }
         }
       }
+    },
+    "/api/live/current": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Get Current Live",
+        "operationId": "get_current_live_api_live_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveCurrentOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/live/events": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Live Events",
+        "operationId": "live_events_api_live_events_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/live/{live_id}/questions": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Submit Live Question",
+        "operationId": "submit_live_question_api_live__live_id__questions_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveQuestionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveQuestionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/live/media-metadata": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Measure Media Metadata",
+        "operationId": "measure_media_metadata_api_live_media_metadata_post",
+        "requestBody": {
+          "content": {
+            "video/mp4": {
+              "schema": {
+                "type": "string",
+                "maxLength": 26214400,
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveMediaMetadataOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/live/make-result": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Receive Make Result",
+        "operationId": "receive_make_result_api_live_make_result_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveMakeResultIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveMakeResultAck"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/admin/live": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Create Live",
+        "operationId": "create_live_api_admin_live_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveSessionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/start": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Start Live",
+        "operationId": "start_live_api_admin_live__live_id__start_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/end": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "End Live",
+        "operationId": "end_live_api_admin_live__live_id__end_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/pin": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Pin Live",
+        "operationId": "pin_live_api_admin_live__live_id__pin_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LivePinIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/questions/{question_id}/skip": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Skip Live Question",
+        "operationId": "skip_live_question_api_admin_live__live_id__questions__question_id__skip_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveQuestionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/pause": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Pause Live",
+        "operationId": "pause_live_api_admin_live__live_id__pause_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/resume": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Resume Live",
+        "operationId": "resume_live_api_admin_live__live_id__resume_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4172,6 +4655,555 @@
         "type": "object",
         "title": "ImageUpdate"
       },
+      "LiveCurrentOut": {
+        "properties": {
+          "session": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiveSessionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "serverTime": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Servertime"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LiveCurrentOut"
+      },
+      "LiveMakeResultAck": {
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "const": true,
+            "title": "Received",
+            "default": true
+          },
+          "applied": {
+            "type": "boolean",
+            "title": "Applied"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "duplicate",
+              "stale_session",
+              "session_ended",
+              "question_skipped"
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "applied",
+          "reason"
+        ],
+        "title": "LiveMakeResultAck"
+      },
+      "LiveMakeResultIn": {
+        "properties": {
+          "liveId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Liveid"
+          },
+          "questionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Questionid"
+          },
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "failed",
+              "skipped"
+            ],
+            "title": "Status"
+          },
+          "replyText": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replytext"
+          },
+          "videoUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Videourl"
+          },
+          "durationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationseconds",
+            "description": "Measured duration of the actual rendered video in seconds. Required for ready; must be absent or null for failed/skipped. Never infer from text or demo media."
+          },
+          "providerTalkId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providertalkid"
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "unsupported_intent",
+                  "product_not_found",
+                  "generation_failed",
+                  "generation_timeout"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errorcode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "liveId",
+          "questionId",
+          "sku",
+          "status"
+        ],
+        "title": "LiveMakeResultIn"
+      },
+      "LiveMediaMetadataOut": {
+        "properties": {
+          "durationSeconds": {
+            "type": "number",
+            "maximum": 300.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Durationseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "durationSeconds"
+        ],
+        "title": "LiveMediaMetadataOut"
+      },
+      "LivePinIn": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sku"
+        ],
+        "title": "LivePinIn"
+      },
+      "LivePlaybackOut": {
+        "properties": {
+          "playbackId": {
+            "type": "string",
+            "title": "Playbackid"
+          },
+          "videoUrl": {
+            "type": "string",
+            "title": "Videourl"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startedat"
+          },
+          "pausedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pausedat"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "script",
+              "reply"
+            ],
+            "title": "Kind",
+            "default": "script"
+          },
+          "mediaSource": {
+            "type": "string",
+            "enum": [
+              "prerecorded",
+              "make"
+            ],
+            "title": "Mediasource",
+            "default": "prerecorded"
+          },
+          "questionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questionid"
+          },
+          "durationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "playbackId",
+          "videoUrl",
+          "startedAt"
+        ],
+        "title": "LivePlaybackOut"
+      },
+      "LiveQuestionIn": {
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Questionid"
+          },
+          "sessionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Sessionid"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "questionId",
+          "sessionId",
+          "text"
+        ],
+        "title": "LiveQuestionIn"
+      },
+      "LiveQuestionOut": {
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "title": "Questionid"
+          },
+          "liveId": {
+            "type": "string",
+            "title": "Liveid"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Receivedat"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "processing",
+              "ready",
+              "answering",
+              "answered",
+              "failed",
+              "skipped"
+            ],
+            "title": "Status",
+            "default": "queued"
+          },
+          "processingStartedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processingstartedat"
+          },
+          "resultReceivedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resultreceivedat"
+          },
+          "replyText": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replytext"
+          },
+          "videoUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Videourl"
+          },
+          "mediaSource": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "prerecorded",
+                  "make"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mediasource"
+          },
+          "videoDurationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 300.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Videodurationseconds"
+          },
+          "providerTalkId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providertalkid"
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errorcode"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "const": true,
+            "title": "Isdemo",
+            "default": true
+          },
+          "source": {
+            "type": "string",
+            "const": "web_live",
+            "title": "Source",
+            "default": "web_live"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "questionId",
+          "liveId",
+          "text",
+          "sku",
+          "receivedAt"
+        ],
+        "title": "LiveQuestionOut"
+      },
+      "LiveSessionCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "scheduledSkus": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Scheduledskus"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "scheduledSkus"
+        ],
+        "title": "LiveSessionCreate"
+      },
+      "LiveSessionOut": {
+        "properties": {
+          "liveId": {
+            "type": "string",
+            "title": "Liveid"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "scheduledSkus": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scheduledskus"
+          },
+          "pinnedSku": {
+            "type": "string",
+            "title": "Pinnedsku"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "const": true,
+            "title": "Isdemo",
+            "default": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_started",
+              "playing",
+              "paused",
+              "ended"
+            ],
+            "title": "Status",
+            "default": "not_started"
+          },
+          "playback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LivePlaybackOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/LiveQuestionOut"
+            },
+            "type": "array",
+            "title": "Questions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "liveId",
+          "title",
+          "scheduledSkus",
+          "pinnedSku"
+        ],
+        "title": "LiveSessionOut"
+      },
       "LoginIn": {
         "properties": {
           "email": {
@@ -5856,6 +6888,13 @@
         "type": "object",
         "title": "VariantUpdate",
         "description": "The SKU is not editable: orders and stock will refer to it."
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Live-Make-Token"
       }
     }
   }

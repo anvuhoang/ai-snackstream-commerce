@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
+    "test:live": "node --experimental-strip-types --test tests/live-playback.test.mjs",
+    "test:live:browser": "node tests/live-playback.browser.mjs",
     "gen:types": "openapi-typescript ../api/openapi.json --default-non-nullable false -o src/lib/api/schema.d.ts"
   },
   "dependencies": {

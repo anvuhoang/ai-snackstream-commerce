@@ -23,12 +23,12 @@ const NAV = [
   { href: "/admin/orders", label: "Đơn hàng" },
   { href: "/admin/inventory", label: "Kho" },
   { href: "/admin/analytics", label: "Dashboard" },
+  { href: "/admin/live", label: "Live" },
 ] as const;
 
 // Sections that are planned but not built yet (see docs/ROADMAP.md).
 const SOON = [
   { label: "Chatbot", phase: 5 },
-  { label: "Live", phase: 6 },
 ] as const;
 
 const item = "flex items-center gap-3 whitespace-nowrap rounded-xl px-3.5 py-3 text-[15px] font-medium transition-colors";
