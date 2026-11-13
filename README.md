@@ -47,6 +47,9 @@ With Docker (includes PostgreSQL): `copy .env.example .env`, set `POSTGRES_PASSW
 
 Create an admin without the bootstrap variables: `uv run python -m app.cli create-admin you@example.com`.
 
+Load the demo catalog (9 labelled demo products, safe to repeat): `uv run python -m app.cli seed-catalog`, or set `SEED_DEMO_CATALOG=1`.
+Staging deploy: see [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Check it
 
 ```powershell

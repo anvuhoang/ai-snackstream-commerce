@@ -5,7 +5,7 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
   return (
     <input
       className={cn(
-        "h-11 w-full rounded-lg border border-line bg-surface px-3 text-sm placeholder:text-muted/70 focus:border-brand",
+        "h-12 w-full rounded-xl border-2 border-line bg-surface px-4 text-[15px] placeholder:text-muted/70 focus:border-accent focus:outline-none disabled:bg-canvas disabled:text-muted",
         className,
       )}
       {...props}
@@ -15,8 +15,8 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
 
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="grid gap-1.5 text-sm font-medium">
-      <span>{label}</span>
+    <label className="grid gap-2 text-sm">
+      <span className="text-[13px] font-semibold text-ink">{label}</span>
       {children}
     </label>
   );

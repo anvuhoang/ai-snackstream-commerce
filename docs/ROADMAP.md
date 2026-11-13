@@ -43,17 +43,20 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
 **Goal:** a visitor can find and read about a product; staff can manage the catalog.
 
 - **DB:** `category`, `product` (slug, name, description, ingredients, storage, status `draft|published|hidden`),
-  `variant` (unique `sku`, name, price VND as integer, weight), `product_image`. Search with `pg_trgm` + `unaccent`.
+  `variant` (unique `sku`, name, price VND as integer, weight), `product_image`. Search is a substring match on an accent-folded `search_text`
+  column (works on SQLite and PostgreSQL; `pg_trgm` can come later if the catalog outgrows it).
 - **API:** public `GET /api/catalog/categories | products | products/{slug}` (published only); admin CRUD, image upload,
   publish / hide.
-- **Web:** home, listing with search + filter, product detail (variants, price, stock badge, verified ingredients and
-  storage), admin product screens. Seed with a realistic snack catalog (6–10 SKUs).
+- **Web:** home, listing with search + filter, product detail (variants, price, verified ingredients and
+  storage; the stock badge arrives with P3), admin product screens. Seed with a realistic snack catalog (6–10 SKUs).
 - **Rules:** every sellable variant has its own SKU; a product cannot be published without verified ingredients and
   storage text; hiding a product never deletes it (order history must keep working).
+- **Staging deploy (end of this phase):** `dev` deploys to a public URL (API + PostgreSQL on Render, web on Vercel), so teammates share one
+  environment and payment gateways can call back later. See "Hosting notes".
 - **Accept:** a customer sees only published items; unaccented search finds "banh trang"; a `@postgres` test covers search.
 - **Unblocks:** Phong and Nguyen — the catalog API is the shared source of products and prices.
 
-## P2 · Cart, checkout, orders — A03, A04 (size L) · An
+## P2 · Cart, checkout, orders — A03, A04 (size L) · An — **built** (branch `feat/orders`)
 
 **Goal:** a guest can place a cash-on-delivery order; staff can process it.
 
@@ -65,10 +68,24 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
 - **Web:** cart, checkout form (react-hook-form + zod), confirmation page with lookup link, admin orders.
 - **Rules:** never trust client prices; order codes are random tokens, not counters; the "Buy on Shopee" button opens
   Shopee and never counts as a purchase.
+- **Online payment (sandbox):** a `PaymentProvider` interface (COD and one gateway sandbox, e.g. VNPay test environment). Flow: create
+  the payment → redirect the customer to the gateway → the customer returns **and** the gateway calls our server-to-server callback
+  (IPN) → verify the signature → mark the payment `paid | failed`. The callback is the source of truth, not the browser return.
+  Callbacks are idempotent (the same one may arrive twice). An unpaid order keeps its stock reserved only for N minutes, then the
+  reservation is released and the order expires. Gateway keys live in server environment variables only. Every payment screen says
+  "Sandbox — no real money is charged".
+- **What shipped:** module `app/modules/orders` (migration `0003`), cart cookie `ss_cart`, `POST /api/orders` with `Idempotency-Key`,
+  look-up by code + phone (rate limited), admin orders with guarded status changes, VNPay sandbox (signed URL, callback `GET /api/payments/vnpay/ipn`,
+  read-only return `GET /api/payments/vnpay/return`), unpaid-order expiry, stock seam `orders/stock.py` for P3. Web: cart + checkout, result page,
+  look-up page, admin orders. Settings: `SHIPPING_FEE_VND` (30.000), `FREE_SHIP_FROM_VND` (300.000), `ORDER_EXPIRY_MINUTES` (15), `VNPAY_*` (empty = COD only).
+- **Still to do for the online flow:** run `python -m app.cli expire-orders` every minute or so (Render cron job); the API also expires orders when
+  they are read, so it is housekeeping, not correctness. The VNPay callback was tested with signed test callbacks; a real sandbox payment needs the
+  public staging URL, which VNPay can reach.
 - **Accept:** submitting twice creates one order; a customer cannot guess another order; admin endpoints reject anonymous
-  callers; totals match line items to the dong.
+  callers; totals match line items to the dong; a replayed or tampered gateway callback is rejected or ignored; an unpaid order
+  expires and releases its stock exactly once.
 
-## P3 · Inventory and Odoo — A05 (size L) · An
+## P3 · Inventory and Odoo — A05 (size L) · An — **built** (branch `feat/inventory`)
 
 **Goal:** stock is correct under concurrency, and Odoo can be the source of on-hand quantity.
 
@@ -79,6 +96,23 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
 - **Policy to decide first:** how stock is shared with Shopee (fixed quota per channel vs. web-held reservations), and what
   the shop does when Odoo is unreachable (use cached stock up to N minutes, then show "contact us").
 - **Dev environment:** this phase adds a throw-away Odoo service to `docker-compose.yml`, so work never waits for real credentials.
+- **What shipped** (branch `feat/inventory`, migration `0004`): module `app/modules/inventory` with `stock_level` (`on_hand`, `reserved`, `source`),
+  an append-only `stock_movement` log and `stock_sync_run`. `orders/stock.py` is now the seam to it: `reserve` at checkout (one conditional `UPDATE`,
+  `409 out_of_stock` when short), `ship` when an order starts shipping, `release` once on cancel or expiry (a shipped parcel that is cancelled goes back on hand).
+  A variant with no `stock_level` row is **not tracked** and sells without limit; the demo seed gives each demo variant 100. Odoo: read-only client for
+  Odoo's JSON-2 API (`odoo.py`), `python -m app.cli sync-odoo` and `GET/POST /api/admin/inventory/sync` copy `qty_available` by SKU (Internal Reference)
+  into rows marked `source = odoo`; a sync never sets a count below what open orders hold, a failed sync changes nothing and is recorded. For Odoo-owned
+  counts, shipping only ends the reservation (Odoo's own delivery lowers on-hand), and the count cannot be edited in the web. Web: `/admin/inventory`
+  (list, filters, receive / correct, sync panel) and a movement history per variant. Settings: `ODOO_URL`, `ODOO_DB`, `ODOO_API_KEY`, `ODOO_TIMEOUT_S`.
+- **Decisions taken:** D1 → the real Odoo Online instance (no throw-away Docker service). D2 (Shopee quota) is still open.
+- **Added later:** the public catalog now says what stock a variant has (`available`, `stockStatus` = ok / low / out / unknown, `stockUpdatedAt`; a card has
+  `soldOut`), the product page shows "Hết hàng" / "Chỉ còn N" and disables the button, and the cart refuses an item that is out (`out_of_stock`). A count copied
+  from Odoo that is older than `STOCK_STALE_MINUTES` (default 0 = never) is `unknown`: the shop shows "contact the shop" and refuses to add it (`stock_unknown`).
+  The free-shipping threshold on the pages comes from the shop settings. `render.yaml` lists the VNPay and Odoo variables and has the two cron jobs
+  (`expire-orders`, `sync-odoo`) ready to uncomment (Render cron is a paid feature); `docs/DEPLOY.md` section 3 explains them.
+  A concurrency test for the last unit is in `api/tests/test_inventory_postgres.py`: it runs only with `POSTGRES_TEST_URL` pointing at a **throw-away** database.
+- **Still to do:** run that PostgreSQL test (it has only been checked to skip without a database); write deliveries back to Odoo, so web orders are visible there and
+  the web count is exact between syncs.
 - **Accept:** two simultaneous requests for the last unit → exactly one succeeds (`@postgres` test); cancelling twice
   releases once; one real or test Odoo SKU syncs; admin sees sync status and can resync.
 
@@ -97,6 +131,17 @@ what cost — and what evidence is missing?"
   source, duplicate protection, real vs. demo, export).
 - **Rules:** never sum views into "unique people"; never add an order that appears in two reports; show "cannot be
   computed" for a zero or missing denominator; CAC only when new customers are identifiable, otherwise cost per order.
+- **What shipped:** events (`event`), the attribution rule (docs/ARCHITECTURE.md), and the dashboard at `/admin/analytics` with five tabs.
+  **Tổng quan**: funnel, sources, products. **Kênh ngoài**: numbers that TikTok, Facebook and others report. **Shopee**: web "buy on Shopee" clicks and
+  Shopee's own report side by side (never added). **Chatbot và Live**: counts from the events P5 and P6 will send; until they do the tab says "not collected"
+  instead of showing 0. **Dữ liệu**: CSV import (`POST /api/admin/analytics/imports`), manual entry, history with undo (admins), and CSV export of the channel numbers
+  and of the funnel. Tables `import_batch` and `channel_metric` (migration `0006`). CSV columns: `date`, `channel`, optional `content`, and at least one of
+  `views`, `impressions`, `clicks`, `orders`, `revenue`, `cost` (Vietnamese names and `;` separators are read too, `1.250.000đ` is a number).
+  Rules enforced: an empty cell is "not reported" and stored as nothing, never 0; a file with any bad row is refused whole; the same file (SHA-256) or the same
+  value for the same day/channel/content/metric/demo flag is never stored twice (a repeat is skipped and counted, never overwritten); a ratio uses only the days
+  that report both numbers; CTR and cost per order say "cannot be computed" for a zero denominator; reported orders are kept apart from the web's own.
+- **Still to do for P4:** Excel (`.xlsx`) import (CSV only today); the AI-versus-human comparison needs the chat and live logs from P5 and P6 (content type,
+  auto-resolved); CAC needs identifiable new customers, so only cost per order is shown.
 - **Accept:** each filter changes tables and charts consistently; missing steps are labelled, not bridged; importing the
   same file twice is rejected; a unit test per formula.
 - *The earlier dashboard prototype lives on branch `legacy-dashboard`; use it as a reference for formulas and screens, not as a dependency.*
@@ -132,7 +177,8 @@ what cost — and what evidence is missing?"
   aggregation on ~500k rows. Fix what the numbers show (SQL aggregation / summary tables, indexes, caching).
 - **Scale-out prerequisites:** move rate limiting and live fan-out to Redis before running more than one API worker.
 - **Security:** review PII handling (name, phone, address — minimum fields, retention), CSP headers, admin lockout, backups.
-- **Release:** one VPS running Docker Compose with Caddy for HTTPS (added in this phase), backup / restore drill, runbook, `.env` hygiene.
+- **Release:** `main` deploys to the production-like environment (Render + Vercel), rollback tried once, backup / restore drill for the
+  database, runbook, secrets only in the hosts' environment settings.
 - **Demo:** watch live → ask → hear the host → pinned item → cart → order → admin sees order, stock and metrics; chatbot
   advises on the same SKU.
 
@@ -146,5 +192,19 @@ what cost — and what evidence is missing?"
 | D2 | Stock shared with Shopee: quota per channel or web-held reservations | P3 | Quota per channel for the first release |
 | D3 | Live media: queued clips or true stream | P6 start | Queued clips |
 | D4 | Shipping fee rule (flat, by weight, free over X) | P2 | Flat fee + free over a threshold |
-| D5 | Real shop or coursework demo (decides payment, legal text, data retention) | P2 | Demo with COD |
-| D6 | Hosting target | P7 | Single VPS with Docker Compose |
+| D5 | Real shop or coursework demo | P2 | **Decided:** demo. COD plus an online-payment *sandbox* (test money only, labelled as such on screen) |
+| D6 | Hosting target | P1 (staging) | **Decided:** web on Vercel, API + PostgreSQL on Render. See "Hosting notes" below |
+
+## Hosting notes (Vercel + Render)
+
+- **Branches map to environments:** `dev` → staging, `main` → production-like. Vercel creates a preview per pull request.
+- **Render** runs the API from `api/Dockerfile` (root directory `api`) with a managed PostgreSQL. Run `python -m app.cli migrate` as the
+  pre-deploy command, never at app start in production. Free instances may sleep after inactivity (the first request is slow) and free
+  databases have a limited lifetime — check the current plan limits before relying on them, and keep a backup of demo data.
+- **Vercel** builds the web app from the `web` directory with `API_URL` pointing at the Render API. The browser still sees one origin,
+  so the admin session cookie keeps working through the `/api` proxy.
+- **Live is the exception:** server-sent events are long-lived, and serverless functions have execution-time limits, so the live page
+  must **not** stream through Vercel. Either connect straight to the API's public URL (anonymous, token-based, CORS allowed for the
+  web origin only) or host the web app on Render as well. Decide this at the start of P6.
+- **Payment callbacks need a public HTTPS URL**, which is why the staging deploy is part of P1: the gateway cannot reach `localhost`.
+- Set `APP_ENV=production` and a real `SECRET_KEY` on Render; the API refuses to start otherwise.

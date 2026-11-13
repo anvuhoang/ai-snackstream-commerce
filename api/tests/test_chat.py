@@ -63,6 +63,9 @@ def test_chat_uses_odoo_facts_and_keeps_key_server_side(client, settings):
 def test_odoo_reads_only_allowlisted_saleable_skus(settings):
     from unittest.mock import MagicMock
 
+    # The chatbot and the stock sync share these settings, and the test settings are blank on purpose (see conftest).
+    settings.odoo_url = "https://odoo.example.com"
+    settings.odoo_db = "shop"
     settings.odoo_login = "shop@example.com"
     settings.chat_all_sale_products = False
     settings.odoo_api_key = "private-odoo-key"

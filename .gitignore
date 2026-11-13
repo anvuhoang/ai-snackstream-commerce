@@ -15,3 +15,5 @@ node_modules/
 .next/
 out/
 *.tsbuildinfo
+web/public/live-demo/avatar.mp4
+api/media/

@@ -28,6 +28,12 @@ export function ChatWidget({ embedded = false, sku = null }: { embedded?: boolea
   const [error, setError] = useState("");
   const [failed, setFailed] = useState("");
   const [status, setStatus] = useState<{ enabled: boolean; contactText: string; supportState?: string | null } | null>(null);
+  // The generated API types mark fields that have a default as optional, so fill the gaps once here.
+  const toStatus = (s: { enabled?: boolean; contactText?: string; supportState?: string | null }) => ({
+    enabled: s.enabled ?? false,
+    contactText: s.contactText ?? "",
+    supportState: s.supportState,
+  });
   const [statusError, setStatusError] = useState(false);
   const [supportBusy, setSupportBusy] = useState(false);
   const blocked = !status || !status.enabled || status.supportState === "active";
@@ -38,7 +44,7 @@ export function ChatWidget({ embedded = false, sku = null }: { embedded?: boolea
       try {
         const { data } = await browserApi.GET("/api/chat/status");
         if (!cancelled) {
-          if (data) { setStatus(data); setStatusError(false); }
+          if (data) { setStatus(toStatus(data)); setStatusError(false); }
           else { setStatus(null); setStatusError(true); }
         }
       } catch { if (!cancelled) { setStatus(null); setStatusError(true); } }
@@ -56,7 +62,7 @@ export function ChatWidget({ embedded = false, sku = null }: { embedded?: boolea
       });
       if (!data) throw new Error("Chưa gửi được yêu cầu hỗ trợ. Bạn thử lại nhé.");
       const { data: latest } = await browserApi.GET("/api/chat/status");
-      if (latest) setStatus(latest);
+      if (latest) setStatus(toStatus(latest));
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Mất kết nối."); }
     finally { setSupportBusy(false); }
   }
