@@ -131,14 +131,14 @@ export function AdminLiveQuestions({ liveId }: { liveId: string }) {
                   </p>
 
                   <p className="text-sm text-muted">
-                    SKU: {question.sku} · {STATUS_LABELS[question.status]}
+                    SKU: {question.sku} · {question.status ? STATUS_LABELS[question.status] : ""}
                   </p>
                   {question.mediaSource === "prerecorded" && (
                     <p className="text-sm text-muted">
                       Video mô phỏng: dùng clip có sẵn để kiểm tra luồng phát, chưa tạo câu trả lời AI cho câu hỏi này.
                     </p>
                   )}
-                  {["queued", "processing", "ready", "answering"].includes(question.status) &&
+                  {["queued", "processing", "ready", "answering"].includes(question.status ?? "") &&
                     user.role === "admin" && (
                     <Button
                       type="button"

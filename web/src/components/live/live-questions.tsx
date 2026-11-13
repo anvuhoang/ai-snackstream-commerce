@@ -171,7 +171,7 @@ export function LiveQuestions({ live, connected, onLog }: Props) {
               </p>
 
               <p className="text-sm text-muted">
-                SKU: {question.sku} · {STATUS_LABELS[question.status]}
+                SKU: {question.sku} · {question.status ? STATUS_LABELS[question.status] : ""}
               </p>
 
               {question.mediaSource === "prerecorded" && (

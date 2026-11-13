@@ -108,7 +108,7 @@ export function LiveSessionViewer() {
           }
 
           log.record("live_state_received", context, {
-            status: session.status,
+            status: session.status ?? null,
             pinnedSku: session.pinnedSku,
             questionCount: session.questions?.length ?? 0,
             serverTime: next.serverTime ?? null,
@@ -122,13 +122,13 @@ export function LiveSessionViewer() {
                 liveId: session.liveId, questionId: item.questionId,
                 sku: item.sku, mediaSource: item.mediaSource ?? undefined,
               }, {
-                status: item.status,
+                status: item.status ?? null,
                 previousObservedStatus: previous ?? null,
                 observation: firstSnapshot || previous === undefined ? "snapshot" : "update",
                 receivedAt: item.receivedAt,
                 errorCode: item.errorCode ?? null,
               });
-              observedStatuses.set(key, item.status);
+              observedStatuses.set(key, item.status ?? "");
             }
           }
 
@@ -205,7 +205,7 @@ export function LiveSessionViewer() {
         live ? (
           <section className="grid gap-3 rounded-card border border-line bg-surface p-5">
             {live.isDemo && <p className="text-sm text-muted">Dữ liệu thử nghiệm</p>}
-            <h2 className="text-xl font-bold">{STATUS_LABELS[live.status]}</h2>
+            <h2 className="text-xl font-bold">{live.status ? STATUS_LABELS[live.status] : ""}</h2>
             <p className="break-all text-sm text-muted">Mã phiên: {live.liveId}</p>
             <p className="text-sm text-muted">
               SKU đang giới thiệu: {live.pinnedSku}

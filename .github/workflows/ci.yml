@@ -30,6 +30,10 @@ jobs:
       - run: uv run ruff format --check .
       - name: Tests (SQLite)
         run: uv run pytest
+      - name: PostgreSQL smoke tests
+        env:
+          POSTGRES_TEST_URL: postgresql+psycopg://snack:snack@localhost:5432/snackstream_test
+        run: uv run pytest -m postgres
       - name: Migrations on PostgreSQL
         env:
           DATABASE_URL: postgresql+psycopg://snack:snack@localhost:5432/snackstream_test

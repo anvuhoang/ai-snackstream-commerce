@@ -10,3 +10,4 @@ node_modules/
 out/
 *.tsbuildinfo
 web/public/live-demo/avatar.mp4
+api/media/
