@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CartLink } from "@/components/cart/cart-link";
 import { CartProvider } from "@/components/cart/cart-provider";
+import { ChatLauncher } from "@/components/chat-launcher";
 import { freeShipText } from "@/lib/format";
 import { getShopConfig } from "@/lib/shop-config";
 
@@ -39,6 +40,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
           </div>
         </header>
         <main className="flex-1">{children}</main>
+        <ChatLauncher />
         <footer className="mt-16 overflow-hidden bg-ink text-[#eadbbd]">
           <div className="mx-auto flex w-full max-w-[1200px] flex-wrap items-start justify-between gap-x-12 gap-y-6 px-4 pb-6 pt-12 text-sm sm:px-8">
             <div className="grid max-w-sm gap-2">

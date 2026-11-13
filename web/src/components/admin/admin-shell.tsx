@@ -23,12 +23,8 @@ const NAV = [
   { href: "/admin/orders", label: "Đơn hàng" },
   { href: "/admin/inventory", label: "Kho" },
   { href: "/admin/analytics", label: "Dashboard" },
+  { href: "/admin/chat", label: "Chatbot" },
   { href: "/admin/live", label: "Live" },
-] as const;
-
-// Sections that are planned but not built yet (see docs/ROADMAP.md).
-const SOON = [
-  { label: "Chatbot", phase: 5 },
 ] as const;
 
 const item = "flex items-center gap-3 whitespace-nowrap rounded-xl px-3.5 py-3 text-[15px] font-medium transition-colors";
@@ -64,13 +60,6 @@ export function AdminShell({ user, csrf, children }: { user: User; csrf: string;
                 </Link>
               );
             })}
-            <p className="hidden px-3.5 pb-1.5 pt-5 text-xs font-semibold uppercase tracking-[0.04em] text-[#9dbaa8] md:block">Sắp có</p>
-            {SOON.map((n) => (
-              <span key={n.label} className={cn(item, "hidden cursor-not-allowed text-leaf-soft/55 md:flex")} title={`Có ở giai đoạn ${n.phase}`}>
-                {n.label}
-                <span className="rounded-full bg-paper/10 px-2 py-0.5 text-[10px] font-semibold">G{n.phase}</span>
-              </span>
-            ))}
           </nav>
           <div className="mt-auto hidden gap-3 border-t border-paper/20 px-3.5 pt-4 md:grid">
             <div className="grid gap-0.5 text-[13px]">

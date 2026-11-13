@@ -1,0 +1,36 @@
+"""Local product photos keyed by exact Odoo SKU; generated from project images."""
+
+IMAGE_SKUS = frozenset(
+    [
+        "BANH-TRANG-ME-01",
+        "BAP-RANG-01",
+        "BIM-BIM-100",
+        "BT-BO-01",
+        "BT-CHAM-01",
+        "BT-CUON-01",
+        "BT-MO-01",
+        "BT-PS-01",
+        "BT-TAC-01",
+        "BT-TOI-01",
+        "BT-TRON-01",
+        "BT-XIKE-01",
+        "CHUOI-SAY-200",
+        "DA-CA-100",
+        "HAT-DIEU-200",
+        "KB-LAT-200",
+        "KB-QUE-150",
+        "KB-SL-200",
+        "KEO-CHUOI-01",
+        "KEO-MEO-01",
+        "KG-BB-250",
+        "KG-CAY-250",
+        "KG-CHAY-01",
+        "KG-LC-250",
+        "KG-LC-500",
+        "KHOAI-LAT-100",
+        "MIT-SAY-200",
+        "MUC-CAY-150",
+        "RONG-BIEN-01",
+        "XOAI-KEO-200",
+    ]
+)

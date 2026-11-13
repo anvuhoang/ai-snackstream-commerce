@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import AliasChoices, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEV_SECRET = "dev-only-change-me"
@@ -69,12 +69,21 @@ class Settings(BaseSettings):
     vnpay_return_url: str = Field("http://localhost:3000/checkout/result", alias="VNPAY_RETURN_URL")
     # Odoo (stock source). Empty = stock is kept only in our own tables. Uses Odoo's JSON-2 API with an API key.
     odoo_url: str = Field("", alias="ODOO_URL")
-    odoo_db: str = Field("", alias="ODOO_DB")
+    # ODOO_DATABASE is accepted too: the chatbot used that name first.
+    odoo_db: str = Field("", validation_alias=AliasChoices("ODOO_DB", "ODOO_DATABASE"))
     odoo_api_key: str = Field("", alias="ODOO_API_KEY")
     odoo_timeout_s: float = Field(20.0, alias="ODOO_TIMEOUT_S", gt=0)
     # A count copied from Odoo older than this many minutes is shown as "unknown, contact the shop" and cannot be added to a cart.
     # 0 = never expire (the last synced number is used).
     stock_stale_minutes: int = Field(0, alias="STOCK_STALE_MINUTES", ge=0)
+
+    # The chatbot reads products over XML-RPC and needs the login too (it shares ODOO_URL, ODOO_DB and ODOO_API_KEY above).
+    odoo_login: str = ""
+    chat_public_skus: list[str] = Field(default_factory=list)
+    chat_all_sale_products: bool = False
+    gemini_api_key: str = ""
+    gemini_model: Literal["gemini-3.1-flash-lite"] = "gemini-3.1-flash-lite"
+    gemini_free_tier_confirmed: bool = False
 
     @model_validator(mode="after")
     def _finalize(self) -> Settings:
@@ -90,6 +99,10 @@ class Settings(BaseSettings):
     @property
     def vnpay_enabled(self) -> bool:
         return bool(self.vnpay_tmn_code and self.vnpay_hash_secret)
+
+    @property
+    def odoo_database(self) -> str:
+        return self.odoo_db  # the chatbot's name for the same setting
 
     @property
     def odoo_enabled(self) -> bool:
