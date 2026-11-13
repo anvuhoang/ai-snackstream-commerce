@@ -36,7 +36,12 @@ def test_a_csv_is_imported_and_shown_per_channel(signed_in):
     r = upload(signed_in, GOOD)
     assert r.status_code == 201, r.text
     b = r.json()
-    assert (b["kind"], b["rowsTotal"], b["valuesImported"], b["valuesSkipped"]) == ("csv", 2, 12, 0)
+    assert (b["kind"], b["rowsTotal"], b["valuesImported"], b["valuesSkipped"]) == (
+        "csv",
+        2,
+        10,
+        0,
+    )  # 5 metrics on each of 2 rows
     row = channel_rows(signed_in)["tiktok"]  # "TikTok" and "tiktok" are one channel
     assert (row["views"], row["clicks"], row["orders"], row["revenueVnd"], row["costVnd"], row["days"]) == (
         2000,
@@ -222,7 +227,7 @@ def test_the_channel_numbers_can_be_exported_in_the_format_the_importer_reads(si
     assert r.status_code == 200 and r.headers["content-type"].startswith("text/csv")
     assert "attachment" in r.headers["content-disposition"] and ".csv" in r.headers["content-disposition"]
     lines = r.content.decode("utf-8-sig").strip().splitlines()
-    assert lines[0] == "date,channel,content,metric,value,demo,batch" and len(lines) == 1 + 12
+    assert lines[0] == "date,channel,content,metric,value,demo,batch" and len(lines) == 1 + 10
     assert f"{D1},tiktok,clip-01,views,1200,no," in "\n".join(lines)
 
 
