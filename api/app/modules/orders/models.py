@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base, TimestampMixin
@@ -74,6 +74,13 @@ class Order(Base, TimestampMixin):
     payment_method: Mapped[str] = mapped_column(String(10))
     # Only set for unpaid online orders: after this moment the order is cancelled and its stock released.
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    # Attribution (last touch, see docs/ARCHITECTURE.md): where the buyer came from. Labels the order, never changes money.
+    session_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    utm_source: Mapped[str] = mapped_column(String(100), default="")
+    utm_campaign: Mapped[str] = mapped_column(String(100), default="")
+    utm_content: Mapped[str] = mapped_column(String(100), default="")
+    # True when every item is a demo product: such orders can be left out of reports.
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 
     items: Mapped[list[OrderItem]] = relationship(
         back_populates="order", order_by="OrderItem.id", cascade="all, delete-orphan"

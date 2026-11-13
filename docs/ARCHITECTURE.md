@@ -120,6 +120,20 @@ Common fields on every event: `event` (name), `sessionId`, `occurredAt`, `isDemo
 `order_created` and `order_completed` are **different events**; the funnel shows both. A click on a "Buy on Shopee" button is
 recorded as `shopee_click` and is never a purchase.
 
+**Who writes what.** The browser (and chat / live) may send every event above **except** `order_created` and `order_completed`:
+the server writes those itself, in the same transaction as the order change, once per order. The server stamps the time, and decides
+`isDemo` from the product (or the order's items); a browser's claim is only used for events that name no product.
+
+**Attribution rule (order → source).** *Last touch within 7 days.* The web app remembers the most recent `utm_source` / `utm_campaign` /
+`utm_content` the visitor arrived with, for 7 days, and sends it with the checkout. The server stores it on the order (`utm_*`,
+lower-cased source). No UTM in the window → the order is **direct**. Each order has exactly one source, so it appears in exactly one row
+of the by-source table. Attribution only labels an order; it never changes an amount. First touch and coupon codes are not used yet.
+
+**How the dashboard counts.** Page events count distinct *sessions* (never summed into "people"); `order_*` steps count distinct
+orders; the two units are shown as such. Revenue is the total of orders completed in the period. A ratio with a zero denominator is shown
+as "cannot be computed", never 0. A step with no data while later steps have data is marked as a tracking gap; the funnel is not bridged.
+Days are Vietnam calendar days (UTC+7).
+
 ### Order lifecycle (Phase 2)
 
 ```

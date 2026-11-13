@@ -9,6 +9,7 @@ from typing import Literal
 from pydantic import Field, field_validator
 
 from app.core.schemas import ApiModel
+from app.modules.analytics.schemas import AttributionIn
 from app.modules.catalog.schemas import ImageOut
 
 OrderStatus = Literal["new", "confirmed", "shipping", "completed", "cancelled"]
@@ -110,6 +111,7 @@ class CheckoutIn(ApiModel):
     shipping: ShippingIn
     note: str = Field("", max_length=500)
     payment_method: PaymentMethod = "cod"
+    attribution: AttributionIn | None = None
 
 
 class LookupIn(ApiModel):
