@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.storage import MediaStorage
 from app.modules.auth.models import AdminUser
 from app.modules.catalog import presenters as catalog_presenters
+from app.modules.catalog.models import Product, Variant
 
 from . import service
 from .models import Order
@@ -70,14 +71,28 @@ def checkout_out(o: Order, payment_url: str | None) -> CheckoutOut:
     return CheckoutOut(**_order_fields(o, public=True), payment_url=payment_url)
 
 
-def admin_order(o: Order, db: Session) -> AdminOrder:
+def admin_order(o: Order, db: Session, storage: MediaStorage) -> AdminOrder:
     ids = {h.actor_id for h in o.history if h.actor_id}
     actors = (
         {u.id: u.email for u in db.scalars(select(AdminUser).where(AdminUser.id.in_(ids)))} if ids else {}
     )
-    return AdminOrder(
+    out = AdminOrder(
         id=o.id, next_statuses=service.next_statuses(o), **_order_fields(o, public=False, actors=actors)
     )
+    # Photos come from today's catalog (the order itself keeps only a text snapshot).
+    products = {
+        sku: p
+        for sku, p in db.execute(
+            select(Variant.sku, Product)
+            .join(Product, Product.id == Variant.product_id)
+            .where(Variant.sku.in_([i.sku for i in o.items]))
+            .options(selectinload(Product.images))
+        )
+    }
+    for item in out.items:
+        p = products.get(item.sku)
+        item.image = catalog_presenters.image(p.images[0], storage) if p is not None and p.images else None
+    return out
 
 
 def admin_row(o: Order) -> AdminOrderRow:

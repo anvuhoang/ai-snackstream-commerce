@@ -16,7 +16,6 @@ export function useAdmin() {
   return ctx;
 }
 
-// `phase` marks sections that are planned but not built yet (see docs/ROADMAP.md).
 const NAV = [
   { href: "/admin", label: "Tổng quan" },
   { href: "/admin/products", label: "Sản phẩm" },
@@ -24,11 +23,15 @@ const NAV = [
   { href: "/admin/orders", label: "Đơn hàng" },
   { href: "/admin/inventory", label: "Kho" },
   { href: "/admin/analytics", label: "Dashboard" },
-  { href: "/admin/chat", label: "Chatbot", phase: 5 },
-  { href: "/admin/live", label: "Live", phase: 6 },
 ] as const;
 
-const cell = "flex items-center whitespace-nowrap border-l border-line px-4 sm:px-6 transition-colors";
+// Sections that are planned but not built yet (see docs/ROADMAP.md).
+const SOON = [
+  { label: "Chatbot", phase: 5 },
+  { label: "Live", phase: 6 },
+] as const;
+
+const item = "flex items-center gap-3 whitespace-nowrap rounded-xl px-3.5 py-3 text-[15px] font-medium transition-colors";
 
 export function AdminShell({ user, csrf, children }: { user: User; csrf: string; children: React.ReactNode }) {
   const path = usePathname();
@@ -42,40 +45,50 @@ export function AdminShell({ user, csrf, children }: { user: User; csrf: string;
 
   return (
     <AdminContext.Provider value={{ user, csrf }}>
-      <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-20 flex h-[34px] items-stretch border-b border-line bg-surface text-[11px] font-medium uppercase tracking-[0.04em]">
-          <div className="flex items-center px-4 text-[13px] normal-case tracking-normal sm:w-60 sm:px-6">
-            SnackStream
-            <span className="ml-2 text-[11px] uppercase tracking-[0.04em] text-muted">Admin</span>
-          </div>
-          <nav aria-label="Quản trị" className="flex min-w-0 flex-1 items-stretch overflow-x-auto">
-            {NAV.map((item) => {
-              const active = item.href === "/admin" ? path === "/admin" : path.startsWith(item.href);
-              if ("phase" in item) {
-                return (
-                  <span key={item.href} className={cn(cell, "hidden cursor-not-allowed text-muted lg:flex")} title={`Có ở giai đoạn ${item.phase}`}>
-                    {item.label}
-                    <span className="ml-1.5 text-[9px]">G{item.phase}</span>
-                  </span>
-                );
-              }
+      <div className="flex min-h-screen flex-wrap bg-canvas/40">
+        <aside className="flex basis-full flex-col gap-1 bg-leaf p-4 text-paper md:sticky md:top-0 md:h-screen md:basis-[248px] md:shrink-0 md:overflow-y-auto">
+          <Link href="/admin" className="px-3.5 pb-3 pt-1.5 text-[22px] font-extrabold tracking-[-0.03em] text-turmeric">
+            SnackStream <span className="text-xs font-semibold tracking-[0.04em] text-leaf-soft">ADMIN</span>
+          </Link>
+          <nav aria-label="Quản trị" className="flex gap-1 overflow-x-auto md:flex-col md:overflow-visible">
+            {NAV.map((n) => {
+              const active = n.href === "/admin" ? path === "/admin" : path.startsWith(n.href);
               return (
-                <Link key={item.href} href={item.href} className={cn(cell, active ? "font-semibold underline underline-offset-4" : "hover:bg-ink hover:text-white")}>
-                  {item.label}
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(item, active ? "bg-paper font-semibold text-leaf" : "text-leaf-soft hover:bg-paper/10")}
+                >
+                  {n.label}
                 </Link>
               );
             })}
-            <span className="min-w-4 flex-1 border-l border-line" />
+            <p className="hidden px-3.5 pb-1.5 pt-5 text-xs font-semibold uppercase tracking-[0.04em] text-[#9dbaa8] md:block">Sắp có</p>
+            {SOON.map((n) => (
+              <span key={n.label} className={cn(item, "hidden cursor-not-allowed text-leaf-soft/55 md:flex")} title={`Có ở giai đoạn ${n.phase}`}>
+                {n.label}
+                <span className="rounded-full bg-paper/10 px-2 py-0.5 text-[10px] font-semibold">G{n.phase}</span>
+              </span>
+            ))}
           </nav>
-          <span className={cn(cell, "hidden normal-case tracking-normal text-muted md:flex")} title={user.email}>
-            {user.email}
-            <span className="ml-2 border border-line px-1 text-[9px] uppercase">{user.role}</span>
-          </span>
-          <button type="button" onClick={logout} className={cn(cell, "uppercase hover:bg-ink hover:text-white")}>
+          <div className="mt-auto hidden gap-3 border-t border-paper/20 px-3.5 pt-4 md:grid">
+            <div className="grid gap-0.5 text-[13px]">
+              <span className="text-leaf-soft">Đăng nhập với</span>
+              <b className="break-all font-semibold" title={user.email}>
+                {user.email}
+              </b>
+              <span className="w-fit rounded-full bg-paper/15 px-2 py-0.5 text-[11px] font-semibold uppercase">{user.role}</span>
+            </div>
+            <button type="button" onClick={logout} className="h-10 rounded-xl border-2 border-paper/40 text-sm font-semibold transition-colors hover:bg-paper hover:text-leaf">
+              Đăng xuất
+            </button>
+          </div>
+          <button type="button" onClick={logout} className="h-10 rounded-xl border-2 border-paper/40 text-sm font-semibold transition-colors hover:bg-paper hover:text-leaf md:hidden">
             Đăng xuất
           </button>
-        </header>
-        <main className="flex-1 p-4 sm:p-8">{children}</main>
+        </aside>
+        <main className="min-w-0 flex-[999_1_640px] p-4 sm:p-8">{children}</main>
       </div>
     </AdminContext.Provider>
   );

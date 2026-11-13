@@ -46,15 +46,15 @@ export function OrderActions({
 
   if (next.length === 0) {
     return (
-      <p className="border border-line bg-canvas px-5 py-3.5 text-sm text-muted">
+      <p className="rounded-[20px] border border-line bg-canvas px-5 py-3.5 text-sm text-muted">
         {status === "cancelled" ? "Đơn đã hủy, không thể thay đổi nữa." : "Đơn đã hoàn tất."}
       </p>
     );
   }
 
   return (
-    <section className="grid gap-3 border border-line bg-surface p-5" aria-label="Xử lý đơn">
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.04em]">Xử lý đơn</h2>
+    <section className="grid gap-3 rounded-[20px] border border-line bg-surface p-5" aria-label="Xử lý đơn">
+      <h2 className="text-sm font-extrabold">Xử lý đơn</h2>
       {paymentMethod === "vnpay" && !paid && status === "new" && (
         <p className="text-xs text-muted">Đơn thanh toán online: chỉ xác nhận được sau khi cổng thanh toán báo đã nhận tiền.</p>
       )}
@@ -65,7 +65,7 @@ export function OrderActions({
           onChange={(e) => setNote(e.target.value)}
           maxLength={500}
           placeholder="Ví dụ: đã gọi khách xác nhận"
-          className="h-11 w-full border border-line bg-surface px-3 text-sm focus:bg-canvas focus:outline-none"
+          className="h-11 w-full rounded-xl border-2 border-line bg-surface px-3 text-sm focus:bg-canvas focus:outline-none"
         />
       </label>
       {error && <Status kind="error">{error}</Status>}

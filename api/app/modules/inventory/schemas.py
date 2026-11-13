@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import Field, model_validator
 
 from app.core.schemas import ApiModel
+from app.modules.catalog.schemas import ImageOut
 
 StockState = Literal["untracked", "out", "low"]
 
@@ -17,6 +18,7 @@ class StockRow(ApiModel):
     sku: str
     product_name: str
     variant_name: str
+    image: ImageOut | None
     tracked: bool
     source: Literal["own", "odoo"] | None
     on_hand: int

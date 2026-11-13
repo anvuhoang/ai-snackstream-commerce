@@ -15,7 +15,8 @@ export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 20;
 const STATUSES: OrderStatus[] = ["new", "confirmed", "shipping", "completed", "cancelled"];
-const TONE = { new: "brand", confirmed: "neutral", shipping: "neutral", completed: "ok", cancelled: "warn" } as const;
+const TONE = { new: "brand", confirmed: "warn", shipping: "warn", completed: "ok", cancelled: "danger" } as const;
+const PAY_TONE = { pending: "warn", paid: "ok", failed: "danger", expired: "danger" } as const;
 type Search = { q?: string; status?: string; page?: string };
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<Search> }) {
@@ -33,20 +34,20 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-[clamp(34px,4vw,56px)] font-light leading-none tracking-[-0.05em]">Đơn hàng</h1>
+        <h1 className="text-[clamp(34px,4vw,56px)] font-extrabold leading-[1.05] tracking-[-0.04em]">Đơn hàng</h1>
         <p className="mt-2 text-xs text-muted">{data.total} đơn</p>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap border border-line" aria-label="Lọc theo trạng thái">
+        <div className="flex flex-wrap gap-2" aria-label="Lọc theo trạng thái">
           {[undefined, ...STATUSES].map((s) => (
             <Link
               key={s ?? "all"}
               href={href({ status: s ?? "" })}
               aria-current={status === s ? "true" : undefined}
               className={cn(
-                "flex h-9 items-center border-r border-line px-4 text-[11px] font-medium uppercase tracking-[0.04em] last:border-r-0",
-                status === s ? "bg-ink text-white" : "hover:bg-canvas",
+                "inline-flex h-10 items-center rounded-full border-2 px-4 text-sm font-semibold transition-colors",
+                status === s ? "border-accent bg-accent text-white" : "border-ink hover:bg-canvas",
               )}
             >
               {s ? ORDER_STATUS_LABEL[s] : "Tất cả"}
@@ -62,7 +63,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               defaultValue={q}
               placeholder="Mã đơn, tên, số điện thoại…"
               aria-label="Tìm đơn hàng"
-              className="h-10 w-72 border border-line bg-surface pl-9 pr-3 text-sm focus:bg-canvas focus:outline-none"
+              className="h-10 w-72 rounded-xl border-2 border-line bg-surface pl-9 pr-3 text-sm focus:bg-canvas focus:outline-none"
             />
           </div>
           <Button type="submit" size="sm" variant="outline" className="h-10">
@@ -72,11 +73,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       </div>
 
       {data.items.length === 0 ? (
-        <p className="border border-dashed border-line p-12 text-center text-sm text-muted">
+        <p className="rounded-[20px] border-2 border-dashed border-line p-12 text-center text-sm text-muted">
           {q || status ? "Không có đơn khớp bộ lọc." : "Chưa có đơn hàng nào."}
         </p>
       ) : (
-        <div className="overflow-x-auto border border-line bg-surface">
+        <div className="overflow-x-auto rounded-[20px] border border-line bg-surface">
           <table className="w-full min-w-[820px] text-left text-sm">
             <thead className="border-b border-line text-[10px] uppercase tracking-[0.04em] text-muted">
               <tr>
@@ -106,7 +107,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   </td>
                   <td className="px-4 py-3 text-xs">
                     {PAYMENT_METHOD_LABEL[o.paymentMethod]}
-                    {o.paymentStatus && <span className="block text-muted">{PAYMENT_STATUS_LABEL[o.paymentStatus]}</span>}
+                    {o.paymentStatus && (
+                      <div className="mt-1">
+                        <Badge tone={PAY_TONE[o.paymentStatus]}>{PAYMENT_STATUS_LABEL[o.paymentStatus]}</Badge>
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{o.itemCount}</td>
                   <td className="px-4 py-3 text-right font-medium tabular-nums">{formatVnd(o.totalVnd)}</td>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { buttonClass } from "@/components/ui/button";
 
 type Result = { result: "paid" | "failed" | "pending" | "invalid"; orderCode: string | null };
 
@@ -28,28 +29,29 @@ export function PaymentResult() {
   }, []);
 
   const copy = state ? COPY[state.result] : null;
+  const tone = state?.result === "paid" ? "bg-leaf-soft text-leaf" : state?.result === "failed" || state?.result === "invalid" ? "bg-danger-soft text-danger" : "bg-turmeric-soft text-warn";
   return (
-    <div className="flex min-h-[calc(100vh-34px)] flex-col justify-between px-6 py-14 sm:pl-60">
-      <div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">Kết quả thanh toán · Sandbox</p>
-        <h1 className="mt-5 max-w-3xl text-[clamp(36px,5.5vw,84px)] font-light leading-[0.98] tracking-[-0.05em]">{copy?.title ?? "Đang kiểm tra…"}</h1>
-        {copy && <p className="mt-6 max-w-md text-xs leading-relaxed">{copy.text}</p>}
+    <div className="mx-auto grid w-full max-w-[1200px] gap-10 px-4 py-12 sm:px-8 md:py-20">
+      <div className="grid max-w-2xl gap-6">
+        <span className={`w-fit rounded-full px-3.5 py-2 text-sm font-semibold ${tone}`}>Kết quả thanh toán · Sandbox</span>
+        <h1 className="text-[clamp(36px,5.5vw,72px)] font-extrabold leading-[1] tracking-[-0.05em]">{copy?.title ?? "Đang kiểm tra…"}</h1>
+        {copy && <p className="max-w-md text-base leading-relaxed text-muted">{copy.text}</p>}
         {state?.orderCode && (
-          <p className="mt-8 text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
+          <p className="text-sm font-semibold text-muted">
             Mã đơn hàng
-            <b className="mt-2 block select-all text-[26px] font-medium tracking-[0.02em] text-ink">{state.orderCode}</b>
+            <b className="mt-1.5 block select-all text-[32px] font-extrabold tracking-[0.02em] text-ink">{state.orderCode}</b>
           </p>
         )}
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/orders/lookup" className="inline-flex h-11 items-center bg-ink px-7 text-[11px] font-medium uppercase tracking-[0.04em] text-white">
+        <div className="flex flex-wrap gap-3">
+          <Link href="/orders/lookup" className={buttonClass({ size: "lg" })}>
             Tra cứu đơn
           </Link>
-          <Link href="/products" className="inline-flex h-11 items-center px-7 text-[11px] font-medium uppercase tracking-[0.04em] shadow-[inset_0_0_0_1px_var(--color-ink)]">
+          <Link href="/products" className={buttonClass({ size: "lg", variant: "outline" })}>
             Tiếp tục mua sắm
           </Link>
         </div>
       </div>
-      <p className="mt-16 text-[11px] text-muted">Đây là môi trường thử nghiệm: không có tiền thật bị trừ.</p>
+      <p className="text-sm text-muted">Đây là môi trường thử nghiệm: không có tiền thật bị trừ.</p>
     </div>
   );
 }

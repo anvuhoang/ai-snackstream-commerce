@@ -49,6 +49,11 @@ class VariantOut(ApiModel):
     price_vnd: int
     compare_at_vnd: int | None
     weight_g: int | None
+    # Units still sellable (None = not tracked, always sellable) and what the shop may say about it. `unknown` = the count is
+    # too old to trust, so the shop asks the customer to contact it instead.
+    available: int | None = None
+    stock_status: Literal["ok", "low", "out", "unknown"] = "ok"
+    stock_updated_at: datetime | None = None
 
 
 class ProductCard(ApiModel):
@@ -61,6 +66,7 @@ class ProductCard(ApiModel):
     compare_at_from_vnd: int | None
     variant_count: int
     is_demo: bool
+    sold_out: bool = False  # every variant on sale is out of stock
 
 
 class ProductCardPage(ApiModel):
@@ -205,6 +211,7 @@ class AdminProductRow(ApiModel):
     variant_count: int
     is_demo: bool
     updated_at: datetime
+    image: ImageOut | None = None  # the cover photo, for the list
 
 
 class AdminProductPage(ApiModel):

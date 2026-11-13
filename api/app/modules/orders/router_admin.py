@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
+from app.core.storage import MediaStorage, get_storage
 from app.modules.auth.deps import current_admin, require_csrf, require_role
 from app.modules.auth.models import AdminUser
 
@@ -20,6 +21,7 @@ Reader = Depends(require_role("admin", "staff"))
 # Staff run the orders day to day, so they may change status too (unlike the catalog, which only admins edit).
 Operator = [Depends(require_role("admin", "staff")), Depends(require_csrf)]
 Db = Annotated[Session, Depends(get_db)]
+Storage = Annotated[MediaStorage, Depends(get_storage)]
 
 
 @router.get("", response_model=AdminOrderPage, dependencies=[Reader])
@@ -37,14 +39,14 @@ def list_orders(
 
 
 @router.get("/{order_id}", response_model=AdminOrder, dependencies=[Reader])
-def get_order(order_id: int, db: Db) -> AdminOrder:
+def get_order(order_id: int, db: Db, storage: Storage) -> AdminOrder:
     order = service.load_order(db, order_id)
     service.expire_if_due(db, order)
-    return presenters.admin_order(service.load_order(db, order_id), db)
+    return presenters.admin_order(service.load_order(db, order_id), db, storage)
 
 
 @router.post("/{order_id}/status", response_model=AdminOrder, dependencies=Operator)
 def change_status(
-    order_id: int, body: StatusChange, db: Db, actor: AdminUser = Depends(current_admin)
+    order_id: int, body: StatusChange, db: Db, storage: Storage, actor: AdminUser = Depends(current_admin)
 ) -> AdminOrder:
-    return presenters.admin_order(service.change_status(db, order_id, body.to, body.note, actor), db)
+    return presenters.admin_order(service.change_status(db, order_id, body.to, body.note, actor), db, storage)

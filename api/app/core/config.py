@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     odoo_db: str = Field("", alias="ODOO_DB")
     odoo_api_key: str = Field("", alias="ODOO_API_KEY")
     odoo_timeout_s: float = Field(20.0, alias="ODOO_TIMEOUT_S", gt=0)
+    # A count copied from Odoo older than this many minutes is shown as "unknown, contact the shop" and cannot be added to a cart.
+    # 0 = never expire (the last synced number is used).
+    stock_stale_minutes: int = Field(0, alias="STOCK_STALE_MINUTES", ge=0)
 
     @model_validator(mode="after")
     def _finalize(self) -> Settings:

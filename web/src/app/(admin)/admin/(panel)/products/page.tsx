@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AdminOnly } from "@/components/admin/admin-only";
 import { Pagination } from "@/components/store/pagination";
+import { ProductImage } from "@/components/store/product-image";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonClass } from "@/components/ui/button";
 import { serverApi } from "@/lib/api/server";
@@ -34,8 +35,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Sản phẩm</h1>
-          <p className="text-muted">{data.total} sản phẩm</p>
+          <h1 className="text-[clamp(34px,4vw,56px)] font-extrabold leading-[1.05] tracking-[-0.04em]">Sản phẩm</h1>
+          <p className="mt-2 text-xs text-muted">{data.total} sản phẩm</p>
         </div>
         <AdminOnly>
           <Link href="/admin/products/new" className={buttonClass()}>
@@ -52,8 +53,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
               href={href({ status: s ?? "" })}
               aria-current={status === s ? "true" : undefined}
               className={cn(
-                "rounded-full border px-4 py-1.5 text-sm font-medium",
-                status === s ? "border-brand bg-brand-soft text-brand" : "border-line bg-surface text-muted hover:border-muted",
+                "inline-flex h-10 items-center rounded-full border-2 px-4 text-sm font-semibold transition-colors",
+                status === s ? "border-accent bg-accent text-white" : "border-ink hover:bg-canvas",
               )}
             >
               {s ? STATUS_LABEL[s] : "Tất cả"}
@@ -69,7 +70,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
               defaultValue={q}
               placeholder="Tìm theo tên, SKU…"
               aria-label="Tìm sản phẩm"
-              className="h-10 w-64 rounded-lg border border-line bg-surface pl-9 pr-3 text-sm focus:border-brand"
+              className="h-10 w-64 rounded-xl border-2 border-line bg-surface pl-9 pr-3 text-sm focus:bg-canvas focus:outline-none"
             />
           </div>
           <Button type="submit" size="sm" variant="outline" className="h-10">
@@ -83,29 +84,34 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           {q || status ? "Không có sản phẩm khớp bộ lọc." : "Chưa có sản phẩm nào. Hãy thêm sản phẩm đầu tiên."}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-[var(--radius-card)] border border-line bg-surface">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-line bg-canvas text-xs uppercase tracking-wide text-muted">
+        <div className="overflow-x-auto rounded-[20px] border border-line bg-surface">
+          <table className="w-full min-w-[720px] text-left text-sm">
+            <thead className="border-b border-line text-[10px] uppercase tracking-[0.04em] text-muted">
               <tr>
-                <th className="px-4 py-3 font-semibold">Sản phẩm</th>
-                <th className="px-4 py-3 font-semibold">Danh mục</th>
-                <th className="px-4 py-3 font-semibold">Trạng thái</th>
-                <th className="px-4 py-3 text-right font-semibold">Quy cách</th>
-                <th className="px-4 py-3 font-semibold">Cập nhật</th>
+                <th className="px-4 py-3 font-medium">Sản phẩm</th>
+                <th className="px-4 py-3 font-medium">Danh mục</th>
+                <th className="px-4 py-3 font-medium">Trạng thái</th>
+                <th className="px-4 py-3 text-right font-medium">Quy cách</th>
+                <th className="px-4 py-3 font-medium">Cập nhật</th>
               </tr>
             </thead>
             <tbody>
               {data.items.map((p) => (
-                <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas">
+                <tr key={p.id} className="border-b border-hair last:border-0 hover:bg-canvas">
                   <td className="px-4 py-3">
-                    <Link href={`/admin/products/${p.id}`} className="font-semibold hover:text-brand hover:underline">
-                      {p.name}
-                    </Link>
-                    {p.isDemo && (
-                      <Badge tone="warn" className="ml-2">
-                        Demo
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <ProductImage image={p.image} name={p.name} className="size-12 shrink-0" sizes="48px" />
+                      <span>
+                        <Link href={`/admin/products/${p.id}`} className="font-medium hover:underline">
+                          {p.name}
+                        </Link>
+                        {p.isDemo && (
+                          <Badge tone="warn" className="ml-2">
+                            Demo
+                          </Badge>
+                        )}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-muted">{p.categoryName ?? "—"}</td>
                   <td className="px-4 py-3">

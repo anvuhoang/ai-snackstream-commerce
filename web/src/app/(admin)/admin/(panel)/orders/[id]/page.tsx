@@ -6,7 +6,10 @@ import { OrderActions } from "@/components/admin/order-actions";
 import { Badge } from "@/components/ui/badge";
 import { serverApi } from "@/lib/api/server";
 import { formatDateTime, formatVnd } from "@/lib/format";
+import { ProductImage } from "@/components/store/product-image";
 import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/shop";
+
+const TONE = { new: "brand", confirmed: "warn", shipping: "warn", completed: "ok", cancelled: "danger" } as const;
 
 export const metadata: Metadata = { title: "Chi tiết đơn · Quản trị" };
 export const dynamic = "force-dynamic";
@@ -29,17 +32,18 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-medium tracking-wide">{o.code}</h1>
-          <Badge tone={o.status === "cancelled" ? "warn" : "brand"}>{ORDER_STATUS_LABEL[o.status]}</Badge>
+          <Badge tone={TONE[o.status]}>{ORDER_STATUS_LABEL[o.status]}</Badge>
         </div>
         <p className="mt-1 text-xs text-muted">Đặt lúc {formatDateTime(o.createdAt)}</p>
       </div>
 
       <OrderActions orderId={o.id} status={o.status} next={o.nextStatuses} paymentMethod={o.paymentMethod} paid={o.payments.some((p) => p.status === "paid")} />
 
-      <section className="border border-line bg-surface" aria-label="Sản phẩm">
+      <section className="rounded-[20px] border border-line bg-surface" aria-label="Sản phẩm">
         {o.items.map((i) => (
           <div key={i.sku} className="flex items-center justify-between gap-4 border-b border-hair px-5 py-3.5 text-sm last:border-0">
-            <div>
+            <ProductImage image={i.image} name={i.productName} className="size-14 shrink-0" sizes="56px" />
+            <div className="mr-auto">
               <b className="block font-medium">{i.productName}</b>
               <span className="text-xs text-muted">
                 {i.variantName} · <span className="font-mono">{i.sku}</span> · {formatVnd(i.unitPriceVnd)} × {i.qty}
@@ -58,9 +62,9 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         </dl>
       </section>
 
-      <section className="grid gap-px border border-line bg-line sm:grid-cols-2" aria-label="Giao hàng và thanh toán">
+      <section className="grid gap-px rounded-[20px] border border-line bg-line sm:grid-cols-2" aria-label="Giao hàng và thanh toán">
         <div className="grid gap-1 bg-surface p-5 text-sm">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.04em]">Giao hàng</h2>
+          <h2 className="text-sm font-extrabold">Giao hàng</h2>
           <p className="font-medium">{o.customerName}</p>
           <a href={`tel:${o.customerPhone}`} className="w-fit border-b border-current">
             {o.customerPhone}
@@ -69,7 +73,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
           {o.note && <p className="mt-1 text-xs">Ghi chú: {o.note}</p>}
         </div>
         <div className="grid gap-1 bg-surface p-5 text-sm">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.04em]">Thanh toán</h2>
+          <h2 className="text-sm font-extrabold">Thanh toán</h2>
           <p className="font-medium">{PAYMENT_METHOD_LABEL[o.paymentMethod]}</p>
           {o.payments.map((p, i) => (
             <p key={i} className="text-muted">
@@ -81,8 +85,8 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         </div>
       </section>
 
-      <section className="border border-line bg-surface p-5" aria-label="Lịch sử">
-        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.04em]">Lịch sử</h2>
+      <section className="rounded-[20px] border border-line bg-surface p-5" aria-label="Lịch sử">
+        <h2 className="mb-3 text-sm font-extrabold">Lịch sử</h2>
         <ol className="grid gap-2.5 text-sm">
           {[...o.history].reverse().map((h, i) => (
             <li key={i} className="grid grid-cols-[130px_1fr] gap-3">

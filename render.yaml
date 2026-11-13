@@ -32,3 +32,49 @@ services:
         sync: false
       - key: BOOTSTRAP_ADMIN_PASSWORD
         sync: false
+
+      # ---- Online payment (VNPay SANDBOX). Leave empty to offer cash on delivery only.
+      # Get a test merchant at https://sandbox.vnpayment.vn. VNPAY_RETURN_URL is the WEB address + /checkout/result, e.g.
+      # https://<your-app>.vercel.app/checkout/result. The gateway's server callback (IPN) is set in the VNPay merchant page to
+      # https://<this-service>.onrender.com/api/payments/vnpay/ipn
+      - key: VNPAY_TMN_CODE
+        sync: false
+      - key: VNPAY_HASH_SECRET
+        sync: false
+      - key: VNPAY_RETURN_URL
+        sync: false
+
+      # ---- Stock from Odoo (optional). Leave empty to keep stock only in our own tables.
+      - key: ODOO_URL
+        sync: false
+      - key: ODOO_DB
+        sync: false
+      - key: ODOO_API_KEY
+        sync: false
+      # A count copied from Odoo older than this many minutes is shown as "contact the shop". 0 = never expire.
+      - key: STOCK_STALE_MINUTES
+        value: "0"
+
+# Scheduled jobs. Render cron jobs are not on the free plan, so they are left commented out. Without them the shop still works:
+# an unpaid online order expires the next time anyone reads it, and stock can be refreshed with the "Đồng bộ ngay" button in
+# /admin/inventory. Uncomment to run them in the background (a paid plan is needed; copy the same envVars as the web service).
+#
+#  - type: cron
+#    name: snackstream-expire-orders
+#    runtime: docker
+#    rootDir: api
+#    dockerfilePath: ./Dockerfile
+#    plan: starter
+#    schedule: "* * * * *"          # every minute: cancel unpaid online orders whose payment time ran out
+#    dockerCommand: python -m app.cli expire-orders
+#    envVars: [...]
+#
+#  - type: cron
+#    name: snackstream-sync-odoo
+#    runtime: docker
+#    rootDir: api
+#    dockerfilePath: ./Dockerfile
+#    plan: starter
+#    schedule: "*/10 * * * *"       # every 10 minutes: copy on-hand counts from Odoo
+#    dockerCommand: python -m app.cli sync-odoo
+#    envVars: [...]

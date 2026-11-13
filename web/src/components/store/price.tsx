@@ -16,11 +16,11 @@ export function Price({
   return (
     <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
       {prefix && <span className="text-xs text-muted">{prefix}</span>}
-      <span className={cn("font-medium", size === "lg" ? "text-3xl font-light tracking-[-0.03em]" : "text-sm")}>{formatVnd(vnd)}</span>
+      <span className={cn("font-extrabold", size === "lg" ? "text-4xl tracking-[-0.03em]" : "text-base")}>{formatVnd(vnd)}</span>
       {compareAt ? (
         <>
-          <s className="text-xs text-muted">{formatVnd(compareAt)}</s>
-          <span className="border border-ink px-1.5 text-[10px] font-medium">-{discountPercent(vnd, compareAt)}%</span>
+          <s className="text-sm text-muted">{formatVnd(compareAt)}</s>
+          <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-white">-{discountPercent(vnd, compareAt)}%</span>
         </>
       ) : null}
     </p>

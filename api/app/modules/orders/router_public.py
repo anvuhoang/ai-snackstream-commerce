@@ -13,6 +13,7 @@ from app.core.db import get_db
 from app.core.errors import AppError
 from app.core.security import RateLimiter
 from app.core.storage import MediaStorage, get_storage
+from app.modules.inventory import service as inventory
 
 from . import presenters, service
 from .models import Cart
@@ -94,6 +95,17 @@ def get_cart(request: Request, db: Db, storage: Storage) -> CartOut:
 
 @router.post("/cart/items", response_model=CartOut)
 def add_item(body: CartItemAdd, request: Request, response: Response, db: Db, storage: Storage) -> CartOut:
+    info = inventory.stock_info(db, [body.variant_id], _settings(request).stock_stale_minutes).get(
+        body.variant_id
+    )
+    if info is not None and info.status == "out":
+        raise AppError(409, "out_of_stock", "This item is out of stock.", {"skus": []})
+    if info is not None and info.status == "unknown":
+        raise AppError(
+            409,
+            "stock_unknown",
+            "The stock of this item is not confirmed right now. Please contact the shop.",
+        )
     cart = _cart_or_new(request, response, db)
     return _cart_out(db, service.add_to_cart(db, cart, body.variant_id, body.qty), request, storage)
 

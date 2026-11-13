@@ -6,9 +6,19 @@ product or order involved, so demo traffic can be excluded from reports without 
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, utcnow
@@ -53,3 +63,49 @@ class Event(Base):
     order_id: Mapped[int | None] = mapped_column(ForeignKey("orders.id", ondelete="SET NULL"), index=True)
     live_id: Mapped[str | None] = mapped_column(String(64))
     conversation_id: Mapped[str | None] = mapped_column(String(64))
+
+
+# ------------------------------------------------------------------ numbers reported by other channels (CSV import or typed in)
+METRICS = ("views", "impressions", "clicks", "orders", "revenue_vnd", "cost_vnd")
+
+
+class ImportBatch(Base):
+    """One CSV file or one manual entry. A batch is the unit of "who added this" and "undo this"."""
+
+    __tablename__ = "import_batch"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    kind: Mapped[str] = mapped_column(String(8))  # csv | manual
+    filename: Mapped[str] = mapped_column(String(200), default="")
+    # SHA-256 of the file (or of the manual entry). Unique: the same file, or the same entry, can never be added twice.
+    sha256: Mapped[str] = mapped_column(String(64), unique=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
+    rows_total: Mapped[int] = mapped_column(Integer, default=0)
+    values_imported: Mapped[int] = mapped_column(Integer, default=0)
+    values_skipped: Mapped[int] = mapped_column(Integer, default=0)  # already stored by an earlier batch
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("admin_user.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class ChannelMetric(Base):
+    """One number reported for one day on one channel: for example "tiktok, 2026-11-02, clip-01, views = 1200".
+
+    A number that was not reported has NO row. It is never stored as 0, so "not collected" and "zero" stay different things.
+    """
+
+    __tablename__ = "channel_metric"
+    __table_args__ = (
+        UniqueConstraint("day", "channel", "content_code", "metric", "is_demo", name="one_value_per_key"),
+        Index("ix_channel_metric_day_channel", "day", "channel"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    batch_id: Mapped[int] = mapped_column(ForeignKey("import_batch.id", ondelete="CASCADE"), index=True)
+    day: Mapped[date] = mapped_column(Date)
+    channel: Mapped[str] = mapped_column(String(40))  # lower case: tiktok, facebook, shopee ...
+    content_code: Mapped[str] = mapped_column(
+        String(100), default=""
+    )  # utm_content / the video or post id; "" = whole channel
+    metric: Mapped[str] = mapped_column(String(16))
+    value: Mapped[int] = mapped_column(BigInteger)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)

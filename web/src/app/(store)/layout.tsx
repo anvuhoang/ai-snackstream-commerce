@@ -1,44 +1,63 @@
 import Link from "next/link";
 import { CartLink } from "@/components/cart/cart-link";
 import { CartProvider } from "@/components/cart/cart-provider";
+import { freeShipText } from "@/lib/format";
+import { getShopConfig } from "@/lib/shop-config";
 
 const NAV: { href: string; label: string }[] = [
   { href: "/products", label: "Cửa hàng" },
   { href: "/live", label: "Live" },
 ];
 
-const cell = "flex items-center border-l border-line px-4 sm:px-6 transition-colors hover:bg-ink hover:text-white";
+const link = "rounded-[10px] px-3.5 py-2.5 text-[15px] font-medium transition-colors hover:bg-canvas";
 
-export default function StoreLayout({ children }: { children: React.ReactNode }) {
+export default async function StoreLayout({ children }: { children: React.ReactNode }) {
+  const { freeShipFromVnd } = await getShopConfig();
   return (
     <CartProvider>
       <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-20 flex h-[34px] items-stretch border-b border-line bg-surface text-[11px] font-medium uppercase tracking-[0.04em]">
-          <Link href="/" className="flex items-center px-4 text-[13px] font-medium normal-case tracking-normal sm:w-60 sm:px-6">
-            SnackStream<sup className="ml-px text-[8px]">™</sup>
-          </Link>
-          <nav aria-label="Điều hướng chính" className="flex flex-1 items-stretch">
-            {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className={cell}>
-                {item.label}
-              </Link>
-            ))}
-            <span className="flex-1 border-l border-line" />
-            <Link href="/orders/lookup" className={`${cell} hidden sm:flex`}>
+        <div className="bg-leaf px-4 py-2.5 text-center text-[13px] font-medium text-paper">
+          {freeShipText(freeShipFromVnd)} · Thanh toán khi nhận hàng · Tra cứu đơn không cần tài khoản
+        </div>
+        <header className="sticky top-0 z-20 border-b border-line bg-paper/95 backdrop-blur">
+          <div className="mx-auto flex h-[72px] w-full max-w-[1200px] items-center gap-3 px-4 sm:gap-6 sm:px-8">
+            <Link href="/" className="text-2xl font-extrabold tracking-[-0.03em] text-accent">
+              SnackStream
+            </Link>
+            <nav aria-label="Điều hướng chính" className="hidden flex-1 items-center gap-1 md:flex">
+              {NAV.map((item) => (
+                <Link key={item.href} href={item.href} className={link}>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <span className="flex-1 md:hidden" />
+            <Link href="/orders/lookup" className={`${link} hidden sm:block`}>
               Tra cứu đơn
             </Link>
-            <CartLink className={cell} />
-          </nav>
+            <CartLink className="inline-flex h-11 items-center rounded-xl bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover" />
+          </div>
         </header>
         <main className="flex-1">{children}</main>
-        <footer className="flex flex-wrap justify-between gap-3 border-t border-line px-4 py-5 text-xs sm:px-6">
-          <span>© SnackStream · Đặc sản ăn vặt đường phố</span>
-          <span className="flex gap-6">
-            <Link href="/orders/lookup" className="border-b border-current">
-              Tra cứu đơn hàng
-            </Link>
-            <span className="text-muted">Shop demo của đồ án môn học. Thanh toán online chỉ là sandbox.</span>
-          </span>
+        <footer className="mt-16 overflow-hidden bg-ink text-[#eadbbd]">
+          <div className="mx-auto flex w-full max-w-[1200px] flex-wrap items-start justify-between gap-x-12 gap-y-6 px-4 pb-6 pt-12 text-sm sm:px-8">
+            <div className="grid max-w-sm gap-2">
+              <b className="text-xl font-extrabold tracking-[-0.03em] text-turmeric">SnackStream</b>
+              <span className="leading-relaxed">Đặc sản ăn vặt đường phố. Shop demo của đồ án môn học, thanh toán online chỉ là môi trường thử nghiệm.</span>
+            </div>
+            <div className="grid gap-2.5">
+              <b className="text-paper">Hỗ trợ</b>
+              <Link href="/orders/lookup" className="hover:text-paper">
+                Tra cứu đơn hàng
+              </Link>
+              <Link href="/checkout" className="hover:text-paper">
+                Giỏ hàng
+              </Link>
+            </div>
+          </div>
+          <div aria-hidden className="select-none whitespace-nowrap pl-[2vw] text-[clamp(64px,17vw,230px)] font-extrabold leading-[0.8] tracking-[-0.06em] text-turmeric">
+            SnackStream
+          </div>
         </footer>
       </div>
     </CartProvider>

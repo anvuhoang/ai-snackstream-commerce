@@ -18,8 +18,9 @@ const schema = z.object({
 });
 type Values = z.infer<typeof schema>;
 
-const label = "absolute left-6 top-2.5 text-[10px] font-medium uppercase tracking-[0.04em] text-muted";
-const field = "w-full bg-transparent px-6 pb-3 pt-7 text-sm focus:bg-canvas focus:outline-none";
+const label = "text-[13px] font-semibold";
+const field =
+  "h-[52px] w-full rounded-xl border-2 border-line bg-surface px-4 text-[15px] placeholder:text-muted/70 focus:border-accent focus:outline-none aria-[invalid=true]:border-danger";
 
 export function LookupView() {
   const [order, setOrder] = useState<OrderOut | null>(null);
@@ -43,36 +44,44 @@ export function LookupView() {
   }
 
   return (
-    <div className="grid min-h-[calc(100vh-34px)] md:grid-cols-2">
-      <div className="flex flex-col justify-between border-b border-line pt-14 md:border-b-0 md:border-r">
-        <div className="px-6">
-          <h1 className="text-[clamp(44px,6vw,92px)] font-light leading-[0.95] tracking-[-0.05em]">
+    <div className="mx-auto grid w-full max-w-[1200px] gap-8 px-4 py-10 sm:px-8 md:grid-cols-2 md:gap-14 md:py-16">
+      <div className="grid content-start gap-8">
+        <div>
+          <h1 className="text-[clamp(40px,6vw,72px)] font-extrabold leading-[1] tracking-[-0.05em]">
             Tra cứu
             <br />
-            đơn hàng
+            <span className="text-accent">đơn hàng</span>
           </h1>
-          <p className="mt-6 max-w-sm text-xs leading-relaxed">Nhập mã đơn và số điện thoại đã dùng khi đặt. Không cần tài khoản.</p>
+          <p className="mt-5 max-w-sm text-base leading-relaxed text-muted">Nhập mã đơn và số điện thoại đã dùng khi đặt. Không cần tài khoản.</p>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-12 border-t border-line">
-          <label className="relative block border-b border-line">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-4 rounded-[20px] border border-line bg-surface p-5 sm:p-7">
+          <label className="grid gap-2">
             <span className={label}>Mã đơn</span>
             <input {...register("code")} placeholder="SS-XXXX-XXXX" autoComplete="off" autoCapitalize="characters" aria-invalid={Boolean(errors.code)} className={field} />
-            {errors.code && <p role="alert" className="px-6 pb-2 text-[11px] text-danger">{errors.code.message}</p>}
+            {errors.code && (
+              <p role="alert" className="text-[13px] font-medium text-danger">
+                {errors.code.message}
+              </p>
+            )}
           </label>
-          <label className="relative block border-b border-line">
+          <label className="grid gap-2">
             <span className={label}>Số điện thoại</span>
             <input {...register("phone")} inputMode="tel" autoComplete="tel" placeholder="09xx xxx xxx" aria-invalid={Boolean(errors.phone)} className={field} />
-            {errors.phone && <p role="alert" className="px-6 pb-2 text-[11px] text-danger">{errors.phone.message}</p>}
+            {errors.phone && (
+              <p role="alert" className="text-[13px] font-medium text-danger">
+                {errors.phone.message}
+              </p>
+            )}
           </label>
           {failure && (
-            <p role="alert" className="border-b border-line px-6 py-3.5 text-xs text-danger">
+            <p role="alert" className="rounded-xl border-2 border-danger/25 bg-danger-soft px-4 py-2.5 text-sm font-medium text-danger">
               {failure}
             </p>
           )}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex h-14 w-full items-center justify-between bg-ink px-6 text-xs font-medium uppercase tracking-[0.04em] text-white transition-colors hover:bg-brand-hover disabled:opacity-50"
+            className="flex h-14 w-full items-center justify-between rounded-xl bg-accent px-6 text-base font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             <span>{isSubmitting ? "Đang tìm…" : "Tra cứu"}</span>
             <span aria-hidden>→</span>
@@ -80,20 +89,20 @@ export function LookupView() {
         </form>
       </div>
 
-      <div className="bg-canvas">
+      <div className="content-start">
         {order ? (
-          <>
-            <div className="flex items-start justify-between border-b border-line bg-surface px-6 py-5">
-              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
+          <div className="overflow-hidden rounded-[20px] border border-line bg-surface">
+            <div className="border-b border-line px-6 py-5">
+              <p className="text-sm font-semibold text-muted">
                 Mã đơn hàng
-                <b className="mt-1.5 block text-[22px] font-medium tracking-[0.02em] text-ink">{order.code}</b>
+                <b className="mt-1 block text-[26px] font-extrabold tracking-[0.02em] text-ink">{order.code}</b>
               </p>
             </div>
             <OrderSummary order={order} />
-          </>
+          </div>
         ) : (
-          <p className="border-b border-line px-6 py-6 text-xs leading-[1.7] text-muted">
-            <b className="font-medium text-ink">Mã đơn ở đâu?</b>
+          <p className="rounded-[20px] bg-canvas px-6 py-6 text-[15px] leading-[1.7] text-muted">
+            <b className="font-semibold text-ink">Mã đơn ở đâu?</b>
             <br />
             Mã có dạng SS-XXXX-XXXX, hiển thị ngay sau khi đặt hàng thành công. Số điện thoại phải trùng với số bạn nhập lúc đặt.
           </p>

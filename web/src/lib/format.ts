@@ -8,3 +8,6 @@ export const formatVnd = (amount: number) => `${vnd.format(amount)}đ`;
 export const discountPercent = (price: number, compareAt: number) => Math.round((1 - price / compareAt) * 100);
 
 export const formatDateTime = (iso: string) => dateTime.format(new Date(iso));
+
+/** "Miễn phí giao từ 300.000đ", the threshold coming from the shop settings. */
+export const freeShipText = (freeShipFromVnd: number) => `Miễn phí giao từ ${formatVnd(freeShipFromVnd)}`;

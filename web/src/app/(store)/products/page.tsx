@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { GridSkeleton } from "@/components/store/grid-skeleton";
 import { isSortKey } from "@/lib/catalog";
@@ -18,11 +19,19 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <section className="border-b border-line px-4 py-12 sm:py-14 sm:pl-60 sm:pr-6">
-        <h1 className="text-[11px] font-semibold uppercase tracking-[0.04em]">Mua SnackStream</h1>
-        <p className="mt-4 max-w-lg text-xs leading-relaxed">
-          Bánh tráng, khô gà, khô bò, trái cây sấy và nhiều món ăn vặt đường phố. Thành phần của từng món được đối chiếu với bao bì thật.
-        </p>
+      <section className="bg-canvas">
+        <div className="mx-auto grid w-full max-w-[1200px] gap-3 px-4 py-10 sm:px-8 sm:py-12">
+          <span className="text-sm text-muted">
+            <Link href="/" className="border-b border-muted">
+              Trang chủ
+            </Link>{" "}
+            / Cửa hàng
+          </span>
+          <h1 className="text-[clamp(40px,6vw,60px)] font-extrabold leading-[1.05] tracking-[-0.04em]">Cửa hàng</h1>
+          <p className="max-w-xl text-[17px] leading-relaxed text-muted">
+            Bánh tráng, khô gà, khô bò, trái cây sấy và nhiều món ăn vặt đường phố. Thành phần của từng món được đối chiếu với bao bì thật.
+          </p>
+        </div>
       </section>
 
       {/* The intro above shows at once; the filters and results stream in behind a skeleton. */}

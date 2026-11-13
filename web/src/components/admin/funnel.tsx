@@ -15,9 +15,9 @@ function rateText(step: FunnelStep): string {
 export function FunnelGroup({ title, unitLabel, steps }: { title: string; unitLabel: string; steps: FunnelStep[] }) {
   const max = Math.max(1, ...steps.map((s) => s.count));
   return (
-    <section className="border border-line bg-surface" aria-label={title}>
+    <section className="rounded-[20px] border border-line bg-surface" aria-label={title}>
       <header className="flex items-baseline justify-between gap-3 border-b border-line px-5 py-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.04em]">{title}</h2>
+        <h2 className="text-sm font-extrabold">{title}</h2>
         <span className="text-[11px] text-muted">Đơn vị: {unitLabel}</span>
       </header>
       <ol>
@@ -31,7 +31,7 @@ export function FunnelGroup({ title, unitLabel, steps }: { title: string; unitLa
               <b className="text-lg font-medium tabular-nums">{s.count.toLocaleString("vi-VN")}</b>
             </div>
             <div className="h-3 bg-canvas" title={`${STEP_LABEL[s.key]}: ${s.count.toLocaleString("vi-VN")} ${unitLabel}`}>
-              {s.count > 0 && <div className="h-full min-w-[2px] bg-ink" style={{ width: `${(s.count / max) * 100}%` }} />}
+              {s.count > 0 && <div className="h-full min-w-[2px] bg-accent" style={{ width: `${(s.count / max) * 100}%` }} />}
             </div>
             <p className="text-xs text-muted">{rateText(s)}</p>
           </li>

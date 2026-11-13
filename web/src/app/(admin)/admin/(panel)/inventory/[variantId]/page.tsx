@@ -31,9 +31,9 @@ export default async function StockHistoryPage({ params }: { params: Promise<{ v
       </div>
 
       {data.length === 0 ? (
-        <p className="border border-dashed border-line p-12 text-center text-sm text-muted">Chưa có thay đổi nào.</p>
+        <p className="rounded-[20px] border-2 border-dashed border-line p-12 text-center text-sm text-muted">Chưa có thay đổi nào.</p>
       ) : (
-        <div className="overflow-x-auto border border-line bg-surface">
+        <div className="overflow-x-auto rounded-[20px] border border-line bg-surface">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead className="border-b border-line text-[10px] uppercase tracking-[0.04em] text-muted">
               <tr>
