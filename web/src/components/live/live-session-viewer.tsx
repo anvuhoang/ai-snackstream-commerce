@@ -249,7 +249,13 @@ export function LiveSessionViewer() {
             />
           </section>
         ) : (
-          <p className="text-muted">Hiện chưa có phiên live.</p>
+          <div className="grid gap-3">
+            <p className="text-lg font-semibold">Hiện chưa có phiên live.</p>
+            <p className="text-muted">Phiên live sẽ hiện ở đây khi cửa hàng bắt đầu. Trong lúc chờ, bạn có thể xem sản phẩm hoặc hỏi trợ lý ở nút chat góc dưới.</p>
+            <Link href="/products" className="w-fit border-b-2 border-accent font-semibold">
+              Xem cửa hàng
+            </Link>
+          </div>
         )
       )}
 

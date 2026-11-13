@@ -37,6 +37,14 @@ export function startStory(THREE, Lenis) {
     b.addEventListener('click', function () { var t = el(b.getAttribute('data-to')); if (t) goTo(t.getBoundingClientRect().top + window.scrollY); }, { signal: ac.signal });
   });
 
+  // Bar buttons that leave the story: open the real chat window, or go to a real page.
+  Array.prototype.forEach.call(document.querySelectorAll('[data-chat]'), function (b) {
+    b.addEventListener('click', function () { window.dispatchEvent(new Event('snackstream:chat-open')); }, { signal: ac.signal });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-href]'), function (b) {
+    b.addEventListener('click', function () { window.location.assign(b.getAttribute('data-href')); }, { signal: ac.signal });
+  });
+
   /* ----- build: statement words, shelf, journey ----- */
   var rv = el('rv'), WORDS = 'Mỗi món được đối chiếu thành phần và cách bảo quản với bao bì thật trước khi lên kệ.'.split(' ');
   rv.innerHTML = WORDS.map(function (w) { return '<span class="w">' + w + '</span>'; }).join(' ') + '<sup>[2]</sup>';
