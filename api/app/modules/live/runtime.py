@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def _advance_playback(live: LiveService, settings: Settings) -> str | None:
+    live.advance_script()
     if settings.live_mock_enabled == settings.live_make_enabled:
         return
 

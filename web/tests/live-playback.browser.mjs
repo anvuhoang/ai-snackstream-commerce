@@ -112,7 +112,7 @@ async function page(port) {
   await command("Page.enable");
   await command("Fetch.enable", { patterns: [{ urlPattern: "https://provider.example.invalid/*" }] });
   await command("Page.addScriptToEvaluateOnNewDocument", { source: injection });
-  await command("Page.navigate", { url: `${baseUrl}/live` });
+  await command("Page.navigate", { url: `${baseUrl}/live?debug=1` });
   await until(() => evaluate("window.streams?.length > 0"), "viewer subscribes to SSE");
   return {
     evaluate,

@@ -4,6 +4,8 @@ from uuid import uuid4
 
 from app.core.errors import AppError
 
+from . import simli_host
+from .content import PreparedContent
 from .schemas import (
     LiveMakeResultAck,
     LiveMakeResultIn,
@@ -16,15 +18,22 @@ from .schemas import (
 
 # One shared preload window; no viewer acknowledgement can extend the session.
 REPLY_PREPARATION_SECONDS = 5.0
+# Budget: one SSE interval + three seconds of media load + one second margin.
+SCRIPT_RESTORE_PREPARATION_SECONDS = 5.0
 
 
 class LiveService:
     def __init__(self):
+        self._host_content: PreparedContent | None = None
+        self._simli_host: simli_host.SimliHost | None = None
+        self._simli_slot_until: datetime | None = None
         self._current: LiveSessionOut | None = None
         self._lock = Lock()
         self._question_requests: dict[str, LiveQuestionIn] = {}
         self._active_question_id: str | None = None
-        self._make_results: dict[str, LiveMakeResultIn] = {}
+        self._make_results: dict[str, object] = {}
+        self._audio_answers: dict = {}
+        self._reply_audio: dict[str, bytes] = {}
         self._script_playback: LivePlaybackOut | None = None
 
     def get_current(self) -> LiveSessionOut | None:
@@ -32,9 +41,10 @@ class LiveService:
             if self._current is None:
                 return None
 
+            self._advance_script_locked(self._current, datetime.now(UTC))
             return self._current.model_copy(deep=True)
 
-    def create_session(self, data: LiveSessionCreate) -> LiveSessionOut:
+    def create_session(self, data: LiveSessionCreate, *, reply_format="video") -> LiveSessionOut:
         with self._lock:
             if self._current is not None and self._current.status != "ended":
                 raise AppError(
@@ -44,16 +54,28 @@ class LiveService:
                 )
 
             session = LiveSessionOut(
+                host_mode=data.host_mode or "video",
+                reply_format=reply_format if data.host_mode == "simli" else "video",
                 live_id=uuid4().hex,
                 title=data.title,
                 scheduled_skus=list(data.scheduled_skus),
                 pinned_sku=data.scheduled_skus[0],
+                script_playlist=[segment.model_copy(deep=True) for segment in data.script_playlist],
+                products=[p.model_copy(deep=True) for p in data.products],
             )
 
+            self._host_content = (
+                PreparedContent(session.products[0].model_copy(deep=True))
+                if session.host_mode == "simli" and session.products
+                else None
+            )
+            self._simli_host = None
             self._current = session
             self._question_requests.clear()
             self._active_question_id = None
             self._make_results.clear()
+            self._audio_answers.clear()
+            self._reply_audio.clear()
             self._script_playback = None
             return session.model_copy(deep=True)
 
@@ -67,9 +89,55 @@ class LiveService:
 
         return self._current
 
+    def _select_script_segment(self, session: LiveSessionOut, index: int, started_at: datetime) -> None:
+        segment = session.script_playlist[index]
+        session.pinned_sku = segment.sku
+        session.playback = LivePlaybackOut(
+            playback_id=uuid4().hex,
+            video_url=str(segment.video_url),
+            started_at=started_at,
+            media_source="playlist",
+            script_index=index,
+            script_name=segment.name,
+            duration_seconds=segment.duration_seconds,
+        )
+
+    def _advance_script_locked(self, session: LiveSessionOut, now: datetime) -> None:
+        """Caller holds the lock. Carry exact boundaries, including ticks that miss several clips."""
+        if session.host_mode == "simli":
+            simli_host.advance(self, now)
+            return
+        while (
+            session.status == "playing"
+            and (playback := session.playback) is not None
+            and playback.media_source == "playlist"
+            and playback.kind == "script"
+            and playback.script_index is not None
+            and playback.duration_seconds is not None
+        ):
+            if playback.resume_at is not None and now < playback.resume_at:
+                return
+            boundary = playback.started_at + timedelta(seconds=playback.duration_seconds)
+            if now < boundary:
+                return
+            index = playback.script_index + 1
+            if index == len(session.script_playlist):
+                session.script_completed = True
+                session.playback = None
+                return
+            self._select_script_segment(session, index, boundary)
+
+    def advance_script(self) -> None:
+        with self._lock:
+            if self._current is not None:
+                self._advance_script_locked(self._current, datetime.now(UTC))
+
     def start_session(self, live_id: str) -> LiveSessionOut:
         with self._lock:
             session = self._require_current(live_id)
+
+            if session.host_mode == "simli":
+                raise AppError(409, "host_start_required", "Use the producer host controls.")
 
             if session.status != "not_started":
                 raise AppError(
@@ -85,11 +153,16 @@ class LiveService:
             )
 
             session.status = "playing"
+            if session.script_playlist:
+                self._select_script_segment(session, 0, session.playback.started_at)
             return session.model_copy(deep=True)
 
     def end_session(self, live_id: str) -> LiveSessionOut:
         with self._lock:
             session = self._require_current(live_id)
+            if session.host_mode == "simli":
+                simli_host.end_locked(self, "session_ended")
+                return session.model_copy(deep=True)
             session.status = "ended"
             session.playback = None
             self._script_playback = None
@@ -104,6 +177,12 @@ class LiveService:
     def pin_sku(self, live_id: str, sku: str) -> LiveSessionOut:
         with self._lock:
             session = self._require_current(live_id)
+
+            if session.host_mode == "simli" and sku != session.pinned_sku:
+                raise AppError(409, "host_audio_controls_sku", "Configured host audio controls the SKU.")
+
+            if session.script_playlist:
+                raise AppError(409, "live_playlist_controls_sku", "Playlist controls the current SKU.")
 
             if session.status == "ended":
                 raise AppError(
@@ -126,6 +205,9 @@ class LiveService:
         with self._lock:
             session = self._require_current(live_id)
 
+            now = datetime.now(UTC)
+            self._advance_script_locked(session, now)
+
             original = self._question_requests.get(data.question_id)
             if original is not None:
                 if original != data:
@@ -141,6 +223,11 @@ class LiveService:
             if session.status not in ("playing", "paused"):
                 raise AppError(409, "live_not_running", "Session is not accepting questions.")
 
+            if session.script_completed:
+                raise AppError(
+                    409, "live_script_completed", "Playlist finished; existing questions will drain."
+                )
+
             if len(session.questions) >= 100:
                 raise AppError(429, "live_question_capacity", "Demo question capacity reached.")
 
@@ -149,10 +236,14 @@ class LiveService:
 
             question = LiveQuestionOut(
                 question_id=data.question_id,
+                reply_kind=session.reply_format,
                 live_id=session.live_id,
                 text=data.text,
                 sku=session.pinned_sku,
-                received_at=datetime.now(UTC),
+                received_at=now,
+                product=next(
+                    (p.model_copy(deep=True) for p in session.products if p.sku == session.pinned_sku), None
+                ),
                 is_demo=session.is_demo,
             )
 
@@ -186,38 +277,56 @@ class LiveService:
     def pause_session(self, live_id: str) -> LiveSessionOut:
         with self._lock:
             session = self._require_current(live_id)
+            if session.host_mode == "simli":
+                raise AppError(
+                    409, "host_pause_unsupported", "Simli experimental host supports stop/end, not pause."
+                )
 
             if session.status == "paused":
                 return session.model_copy(deep=True)
 
-            if session.status != "playing" or session.playback is None:
+            now = datetime.now(UTC)
+            self._advance_script_locked(session, now)
+            if session.status != "playing" or (session.playback is None and not session.script_completed):
                 raise AppError(
                     409,
                     "live_invalid_state",
                     "Only a playing session can be paused.",
                 )
 
-            session.playback.paused_at = datetime.now(UTC)
+            if session.playback is not None:
+                session.playback.paused_at = now
             session.status = "paused"
             return session.model_copy(deep=True)
 
     def resume_session(self, live_id: str) -> LiveSessionOut:
         with self._lock:
             session = self._require_current(live_id)
+            if session.host_mode == "simli":
+                raise AppError(
+                    409, "host_pause_unsupported", "Simli experimental host supports stop/end, not pause."
+                )
 
             if session.status == "playing":
                 return session.model_copy(deep=True)
 
-            if session.status != "paused" or session.playback is None or session.playback.paused_at is None:
+            if (
+                session.status != "paused"
+                or (session.playback is None and not session.script_completed)
+                or (session.playback is not None and session.playback.paused_at is None)
+            ):
                 raise AppError(
                     409,
                     "live_invalid_state",
                     "Only a paused session can be resumed.",
                 )
 
-            paused_duration = datetime.now(UTC) - session.playback.paused_at
-            session.playback.started_at += paused_duration
-            session.playback.paused_at = None
+            if session.playback is not None and session.playback.paused_at is not None:
+                paused_duration = datetime.now(UTC) - session.playback.paused_at
+                session.playback.started_at += paused_duration
+                if session.playback.resume_at is not None:
+                    session.playback.resume_at += paused_duration
+                session.playback.paused_at = None
             session.status = "playing"
             return session.model_copy(deep=True)
 
@@ -245,12 +354,16 @@ class LiveService:
     def start_ready_reply(self, live_id: str) -> bool:
         with self._lock:
             session = self._current
+            if session is not None and session.host_mode == "simli":
+                return False
+            if session is not None and session.live_id == live_id:
+                self._advance_script_locked(session, datetime.now(UTC))
             if (
                 session is None
                 or session.live_id != live_id
                 or session.status != "playing"
-                or session.playback is None
-                or session.playback.kind != "script"
+                or (session.playback is None and not session.script_completed)
+                or (session.playback is not None and session.playback.kind != "script")
                 or self._script_playback is not None
             ):
                 return False
@@ -278,19 +391,37 @@ class LiveService:
                 question_id=question.question_id,
                 duration_seconds=question.video_duration_seconds,
             )
-            self._script_playback = session.playback.model_copy(deep=True)
-            self._script_playback.paused_at = now
+            if session.playback is not None:
+                self._script_playback = session.playback.model_copy(deep=True)
+                # A second reply may preempt restore preparation. Preserve content
+                # position, not wall-clock time that has not started running yet.
+                reference = max(now, self._script_playback.resume_at or now)
+                self._script_playback.started_at += now - reference
+                self._script_playback.resume_at = None
+                self._script_playback.paused_at = now
             session.playback = reply
             question.status = "answering"
             return True
 
     def _restore_script(self, session: LiveSessionOut, now: datetime) -> bool:
+        if session.host_mode == "simli":
+            if self._simli_host is None:
+                return False
+            session.playback = None
+            self._simli_host.phase = "restoring"
+            simli_host.sync(self)
+            return True
         script = self._script_playback
+        if session.script_completed and script is None:
+            session.playback = None
+            return True
         if script is None or script.paused_at is None:
             return False
 
         restored = script.model_copy(deep=True)
-        restored.started_at += now - script.paused_at
+        window = timedelta(seconds=SCRIPT_RESTORE_PREPARATION_SECONDS)
+        restored.started_at += now - script.paused_at + window
+        restored.resume_at = now + window
         restored.paused_at = now if session.status == "paused" else None
         restored.playback_id = uuid4().hex
         session.playback = restored
@@ -300,6 +431,8 @@ class LiveService:
     def finish_reply(self, live_id: str) -> bool:
         with self._lock:
             session = self._current
+            if session is not None and session.host_mode == "simli":
+                return False
             if (
                 session is None
                 or session.live_id != live_id
@@ -329,7 +462,13 @@ class LiveService:
             self._active_question_id = None
             return True
 
-    def complete_mock_question(self, live_id: str, question_id: str, duration_seconds: float) -> bool:
+    def complete_mock_question(
+        self,
+        live_id: str,
+        question_id: str,
+        duration_seconds: float,
+        video_url: str = "/live-demo/avatar.mp4",
+    ) -> bool:
         with self._lock:
             session = self._current
             if (
@@ -361,7 +500,7 @@ class LiveService:
                         "Video mô phỏng để kiểm tra phát và tiếp tục phiên live. "
                         "Đây không phải câu trả lời được tạo cho câu hỏi này."
                     ),
-                    "video_url": "/live-demo/avatar.mp4",
+                    "video_url": video_url,
                     "media_source": "prerecorded",
                     "video_duration_seconds": duration_seconds,
                 }
@@ -427,6 +566,10 @@ class LiveService:
                     "Question is not being processed.",
                 )
 
+            if data.status == "ready" and question.reply_kind == "simli_audio":
+                raise AppError(
+                    409, "live_reply_format_mismatch", "Send answer text to make-answer for this question."
+                )
             self._make_results[data.question_id] = data.model_copy(deep=True)
             question.result_received_at = now
             question.provider_talk_id = data.provider_talk_id
@@ -518,4 +661,15 @@ class LiveService:
             if code in ("live_make_disabled", "live_make_not_configured"):
                 if question.status == "processing":
                     question.status = "failed"
+                self._active_question_id = None
+
+    def fail_mock_question(self, live_id: str, question_id: str) -> None:
+        with self._lock:
+            s = self._current
+            if s is None or s.live_id != live_id or self._active_question_id != question_id:
+                return
+            q = next((q for q in s.questions if q.question_id == question_id), None)
+            if q is not None and q.status == "processing":
+                q.status = "failed"
+                q.error_code = "generation_failed"
                 self._active_question_id = None

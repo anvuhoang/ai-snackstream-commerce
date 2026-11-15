@@ -10,7 +10,7 @@ from app.core.errors import AppError
 from .schemas import LiveQuestionOut
 
 
-def build_make_payload(question: LiveQuestionOut, timeout_seconds: float) -> dict[str, str | int]:
+def build_make_payload(question: LiveQuestionOut, timeout_seconds: float) -> dict[str, object]:
     claimed_at = question.processing_started_at
     if not isinstance(claimed_at, datetime) or claimed_at.utcoffset() is None:
         raise AppError(
@@ -22,7 +22,7 @@ def build_make_payload(question: LiveQuestionOut, timeout_seconds: float) -> dic
     # Match service expiry arithmetic, then floor to milliseconds without floats.
     deadline = claimed_at + timedelta(seconds=timeout_seconds)
     deadline_unix_ms = (deadline - datetime(1970, 1, 1, tzinfo=UTC)) // timedelta(milliseconds=1)
-    return {
+    payload: dict[str, object] = {
         "session_id": question.live_id,
         "question_id": question.question_id,
         "question": question.text,
@@ -30,6 +30,11 @@ def build_make_payload(question: LiveQuestionOut, timeout_seconds: float) -> dic
         "source": question.source,
         "deadline_unix_ms": deadline_unix_ms,
     }
+    if question.reply_kind == "simli_audio":
+        payload["reply_format"] = "simli_audio"
+    if question.product is not None:
+        payload["product"] = question.product.model_dump(by_alias=True)
+    return payload
 
 
 def send_make_question(question: LiveQuestionOut, settings: Settings) -> int:

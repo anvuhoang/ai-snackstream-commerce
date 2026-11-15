@@ -57,7 +57,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if settings.seed_demo_catalog:
                 catalog_seed.seed_catalog(db, Path(settings.media_dir))
         playback_task = None
-        if settings.live_mock_enabled or settings.live_make_enabled:
+        if settings.live_mock_enabled or settings.live_make_enabled or settings.live_simli_enabled:
             playback_task = asyncio.create_task(run_playback(app.state.live, settings))
         try:
             yield

@@ -41,6 +41,7 @@ def answering_live(monkeypatch):
 
 def elapsed_script(current, clock):
     reference = current.playback.paused_at or clock.current
+    reference = max(reference, current.playback.resume_at or reference)
     return (reference - current.playback.started_at).total_seconds()
 
 
@@ -119,7 +120,7 @@ def test_next_reply_can_run_after_completion_without_losing_script_position(answ
     assert service.finish_reply(live_id)
     assert service.claim_next_question(live_id).question_id == "finish-question-1"
     service.complete_mock_question(live_id, "finish-question-1", 10.077007)
-    clock.current += timedelta(seconds=2)
+    clock.current = service.get_current().playback.resume_at + timedelta(seconds=2)
     assert service.start_ready_reply(live_id)
     set_deadline(service, clock)
     assert service.finish_reply(live_id)

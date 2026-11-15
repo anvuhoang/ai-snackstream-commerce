@@ -30,7 +30,7 @@ export default async function AdminLivePage() {
       <header>
         <h1 className="text-2xl font-extrabold">Quản lý AI Live</h1>
         <p className="mt-2 text-sm text-muted">
-          Nhấn F5 để cập nhật thông tin phiên hiện tại.
+          Quản lý phiên live, sản phẩm và câu hỏi.
         </p>
       </header>
 
@@ -40,14 +40,10 @@ export default async function AdminLivePage() {
 
       {current === null ? (
         <p role="alert" className="text-danger">
-          Không đọc được thông tin phiên. Kiểm tra backend đang chạy rồi tải lại trang.
+          Không kết nối được phiên live. Hãy thử tải lại trang.
         </p>
       ) : live ? (
         <section className="rounded-card border border-line bg-surface p-5">
-          {live.isDemo && (
-            <p className="mb-4 text-sm text-muted">Dữ liệu thử nghiệm</p>
-          )}
-
           <dl className="grid gap-4">
             <div>
               <dt className="text-sm text-muted">Tiêu đề</dt>
@@ -59,12 +55,12 @@ export default async function AdminLivePage() {
               <dd className="break-all font-mono text-sm">{live.liveId}</dd>
             </div>
 
-            <div>
+            {(live.hostMode !== "simli" || live.status === "ended") && <div>
               <dt className="text-sm text-muted">Trạng thái</dt>
               <dd className="font-semibold">
                 {status ? STATUS_LABELS[status] : "Chưa xác định"}
               </dd>
-            </div>
+            </div>}
           </dl>
           <LiveControls key={live.liveId} live={live} />
         </section>

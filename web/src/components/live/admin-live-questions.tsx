@@ -12,7 +12,7 @@ type Snapshot = components["schemas"]["LiveCurrentOut"];
 const STATUS_LABELS = {
   queued: "Chờ xử lý",
   processing: "Đang xử lý",
-  ready: "Video đã sẵn sàng",
+  ready: "Câu trả lời đã sẵn sàng",
   answering: "Đang phát trả lời",
   answered: "Đã phát xong",
   failed: "Không tạo được câu trả lời",
@@ -135,7 +135,7 @@ export function AdminLiveQuestions({ liveId }: { liveId: string }) {
                   </p>
                   {question.mediaSource === "prerecorded" && (
                     <p className="text-sm text-muted">
-                      Video mô phỏng: dùng clip có sẵn để kiểm tra luồng phát, chưa tạo câu trả lời AI cho câu hỏi này.
+                      {question.replyKind === "simli_audio" ? "Trả lời mô phỏng bằng audio có sẵn, chưa phải đáp án AI cho câu hỏi này." : "Trả lời mô phỏng bằng video có sẵn, chưa phải đáp án AI cho câu hỏi này."}
                     </p>
                   )}
                   {["queued", "processing", "ready", "answering"].includes(question.status ?? "") &&

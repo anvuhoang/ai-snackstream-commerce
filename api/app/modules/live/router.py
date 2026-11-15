@@ -7,8 +7,13 @@ from starlette.concurrency import run_in_threadpool
 from app.core.errors import AppError
 from app.modules.auth.deps import require_csrf, require_role
 
+from .audio_reply import router as audio_reply_router
+from .content import ContentSettings, get_content_settings
+from .content_router import content_router
 from .deps import require_make_callback
 from .dispatcher import dispatch_next_question
+from .host_media import audio_bytes, require_audio_match, require_enabled
+from .host_router import host_admin_router, host_public_router
 from .media_metadata import MAX_MEDIA_BYTES, probe_mp4, read_mp4
 from .schemas import (
     LiveCurrentOut,
@@ -59,9 +64,25 @@ def get_current_live(request: Request) -> LiveCurrentOut:
     status_code=201,
     dependencies=[Depends(require_csrf)],
 )
-def create_live(body: LiveSessionCreate, request: Request) -> LiveSessionOut:
+def create_live(
+    body: LiveSessionCreate, request: Request, config: ContentSettings = Depends(get_content_settings)
+) -> LiveSessionOut:
     live: LiveService = request.app.state.live
-    return live.create_session(body)
+    if body.host_mode == "simli":
+        require_enabled(request.app.state.settings)
+        if body.products:
+            if not config.enabled:
+                raise AppError(409, "live_content_disabled", "Live product narration is disabled.")
+        else:
+            require_audio_match(request.app.state.settings, body.scheduled_skus)
+            audio_bytes(request.app.state.settings)
+        if body.script_playlist:
+            raise AppError(
+                422,
+                "host_playlist_conflict",
+                "Simli host uses configured PCM audio; leave video playlist empty.",
+            )
+    return live.create_session(body, reply_format="simli_audio" if config.reply_audio_enabled else "video")
 
 
 @admin_router.post(
@@ -227,3 +248,9 @@ def receive_make_result(
         _schedule_make(request, background_tasks, body.live_id)
 
     return ack
+
+
+router.include_router(audio_reply_router)
+router.include_router(host_public_router)
+admin_router.include_router(host_admin_router)
+admin_router.include_router(content_router)

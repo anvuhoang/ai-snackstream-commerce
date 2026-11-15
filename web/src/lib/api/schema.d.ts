@@ -866,6 +866,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/live/make-answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make Answer */
+        post: operations["make_answer_api_live_make_answer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/live/{live_id}/host/viewers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register */
+        post: operations["register_api_live__live_id__host_viewers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/live/{live_id}/host/viewers/{viewer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Viewer */
+        get: operations["viewer_api_live__live_id__host_viewers__viewer_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/live/{live_id}/host/viewers/{viewer_id}/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer */
+        post: operations["answer_api_live__live_id__host_viewers__viewer_id__answer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/live/{live_id}/host/viewers/{viewer_id}/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Leave */
+        post: operations["leave_api_live__live_id__host_viewers__viewer_id__leave_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/live": {
         parameters: {
             query?: never;
@@ -979,6 +1064,193 @@ export interface paths {
         put?: never;
         /** Resume Live */
         post: operations["resume_live_api_admin_live__live_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/host-capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capabilities */
+        get: operations["capabilities_api_admin_live_host_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/host/acquire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acquire */
+        post: operations["acquire_api_admin_live__live_id__host_acquire_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/host/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Token */
+        post: operations["token_api_admin_live__live_id__host_token_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/host/audio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Audio */
+        post: operations["audio_api_admin_live__live_id__host_audio_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/host/reply-audio/{question_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reply Audio */
+        post: operations["reply_audio_api_admin_live__live_id__host_reply_audio__question_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/host/action": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Action */
+        post: operations["action_api_admin_live__live_id__host_action_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/host/offer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Offer */
+        post: operations["offer_api_admin_live__live_id__host_offer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/host/mock-video": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mock Video */
+        post: operations["mock_video_api_admin_live__live_id__host_mock_video_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Content */
+        get: operations["read_content_api_admin_live__live_id__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/content/script": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Script */
+        put: operations["save_script_api_admin_live__live_id__content_script_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/live/{live_id}/content/audio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Audio */
+        post: operations["generate_audio_api_admin_live__live_id__content_audio_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1887,6 +2159,26 @@ export interface components {
             /** Sortorder */
             sortOrder?: number | null;
         };
+        /** LiveAudioCreate */
+        LiveAudioCreate: {
+            /** Script */
+            script: string;
+        };
+        /** LiveContentOut */
+        LiveContentOut: {
+            product: components["schemas"]["LiveProduct"];
+            /** Script */
+            script?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "empty" | "script_ready" | "speaking" | "ready";
+            /** Durationseconds */
+            durationSeconds?: number | null;
+            /** Audioformat */
+            audioFormat?: "pcm_s16le_16000_mono" | null;
+        };
         /** LiveCurrentOut */
         LiveCurrentOut: {
             session?: components["schemas"]["LiveSessionOut"] | null;
@@ -1895,6 +2187,163 @@ export interface components {
              * Format: date-time
              */
             serverTime?: string;
+        };
+        /** LiveHostActionIn */
+        LiveHostActionIn: {
+            /** Clientid */
+            clientId: string;
+            /** Requestid */
+            requestId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "heartbeat" | "ready" | "handoff" | "reply_playing" | "reply_ended" | "restored" | "audio_ended" | "stop" | "error";
+            /** Questionid */
+            questionId?: string | null;
+            /** Offsetseconds */
+            offsetSeconds?: number | null;
+        };
+        /** LiveHostAnswerIn */
+        LiveHostAnswerIn: {
+            /** Offerid */
+            offerId: string;
+            /** Sdp */
+            sdp: string;
+        };
+        /** LiveHostCapabilitiesOut */
+        LiveHostCapabilitiesOut: {
+            /**
+             * Contentenabled
+             * @default false
+             */
+            contentEnabled?: boolean;
+            /**
+             * Audioconfigured
+             * @default false
+             */
+            audioConfigured?: boolean;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Transport
+             * @enum {string}
+             */
+            transport: "mock" | "simli";
+            /** Audiosku */
+            audioSku?: string | null;
+        };
+        /** LiveHostClientIn */
+        LiveHostClientIn: {
+            /** Clientid */
+            clientId: string;
+        };
+        /** LiveHostOfferIn */
+        LiveHostOfferIn: {
+            /** Clientid */
+            clientId: string;
+            /** Viewerid */
+            viewerId: string;
+            /** Offerid */
+            offerId: string;
+            /** Sdp */
+            sdp: string;
+        };
+        /** LiveHostOut */
+        LiveHostOut: {
+            /**
+             * Transport
+             * @default mock
+             * @enum {string}
+             */
+            transport?: "mock" | "simli";
+            /** Epoch */
+            epoch: string;
+            /**
+             * Phase
+             * @enum {string}
+             */
+            phase: "preparing" | "script" | "handoff" | "reply" | "restoring" | "complete" | "ended";
+            /** Offsetseconds */
+            offsetSeconds: number;
+            /** Durationseconds */
+            durationSeconds: number;
+            /** Savedoffsetseconds */
+            savedOffsetSeconds?: number | null;
+            /** Questionid */
+            questionId?: string | null;
+            /** Revision */
+            revision: number;
+            /**
+             * Leaseexpiresat
+             * Format: date-time
+             */
+            leaseExpiresAt: string;
+            /**
+             * Deadlineat
+             * Format: date-time
+             */
+            deadlineAt: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** LiveHostPeerOut */
+        LiveHostPeerOut: {
+            /** Viewerid */
+            viewerId: string;
+            /** Offerid */
+            offerId?: string | null;
+            /** Answer */
+            answer?: string | null;
+        };
+        /** LiveHostProducerOut */
+        LiveHostProducerOut: {
+            session: components["schemas"]["LiveSessionOut"];
+            /** Leaseid */
+            leaseId: string;
+            /** Peers */
+            peers: components["schemas"]["LiveHostPeerOut"][];
+        };
+        /** LiveHostTokenOut */
+        LiveHostTokenOut: {
+            /**
+             * Transport
+             * @enum {string}
+             */
+            transport: "mock" | "simli";
+            /** Sessiontoken */
+            sessionToken: string;
+        };
+        /** LiveHostViewerOut */
+        LiveHostViewerOut: {
+            /** Viewerid */
+            viewerId: string;
+            /** Viewerkey */
+            viewerKey: string;
+            /** Epoch */
+            epoch: string;
+        };
+        /** LiveHostViewerStateOut */
+        LiveHostViewerStateOut: {
+            /** Epoch */
+            epoch: string;
+            /** Phase */
+            phase: string;
+            /** Offerid */
+            offerId?: string | null;
+            /** Offer */
+            offer?: string | null;
+        };
+        /** LiveMakeAudioAnswerIn */
+        LiveMakeAudioAnswerIn: {
+            /** Liveid */
+            liveId: string;
+            /** Questionid */
+            questionId: string;
+            /** Sku */
+            sku: string;
+            /** Replytext */
+            replyText: string;
         };
         /** LiveMakeResultAck */
         LiveMakeResultAck: {
@@ -1910,7 +2359,7 @@ export interface components {
              * Reason
              * @enum {string}
              */
-            reason: "accepted" | "duplicate" | "stale_session" | "session_ended" | "question_skipped";
+            reason: "accepted" | "duplicate" | "stale_session" | "session_ended" | "question_skipped" | "processing";
         };
         /** LiveMakeResultIn */
         LiveMakeResultIn: {
@@ -1963,6 +2412,11 @@ export interface components {
             /** Pausedat */
             pausedAt?: string | null;
             /**
+             * Resumeat
+             * @description Shared script restore start. Before this instant the script stays at resumeAt - startedAt seconds while clients preload/seek. Null uses the legacy clock.
+             */
+            resumeAt?: string | null;
+            /**
              * Kind
              * @default script
              * @enum {string}
@@ -1973,11 +2427,27 @@ export interface components {
              * @default prerecorded
              * @enum {string}
              */
-            mediaSource?: "prerecorded" | "make";
+            mediaSource?: "prerecorded" | "make" | "playlist";
+            /** Scriptindex */
+            scriptIndex?: number | null;
+            /** Scriptname */
+            scriptName?: string | null;
             /** Questionid */
             questionId?: string | null;
             /** Durationseconds */
             durationSeconds?: number | null;
+        };
+        /** LiveProduct */
+        LiveProduct: {
+            /** Sku */
+            sku: string;
+            /** Name */
+            name: string;
+            /**
+             * Facts
+             * @description Verified public facts, one per line.
+             */
+            facts: string;
         };
         /** LiveQuestionIn */
         LiveQuestionIn: {
@@ -1990,6 +2460,15 @@ export interface components {
         };
         /** LiveQuestionOut */
         LiveQuestionOut: {
+            /**
+             * Replykind
+             * @default video
+             * @enum {string}
+             */
+            replyKind?: "video" | "simli_audio";
+            /** Audiodurationseconds */
+            audioDurationSeconds?: number | null;
+            product?: components["schemas"]["LiveProduct"] | null;
             /** Questionid */
             questionId: string;
             /** Liveid */
@@ -2038,15 +2517,62 @@ export interface components {
              */
             source?: "web_live";
         };
+        /** LiveScriptSegment */
+        LiveScriptSegment: {
+            /** Name */
+            name: string;
+            /** Sku */
+            sku: string;
+            /**
+             * Videourl
+             * Format: uri
+             */
+            videoUrl: string;
+            /** Durationseconds */
+            durationSeconds: number;
+        };
+        /** LiveScriptUpdate */
+        LiveScriptUpdate: {
+            /** Script */
+            script: string;
+        };
         /** LiveSessionCreate */
         LiveSessionCreate: {
+            /** Hostmode */
+            hostMode?: ("video" | "simli") | null;
             /** Title */
             title: string;
             /** Scheduledskus */
             scheduledSkus: string[];
+            /** Scriptplaylist */
+            scriptPlaylist?: components["schemas"]["LiveScriptSegment"][];
+            /** Products */
+            products?: components["schemas"]["LiveProduct"][];
         };
         /** LiveSessionOut */
         LiveSessionOut: {
+            /**
+             * Replyformat
+             * @default video
+             * @enum {string}
+             */
+            replyFormat?: "video" | "simli_audio";
+            /** Products */
+            products?: components["schemas"]["LiveProduct"][];
+            /**
+             * Hostaudioready
+             * @default false
+             */
+            hostAudioReady?: boolean;
+            /** Hostaudiodurationseconds */
+            hostAudioDurationSeconds?: number | null;
+            /**
+             * Hostmode
+             * @default video
+             * @enum {string}
+             */
+            hostMode?: "video" | "simli";
+            host?: components["schemas"]["LiveHostOut"] | null;
             /** Liveid */
             liveId: string;
             /** Title */
@@ -2055,6 +2581,13 @@ export interface components {
             scheduledSkus: string[];
             /** Pinnedsku */
             pinnedSku: string;
+            /** Scriptplaylist */
+            scriptPlaylist?: components["schemas"]["LiveScriptSegment"][];
+            /**
+             * Scriptcompleted
+             * @default false
+             */
+            scriptCompleted?: boolean;
             /**
              * Isdemo
              * @default true
@@ -4414,6 +4947,176 @@ export interface operations {
             };
         };
     };
+    make_answer_api_live_make_answer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveMakeAudioAnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveMakeResultAck"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_api_live__live_id__host_viewers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostClientIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveHostViewerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    viewer_api_live__live_id__host_viewers__viewer_id__get: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-viewer-key": string;
+            };
+            path: {
+                live_id: string;
+                viewer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveHostViewerStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    answer_api_live__live_id__host_viewers__viewer_id__answer_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-viewer-key": string;
+            };
+            path: {
+                live_id: string;
+                viewer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostAnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    leave_api_live__live_id__host_viewers__viewer_id__leave_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-viewer-key": string;
+            };
+            path: {
+                live_id: string;
+                viewer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_live_api_admin_live_post: {
         parameters: {
             query?: never;
@@ -4625,6 +5328,383 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LiveSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    capabilities_api_admin_live_host_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveHostCapabilitiesOut"];
+                };
+            };
+        };
+    };
+    acquire_api_admin_live__live_id__host_acquire_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostClientIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveHostProducerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    token_api_admin_live__live_id__host_token_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-host-lease": string;
+            };
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostClientIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveHostTokenOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audio_api_admin_live__live_id__host_audio_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-host-lease": string;
+            };
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostClientIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reply_audio_api_admin_live__live_id__host_reply_audio__question_id__post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-host-lease": string;
+            };
+            path: {
+                live_id: string;
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostClientIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    action_api_admin_live__live_id__host_action_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-host-lease": string;
+            };
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostActionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveHostProducerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    offer_api_admin_live__live_id__host_offer_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-host-lease": string;
+            };
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostOfferIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mock_video_api_admin_live__live_id__host_mock_video_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-live-host-lease": string;
+            };
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveHostClientIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_content_api_admin_live__live_id__content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveContentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_script_api_admin_live__live_id__content_script_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveScriptUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveContentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_audio_api_admin_live__live_id__content_audio_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                live_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveAudioCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveContentOut"];
                 };
             };
             /** @description Validation Error */
