@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SnackStream">
+  <rect width="512" height="512" rx="116" fill="#c8321c"/>
+  <path d="M352 168C336 112 205 108 178 178C156 236 248 250 300 272C362 298 346 386 270 396C204 404 164 372 158 332" fill="none" stroke="#f5b82e" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="372" cy="262" r="17" fill="#fff8ea"/>
+  <circle cx="140" cy="262" r="17" fill="#fff8ea"/>
+  <path d="M392 120c-30-4-52 14-58 40 30 4 54-12 58-40z" fill="#1f4d3a"/>
+</svg>
