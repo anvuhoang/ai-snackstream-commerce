@@ -25,6 +25,7 @@ These are all set as environment variables of the Render API service (the bluepr
 
 | Feature | Variables | Notes |
 |---|---|---|
+| **payOS** | `PAYOS_CLIENT_ID`, `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY`, `PAYOS_RETURN_URL`, `PAYOS_CANCEL_URL` | Real money. The three keys are on the payment channel at my.payos.vn. `PAYOS_RETURN_URL` is the **web** address plus `/checkout/result`, `PAYOS_CANCEL_URL` the web address plus `/checkout`. On my.payos.vn set the webhook to `https://<api>.onrender.com/api/payments/payos/webhook`. Empty = payOS is off. |
 | **VNPay sandbox** | `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET`, `VNPAY_RETURN_URL` | Register a test merchant at sandbox.vnpayment.vn. `VNPAY_RETURN_URL` is the **web** address plus `/checkout/result`. In the merchant page set the IPN URL to `https://<api>.onrender.com/api/payments/vnpay/ipn`. Empty = cash on delivery only. |
 | **Odoo stock** | `ODOO_URL`, `ODOO_DB`, `ODOO_API_KEY` | A key made in Odoo (My Profile → Account Security → New API Key). Never commit it. Then press "Đồng bộ ngay" in `/admin/inventory`, or schedule `python -m app.cli sync-odoo`. |
 | **Stale stock rule** | `STOCK_STALE_MINUTES` | A count copied from Odoo that is older than this shows "contact the shop" and cannot be added to a cart. `0` (default) = never expire. Set it only when `sync-odoo` runs on a schedule. |

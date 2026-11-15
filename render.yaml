@@ -33,6 +33,20 @@ services:
       - key: BOOTSTRAP_ADMIN_PASSWORD
         sync: false
 
+      # ---- Online payment (payOS, real money). The keys are on the payment channel at https://my.payos.vn. Leave empty to switch
+      # it off. PAYOS_RETURN_URL is the WEB address + /checkout/result and PAYOS_CANCEL_URL the WEB address + /checkout. The
+      # webhook is set on my.payos.vn to https://<this-service>.onrender.com/api/payments/payos/webhook
+      - key: PAYOS_CLIENT_ID
+        sync: false
+      - key: PAYOS_API_KEY
+        sync: false
+      - key: PAYOS_CHECKSUM_KEY
+        sync: false
+      - key: PAYOS_RETURN_URL
+        sync: false
+      - key: PAYOS_CANCEL_URL
+        sync: false
+
       # ---- Online payment (VNPay SANDBOX). Leave empty to offer cash on delivery only.
       # Get a test merchant at https://sandbox.vnpayment.vn. VNPAY_RETURN_URL is the WEB address + /checkout/result, e.g.
       # https://<your-app>.vercel.app/checkout/result. The gateway's server callback (IPN) is set in the VNPay merchant page to
