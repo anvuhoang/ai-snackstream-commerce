@@ -75,12 +75,11 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
   reservation is released and the order expires. Gateway keys live in server environment variables only. Every payment screen says
   "Sandbox — no real money is charged".
 - **What shipped:** module `app/modules/orders` (migration `0003`), cart cookie `ss_cart`, `POST /api/orders` with `Idempotency-Key`,
-  look-up by code + phone (rate limited), admin orders with guarded status changes, VNPay sandbox (signed URL, callback `GET /api/payments/vnpay/ipn`,
-  read-only return `GET /api/payments/vnpay/return`), unpaid-order expiry, stock seam `orders/stock.py` for P3. Web: cart + checkout, result page,
-  look-up page, admin orders. Settings: `SHIPPING_FEE_VND` (30.000), `FREE_SHIP_FROM_VND` (300.000), `ORDER_EXPIRY_MINUTES` (15), `VNPAY_*` (empty = COD only).
+  look-up by code + phone (rate limited), admin orders with guarded status changes, a gateway with a signed callback and a read-only browser return (VNPay sandbox at first, replaced by payOS, which moves real money), unpaid-order expiry, stock seam `orders/stock.py` for P3. Web: cart + checkout, result page,
+  look-up page, admin orders. Settings: `SHIPPING_FEE_VND` (30.000), `FREE_SHIP_FROM_VND` (300.000), `ORDER_EXPIRY_MINUTES` (15), `PAYOS_*` (empty = COD only), `SHOPEE_SHOP_URL`.
 - **Still to do for the online flow:** run `python -m app.cli expire-orders` every minute or so (Render cron job); the API also expires orders when
-  they are read, so it is housekeeping, not correctness. The VNPay callback was tested with signed test callbacks; a real sandbox payment needs the
-  public staging URL, which VNPay can reach.
+  they are read, so it is housekeeping, not correctness. The payOS webhook is tested with signed test calls; a real payment needs a public URL payOS can reach (a tunnel while
+  developing, the Render address after deploy).
 - **Accept:** submitting twice creates one order; a customer cannot guess another order; admin endpoints reject anonymous
   callers; totals match line items to the dong; a replayed or tampered gateway callback is rejected or ignored; an unpaid order
   expires and releases its stock exactly once.
@@ -108,7 +107,7 @@ tests run on SQLite — PostgreSQL-only behaviour is tested from P1 with `@pytes
 - **Added later:** the public catalog now says what stock a variant has (`available`, `stockStatus` = ok / low / out / unknown, `stockUpdatedAt`; a card has
   `soldOut`), the product page shows "Hết hàng" / "Chỉ còn N" and disables the button, and the cart refuses an item that is out (`out_of_stock`). A count copied
   from Odoo that is older than `STOCK_STALE_MINUTES` (default 0 = never) is `unknown`: the shop shows "contact the shop" and refuses to add it (`stock_unknown`).
-  The free-shipping threshold on the pages comes from the shop settings. `render.yaml` lists the VNPay and Odoo variables and has the two cron jobs
+  The free-shipping threshold on the pages comes from the shop settings. `render.yaml` lists the payOS and Odoo variables and has the two cron jobs
   (`expire-orders`, `sync-odoo`) ready to uncomment (Render cron is a paid feature); `docs/DEPLOY.md` section 3 explains them.
   A concurrency test for the last unit is in `api/tests/test_inventory_postgres.py`: it runs only with `POSTGRES_TEST_URL` pointing at a **throw-away** database.
 - **Still to do:** run that PostgreSQL test (it has only been checked to skip without a database); write deliveries back to Odoo, so web orders are visible there and
