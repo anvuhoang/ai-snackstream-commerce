@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { buttonClass } from "@/components/ui/button";
 
-type Result = { result: "paid" | "failed" | "pending" | "invalid"; orderCode: string | null; sandbox: boolean };
+type Result = { result: "paid" | "failed" | "pending" | "invalid"; orderCode: string | null };
 
 const COPY: Record<Result["result"], { title: string; text: string }> = {
   paid: { title: "Thanh toán thành công", text: "Cảm ơn bạn. Shop sẽ xác nhận đơn và liên hệ giao hàng." },
   pending: {
     title: "Đang chờ xác nhận thanh toán",
-    text: "Cổng thanh toán chưa báo kết quả về cho shop. Hãy tra cứu đơn sau ít phút để xem trạng thái.",
+    text: "payOS chưa báo kết quả về cho shop. Hãy tra cứu đơn sau ít phút để xem trạng thái.",
   },
   failed: { title: "Thanh toán chưa thành công", text: "Đơn chưa được thanh toán. Bạn có thể đặt lại, hoặc chọn thanh toán khi nhận hàng." },
   invalid: { title: "Không xác minh được kết quả", text: "Đường dẫn trả về không hợp lệ. Nếu bạn đã thanh toán, hãy tra cứu đơn bằng mã đơn và số điện thoại." },
@@ -21,13 +21,11 @@ export function PaymentResult() {
   const [state, setState] = useState<Result | null>(null);
 
   useEffect(() => {
-    // The gateway's query string is passed on untouched. VNPay's carries a signature the API checks; payOS's is only a hint,
-    // so the API asks payOS itself what happened.
-    const gateway = window.location.search.includes("vnp_") ? "vnpay" : "payos";
-    fetch(`/api/payments/${gateway}/return${window.location.search}`, { cache: "no-store" })
-      .then((r) => (r.ok ? (r.json() as Promise<Omit<Result, "sandbox">>) : Promise.reject()))
-      .then((r) => setState({ ...r, sandbox: gateway === "vnpay" }))
-      .catch(() => setState({ result: "invalid", orderCode: null, sandbox: false }));
+    // payOS's query string is only a hint, so the API asks payOS itself what happened.
+    fetch(`/api/payments/payos/return${window.location.search}`, { cache: "no-store" })
+      .then((r) => (r.ok ? (r.json() as Promise<Result>) : Promise.reject()))
+      .then(setState)
+      .catch(() => setState({ result: "invalid", orderCode: null }));
   }, []);
 
   const copy = state ? COPY[state.result] : null;
@@ -35,7 +33,7 @@ export function PaymentResult() {
   return (
     <div className="mx-auto grid w-full max-w-[1200px] gap-10 px-4 py-12 sm:px-8 md:py-20">
       <div className="grid max-w-2xl gap-6">
-        <span className={`w-fit rounded-full px-3.5 py-2 text-sm font-semibold ${tone}`}>Kết quả thanh toán{state?.sandbox ? " · Sandbox" : ""}</span>
+        <span className={`w-fit rounded-full px-3.5 py-2 text-sm font-semibold ${tone}`}>Kết quả thanh toán</span>
         <h1 className="text-[clamp(36px,5.5vw,72px)] font-extrabold leading-[1] tracking-[-0.05em]">{copy?.title ?? "Đang kiểm tra…"}</h1>
         {copy && <p className="max-w-md text-base leading-relaxed text-muted">{copy.text}</p>}
         {state?.orderCode && (
@@ -53,7 +51,6 @@ export function PaymentResult() {
           </Link>
         </div>
       </div>
-      {state?.sandbox && <p className="text-sm text-muted">Đây là môi trường thử nghiệm: không có tiền thật bị trừ.</p>}
     </div>
   );
 }

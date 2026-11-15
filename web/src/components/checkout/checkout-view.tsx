@@ -14,7 +14,7 @@ import { cn } from "@/lib/cn";
 import { errorText } from "@/lib/errors";
 import { formatVnd } from "@/lib/format";
 import { attribution, track } from "@/lib/track";
-import { PAYMENT_METHOD_LABEL, type CheckoutOut, type PaymentMethod, type ShopConfig } from "@/lib/shop";
+import { PAYMENT_METHOD_LABEL, type CheckoutOut, type ShopConfig } from "@/lib/shop";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Nhập họ và tên").max(120, "Tối đa 120 ký tự"),
@@ -27,7 +27,7 @@ const schema = z.object({
   district: z.string().trim().max(120),
   ward: z.string().trim().max(120),
   note: z.string().max(500, "Tối đa 500 ký tự"),
-  paymentMethod: z.enum(["cod", "vnpay", "payos"]),
+  paymentMethod: z.enum(["cod", "payos"]),
 });
 type Values = z.infer<typeof schema>;
 
@@ -81,7 +81,7 @@ export function CheckoutView() {
           customer: { name: v.name, phone: v.phone },
           shipping: { address: v.address, ward: v.ward, district: v.district, province: v.province },
           note: v.note,
-          paymentMethod: v.paymentMethod as PaymentMethod,
+          paymentMethod: v.paymentMethod,
           attribution: attribution(),
         },
       });
@@ -249,21 +249,11 @@ export function CheckoutView() {
                 <span className="grid gap-0.5">
                   <b className="text-base font-semibold">{PAYMENT_METHOD_LABEL[m]}</b>
                   <span className="text-sm leading-relaxed text-muted">
-                    {m === "cod"
-                      ? "Trả tiền mặt cho người giao hàng."
-                      : m === "payos"
-                        ? "Quét mã QR bằng app ngân hàng. Đơn được xác nhận ngay khi tiền về."
-                        : "Thẻ ATM, QR ngân hàng. Môi trường thử nghiệm, không trừ tiền thật."}
+                    {m === "cod" ? "Trả tiền mặt cho người giao hàng." : "Quét mã QR bằng app ngân hàng. Đơn được xác nhận ngay khi tiền về."}
                   </span>
                 </span>
-                {m === "vnpay" && <span className="ml-auto self-center rounded-full bg-turmeric px-2.5 py-1 text-xs font-semibold">SANDBOX</span>}
               </label>
             ))}
-            {method === "vnpay" && config && (
-              <p className="text-[13px] leading-relaxed text-muted">
-                Bạn sẽ được chuyển sang trang thanh toán thử của VNPay. Đơn được giữ {config.orderExpiryMinutes} phút, quá hạn sẽ tự hủy.
-              </p>
-            )}
             {method === "payos" && config && (
               <p className="text-[13px] leading-relaxed text-muted">
                 Bạn sẽ được chuyển sang trang thanh toán payOS để quét mã QR. Đơn được giữ {config.orderExpiryMinutes} phút, quá hạn sẽ tự hủy.
@@ -291,7 +281,7 @@ export function CheckoutView() {
               disabled={!canOrder || isSubmitting || busy}
               className="flex h-[60px] w-full items-center justify-between rounded-xl bg-accent px-6 text-[17px] font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-40"
             >
-              <span>{isSubmitting ? "Đang gửi…" : method === "vnpay" ? "Thanh toán VNPay (sandbox)" : method === "payos" ? "Thanh toán bằng QR" : "Đặt hàng"}</span>
+              <span>{isSubmitting ? "Đang gửi…" : method === "payos" ? "Thanh toán bằng QR" : "Đặt hàng"}</span>
               <span aria-hidden>→</span>
             </button>
             <p className="text-[13px] leading-relaxed text-muted">
