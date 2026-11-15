@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -25,6 +26,7 @@ from .schemas import (
     CheckoutOut,
     LookupIn,
     OrderOut,
+    PayLinkOut,
     PaymentReturnOut,
     ShopConfig,
 )
@@ -81,7 +83,11 @@ def shop_config(request: Request) -> ShopConfig:
     return ShopConfig(
         shipping_fee_vnd=s.shipping_fee_vnd,
         free_ship_from_vnd=s.free_ship_from_vnd,
-        payment_methods=["cod", "vnpay"] if s.vnpay_enabled else ["cod"],
+        payment_methods=[
+            "cod",
+            *(["payos"] if s.payos_enabled else []),
+            *(["vnpay"] if s.vnpay_enabled else []),
+        ],
         online_payment_is_sandbox=True,
         order_expiry_minutes=s.order_expiry_minutes,
     )
@@ -144,6 +150,16 @@ def checkout(
     )
 
 
+@router.post("/orders/pay-link", response_model=PayLinkOut)
+def pay_link(body: LookupIn, request: Request, db: Db) -> PayLinkOut:
+    """A new payment page for an order that was placed but not paid (the first page was lost, or payOS had failed)."""
+    ip = _client_ip(request)
+    if _lookup_limiter.blocked(ip):
+        raise AppError(429, "too_many_attempts", "Too many attempts. Please wait a minute and try again.")
+    _lookup_limiter.hit(ip)
+    return PayLinkOut(payment_url=service.pay_link(db, _settings(request), body.code, body.phone))
+
+
 @router.post("/orders/lookup", response_model=OrderOut)
 def lookup(body: LookupIn, request: Request, db: Db) -> OrderOut:
     ip = _client_ip(request)
@@ -165,4 +181,23 @@ def vnpay_ipn(request: Request, db: Db) -> JSONResponse:
 def vnpay_return(request: Request, db: Db) -> PaymentReturnOut:
     """The customer's browser lands on the web page, which asks this what to show. It never changes anything."""
     result, code = service.vnpay_return_result(db, _settings(request), dict(request.query_params))
+    return PaymentReturnOut(result=result, order_code=code)  # type: ignore[arg-type]
+
+
+# ------------------------------------------------------------------ online payment (payOS)
+@router.post("/payments/payos/webhook", include_in_schema=False)
+async def payos_webhook(request: Request, db: Db) -> JSONResponse:
+    """payOS calls this from its servers after a payment. It is the source of truth, not the browser return."""
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse({"success": False}, status_code=400)
+    trusted = await run_in_threadpool(service.apply_payos_webhook, db, _settings(request), body)
+    return JSONResponse({"success": trusted}, status_code=200 if trusted else 400)
+
+
+@router.get("/payments/payos/return", response_model=PaymentReturnOut)
+def payos_return(request: Request, db: Db) -> PaymentReturnOut:
+    """The customer's browser lands on the web page, which asks this what to show."""
+    result, code = service.payos_return_result(db, _settings(request), dict(request.query_params))
     return PaymentReturnOut(result=result, order_code=code)  # type: ignore[arg-type]
