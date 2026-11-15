@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from urllib.parse import quote
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -168,7 +167,6 @@ def seed_catalog(db: Session, media_dir: Path | None = None) -> dict[str, int]:
                 ingredients=ingredients,
                 storage=storage,
                 ingredients_verified=True,  # placeholder text, marked verified only so the product can be published
-                shopee_url=f"https://shopee.vn/search?keyword={quote(name)}",
                 variants=[
                     VariantIn(sku=sku, name=v_name, price_vnd=price, compare_at_vnd=was, weight_g=grams)
                     for sku, v_name, price, was, grams in variants
