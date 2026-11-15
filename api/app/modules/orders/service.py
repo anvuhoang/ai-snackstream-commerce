@@ -29,7 +29,7 @@ from app.modules.auth.models import AdminUser
 from app.modules.catalog.models import Product, Variant
 from app.modules.inventory import service as inventory
 
-from . import payos, stock, vnpay
+from . import payos, stock
 from .models import (
     Cart,
     CartItem,
@@ -53,7 +53,7 @@ TRANSITIONS: dict[str, tuple[str, ...]] = {
 log = logging.getLogger(__name__)
 
 # Payment methods that go through a gateway: the order keeps its stock only until `expires_at` unless paid.
-ONLINE_METHODS = ("vnpay", "payos")
+ONLINE_METHODS = ("payos",)
 
 # Letters and digits without look-alikes (no 0/O, 1/I/L), so a code read over the phone is not misheard.
 _CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
@@ -234,8 +234,6 @@ def place_order(
             "Some items are no longer available. Remove them and try again.",
             {"skus": unavailable},
         )
-    if body.payment_method == "vnpay" and not settings.vnpay_enabled:
-        raise AppError(422, "payment_method_unavailable", "Online payment is not available right now.")
     if body.payment_method == "payos" and not settings.payos_enabled:
         raise AppError(422, "payment_method_unavailable", "Online payment is not available right now.")
 
@@ -306,27 +304,11 @@ def place_order(
     return load_order(db, order.id)
 
 
-def payment_url(db: Session, settings: Settings, order: Order, ip: str) -> str | None:
-    """The gateway address for an unpaid online order, built fresh each time (it carries a timestamp)."""
-    if order.payment_method == "payos":
-        return _payos_url(settings, order)
-    if order.payment_method != "vnpay" or order.status == "cancelled":
+def payment_url(db: Session, settings: Settings, order: Order) -> str | None:
+    """The payOS page for an unpaid online order, or None when there is nothing to pay or payOS cannot be reached."""
+    if order.payment_method != "payos":
         return None
-    payment = next((p for p in order.payments if p.provider == "vnpay"), None)
-    if payment is None or payment.status != "pending" or not settings.vnpay_enabled:
-        return None
-    return vnpay.build_payment_url(
-        base_url=settings.vnpay_url,
-        tmn_code=settings.vnpay_tmn_code,
-        secret=settings.vnpay_hash_secret,
-        return_url=settings.vnpay_return_url,
-        ref=vnpay.txn_ref(order.id, payment.id),
-        amount_vnd=order.total_vnd,
-        order_code=order.code,
-        ip=ip,
-        now=utcnow(),
-        expires_at=aware(order.expires_at),
-    )
+    return _payos_url(settings, order)
 
 
 def _payos_client(settings: Settings) -> payos.PayosClient:
@@ -369,7 +351,7 @@ def _payos_url(settings: Settings, order: Order) -> str | None:
 def pay_link(db: Session, settings: Settings, code: str, phone: str) -> str | None:
     """A new payment page for an order the customer already placed (code + phone, like the look-up)."""
     order = lookup_order(db, code, phone)
-    return payment_url(db, settings, order, "")
+    return payment_url(db, settings, order)
 
 
 # ================================================================== look-up (customer)
@@ -482,64 +464,6 @@ def expire_due_orders(db: Session) -> int:
         .options(selectinload(Order.payments), selectinload(Order.history), selectinload(Order.items))
     ).all()
     return sum(1 for o in due if expire_if_due(db, o))
-
-
-def apply_vnpay_ipn(db: Session, settings: Settings, query: dict[str, str]) -> tuple[str, str]:
-    """Handle the gateway's server-to-server callback. Returns VNPay's (RspCode, Message).
-
-    Safe to receive twice: only a pending payment changes, and (provider, provider_ref) is unique.
-    """
-    if not settings.vnpay_enabled or not vnpay.verify(settings.vnpay_hash_secret, query):
-        return "97", "Invalid signature"
-    parsed = vnpay.parse_txn_ref(query.get("vnp_TxnRef", ""))
-    payment = db.get(Payment, parsed[1]) if parsed else None
-    if payment is None or parsed is None or payment.order_id != parsed[0] or payment.provider != "vnpay":
-        return "01", "Order not found"
-    order = load_order(db, payment.order_id)
-    if query.get("vnp_Amount") != str(order.total_vnd * 100):
-        return "04", "Invalid amount"
-    if payment.status != "pending":
-        return "02", "Order already confirmed"
-    payment.last_payload = json.dumps(query, sort_keys=True)[:4000]
-    if query.get("vnp_ResponseCode") == "00" and query.get("vnp_TransactionStatus", "00") == "00":
-        payment.status, payment.paid_at = "paid", utcnow()
-        payment.provider_ref = query.get("vnp_TransactionNo") or None
-        order.expires_at = None
-        order.history.append(
-            OrderStatusHistory(
-                from_status=order.status,
-                to_status=order.status,
-                actor_id=None,
-                note="Paid online (VNPay)",
-                created_at=utcnow(),
-            )
-        )
-    else:
-        payment.status = "failed"
-    try:
-        db.commit()
-    except IntegrityError:  # the same transaction number was recorded by a parallel delivery
-        db.rollback()
-        return "02", "Order already confirmed"
-    return "00", "Confirm Success"
-
-
-def vnpay_return_result(db: Session, settings: Settings, query: dict[str, str]) -> tuple[str, str | None]:
-    """What to tell the customer's browser. It only reads: the callback above is what changes anything."""
-    if not settings.vnpay_enabled or not vnpay.verify(settings.vnpay_hash_secret, query):
-        return "invalid", None
-    parsed = vnpay.parse_txn_ref(query.get("vnp_TxnRef", ""))
-    payment = db.get(Payment, parsed[1]) if parsed else None
-    if payment is None or parsed is None or payment.order_id != parsed[0]:
-        return "invalid", None
-    order = db.get(Order, payment.order_id)
-    code = order.code if order else None
-    if payment.status == "paid":
-        return "paid", code
-    if payment.status in ("failed", "expired"):
-        return "failed", code
-    # Pending: the callback has not arrived yet (or it never will in local development).
-    return ("failed", code) if query.get("vnp_ResponseCode", "00") != "00" else ("pending", code)
 
 
 # ------------------------------------------------------------------ payOS

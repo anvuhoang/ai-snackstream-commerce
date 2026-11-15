@@ -83,12 +83,7 @@ def shop_config(request: Request) -> ShopConfig:
     return ShopConfig(
         shipping_fee_vnd=s.shipping_fee_vnd,
         free_ship_from_vnd=s.free_ship_from_vnd,
-        payment_methods=[
-            "cod",
-            *(["payos"] if s.payos_enabled else []),
-            *(["vnpay"] if s.vnpay_enabled else []),
-        ],
-        online_payment_is_sandbox=True,
+        payment_methods=["cod", "payos"] if s.payos_enabled else ["cod"],
         order_expiry_minutes=s.order_expiry_minutes,
     )
 
@@ -145,9 +140,7 @@ def checkout(
     """Place an order from the cart. Safe to repeat: the same Idempotency-Key and request return the same order."""
     cart = service.find_cart(db, request.cookies.get(CART_COOKIE))
     order = service.place_order(db, _settings(request), cart, body, idempotency_key)
-    return presenters.checkout_out(
-        order, service.payment_url(db, _settings(request), order, _client_ip(request))
-    )
+    return presenters.checkout_out(order, service.payment_url(db, _settings(request), order))
 
 
 @router.post("/orders/pay-link", response_model=PayLinkOut)
@@ -167,21 +160,6 @@ def lookup(body: LookupIn, request: Request, db: Db) -> OrderOut:
         raise AppError(429, "too_many_attempts", "Too many attempts. Please wait a minute and try again.")
     _lookup_limiter.hit(ip)
     return presenters.public_order(service.lookup_order(db, body.code, body.phone))
-
-
-# ------------------------------------------------------------------ online payment (VNPay sandbox)
-@router.get("/payments/vnpay/ipn", include_in_schema=True)
-def vnpay_ipn(request: Request, db: Db) -> JSONResponse:
-    """The gateway calls this from its servers after a payment. It is the source of truth, not the browser return."""
-    code, message = service.apply_vnpay_ipn(db, _settings(request), dict(request.query_params))
-    return JSONResponse({"RspCode": code, "Message": message})
-
-
-@router.get("/payments/vnpay/return", response_model=PaymentReturnOut)
-def vnpay_return(request: Request, db: Db) -> PaymentReturnOut:
-    """The customer's browser lands on the web page, which asks this what to show. It never changes anything."""
-    result, code = service.vnpay_return_result(db, _settings(request), dict(request.query_params))
-    return PaymentReturnOut(result=result, order_code=code)  # type: ignore[arg-type]
 
 
 # ------------------------------------------------------------------ online payment (payOS)
