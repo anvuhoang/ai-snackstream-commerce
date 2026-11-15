@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.db import Base, TimestampMixin
 
 ORDER_STATUSES = ("new", "confirmed", "shipping", "completed", "cancelled")
-PAYMENT_METHODS = ("cod", "vnpay")
+PAYMENT_METHODS = ("cod", "vnpay", "payos")
 PAYMENT_STATUSES = ("pending", "paid", "failed", "expired")
 
 
@@ -50,7 +50,7 @@ class Order(Base, TimestampMixin):
         CheckConstraint(
             "status IN ('new', 'confirmed', 'shipping', 'completed', 'cancelled')", name="status_valid"
         ),
-        CheckConstraint("payment_method IN ('cod', 'vnpay')", name="payment_method_valid"),
+        CheckConstraint("payment_method IN ('cod', 'vnpay', 'payos')", name="payment_method_valid"),
         CheckConstraint(
             "subtotal_vnd >= 0 AND shipping_fee_vnd >= 0 AND total_vnd >= 0", name="amounts_non_negative"
         ),
@@ -139,7 +139,7 @@ class Payment(Base, TimestampMixin):
     __tablename__ = "payment"
     __table_args__ = (
         UniqueConstraint("provider", "provider_ref", name="uq_payment_provider_ref"),
-        CheckConstraint("provider IN ('cod', 'vnpay')", name="provider_valid"),
+        CheckConstraint("provider IN ('cod', 'vnpay', 'payos')", name="provider_valid"),
         CheckConstraint("status IN ('pending', 'paid', 'failed', 'expired')", name="status_valid"),
         CheckConstraint("amount_vnd >= 0", name="amount_non_negative"),
     )
