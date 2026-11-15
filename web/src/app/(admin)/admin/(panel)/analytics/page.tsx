@@ -140,10 +140,11 @@ async function Overview({ api, query, source }: { api: Api; query: Query; source
   const orders = data.funnel.filter((s) => s.unit === "orders");
   return (
     <>
-      <section aria-label="Chỉ số chính" className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
-        <Tile label="Doanh thu" value={formatVnd(data.totals.revenueVnd)} note="Chỉ tính đơn đã hoàn tất" />
+      <section aria-label="Chỉ số chính" className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+        <Tile label="Giá trị đơn hoàn tất" value={formatVnd(data.totals.revenueVnd)} note="Tổng giá trị đơn hoàn tất, chưa chắc là tiền thực nhận" />
         <Tile label="Đơn đã tạo" value={data.totals.ordersCreated.toLocaleString("vi-VN")} />
         <Tile label="Đơn hoàn tất" value={data.totals.ordersCompleted.toLocaleString("vi-VN")} />
+        <Tile label="Đơn hủy" value={data.totals.ordersCancelled.toLocaleString("vi-VN")} note="Trong số đơn tạo cùng kỳ" />
         <Tile
           label="Tỷ lệ hoàn tất"
           value={data.totals.completionRate === null ? "—" : formatPercent(data.totals.completionRate)}
