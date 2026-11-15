@@ -55,7 +55,7 @@ export function OrderActions({
   return (
     <section className="grid gap-3 rounded-[20px] border border-line bg-surface p-5" aria-label="Xử lý đơn">
       <h2 className="text-sm font-extrabold">Xử lý đơn</h2>
-      {paymentMethod === "vnpay" && !paid && status === "new" && (
+      {paymentMethod !== "cod" && !paid && status === "new" && (
         <p className="text-xs text-muted">Đơn thanh toán online: chỉ xác nhận được sau khi cổng thanh toán báo đã nhận tiền.</p>
       )}
       <label className="grid gap-1.5 text-sm">
