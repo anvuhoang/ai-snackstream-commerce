@@ -13,8 +13,10 @@ from datetime import date
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.modules.chat.models import ChatLog, SupportRequest
+
 from .models import ChannelMetric, Event
-from .report import _scope, day_bounds
+from .report import _scope, day_bounds, rate
 from .schemas import AiOut, ChannelRow, ChannelsOut, ShopeeOut
 
 
@@ -56,13 +58,19 @@ def channels(
             m: (sum(c[m] for c in per if m in c) if any(m in c for c in per) else None)
             for m in ("views", "impressions", "clicks", "orders", "revenue_vnd", "cost_vnd")
         }
-        ctr, ctr_note = _ratio(per, "clicks", "views")
+        ctr, ctr_note = _ratio(per, "clicks", "impressions")
+        cpc, cpc_note = _ratio(per, "cost_vnd", "clicks")
+        roas, roas_note = _ratio(per, "revenue_vnd", "cost_vnd")
         cpo, cpo_note = _ratio(per, "cost_vnd", "orders")
         out.append(
             ChannelRow(
                 channel=name,
                 ctr=ctr,
                 ctr_note=ctr_note,  # type: ignore[arg-type]
+                cpc_vnd=None if cpc is None else round(cpc),
+                cpc_note=cpc_note,  # type: ignore[arg-type]
+                roas=roas,
+                roas_note=roas_note,  # type: ignore[arg-type]
                 cost_per_order_vnd=None if cpo is None else round(cpo),
                 cost_per_order_note=cpo_note,  # type: ignore[arg-type]
                 days=len(days[name]),
@@ -82,12 +90,41 @@ def shopee(db: Session, date_from: date, date_to: date, demo: str) -> ShopeeOut:
         )
         or 0
     )
+    landing = int(
+        db.scalar(
+            _scope(
+                select(func.count(func.distinct(Event.session_id))).where(
+                    Event.name.in_(("product_view", "shopee_click"))
+                ),
+                start,
+                end,
+                demo,
+                None,
+            )
+        )
+        or 0
+    )
+    outbound = int(
+        db.scalar(
+            _scope(
+                select(func.count(func.distinct(Event.session_id))).where(Event.name == "shopee_click"),
+                start,
+                end,
+                demo,
+                None,
+            )
+        )
+        or 0
+    )
     rows = channels(db, date_from, date_to, demo, "shopee").rows
     return ShopeeOut(
         date_from=date_from,
         date_to=date_to,
         demo=demo,  # type: ignore[arg-type]
         web_clicks=int(web_clicks),
+        landing_sessions=landing,
+        outbound_sessions=outbound,
+        outbound_rate=rate(outbound, landing),
         reported=rows[0] if rows else None,
     )
 
@@ -104,7 +141,40 @@ def ai(db: Session, date_from: date, date_to: date, demo: str) -> AiOut:
         return int(db.scalar(_scope(select(col).where(Event.name == name), start, end, demo, None)) or 0)
 
     ever = db.scalar(select(func.count(Event.id)).where(Event.name.in_(AI_EVENTS))) or 0
+
+    # Chat log and support requests are written by the chat module; neither has a demo flag, so the demo filter
+    # does not apply to them.
+    chat_total = int(
+        db.scalar(
+            select(func.count(ChatLog.id)).where(ChatLog.received_at >= start, ChatLog.received_at < end)
+        )
+        or 0
+    )
+    handoffs = int(
+        db.scalar(
+            select(func.count(SupportRequest.id)).where(
+                SupportRequest.created_at >= start, SupportRequest.created_at < end
+            )
+        )
+        or 0
+    )
+    durations = sorted(
+        db.scalars(
+            select(ChatLog.duration_ms).where(
+                ChatLog.received_at >= start,
+                ChatLog.received_at < end,
+                ChatLog.outcome == "answered",
+                ChatLog.duration_ms.is_not(None),
+            )
+        ).all()
+    )
     return AiOut(
+        chat_total=chat_total,
+        chat_handoffs=handoffs,
+        handoff_rate=rate(handoffs, chat_total),
+        latency_avg_ms=round(sum(durations) / len(durations)) if durations else None,
+        latency_p95_ms=durations[min(len(durations) - 1, int(len(durations) * 0.95))] if durations else None,
+        latency_samples=len(durations),
         date_from=date_from,
         date_to=date_to,
         demo=demo,  # type: ignore[arg-type]

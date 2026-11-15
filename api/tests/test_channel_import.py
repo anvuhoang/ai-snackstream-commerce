@@ -28,7 +28,7 @@ def channel_rows(client: TestClient, **params) -> dict[str, dict]:
     return {row["channel"]: row for row in r.json()["rows"]}
 
 
-GOOD = f"date,channel,content,views,clicks,orders,revenue,cost\n{D1},TikTok,clip-01,1200,90,6,540000,200000\n{D2},tiktok,clip-01,800,40,3,270000,100000\n"
+GOOD = f"date,channel,content,views,impressions,clicks,orders,revenue,cost\n{D1},TikTok,clip-01,1200,6000,90,6,540000,200000\n{D2},tiktok,clip-01,800,4000,40,3,270000,100000\n"
 
 
 # ================================================================== importing
@@ -39,9 +39,9 @@ def test_a_csv_is_imported_and_shown_per_channel(signed_in):
     assert (b["kind"], b["rowsTotal"], b["valuesImported"], b["valuesSkipped"]) == (
         "csv",
         2,
-        10,
+        12,
         0,
-    )  # 5 metrics on each of 2 rows
+    )  # 6 metrics on each of 2 rows
     row = channel_rows(signed_in)["tiktok"]  # "TikTok" and "tiktok" are one channel
     assert (row["views"], row["clicks"], row["orders"], row["revenueVnd"], row["costVnd"], row["days"]) == (
         2000,
@@ -51,7 +51,9 @@ def test_a_csv_is_imported_and_shown_per_channel(signed_in):
         300_000,
         2,
     )
-    assert row["ctr"] == 130 / 2000 and row["ctrNote"] == "ok"
+    assert row["ctr"] == 130 / 10000 and row["ctrNote"] == "ok"  # clicks / impressions
+    assert row["cpcVnd"] == round(300_000 / 130) and row["cpcNote"] == "ok"
+    assert row["roas"] == 810_000 / 300_000 and row["roasNote"] == "ok"
     assert row["costPerOrderVnd"] == round(300_000 / 9) and row["costPerOrderNote"] == "ok"
 
 
@@ -119,18 +121,28 @@ def test_a_header_with_no_data_is_refused(signed_in):
 
 # ================================================================== the formulas
 def test_a_ratio_uses_only_the_days_that_report_both_numbers(signed_in):
-    # day 1 reports views and clicks; day 2 reports only views. CTR must be 10 / 100, not 10 / 200.
-    upload(signed_in, f"date,channel,views,clicks\n{D1},tiktok,100,10\n{D2},tiktok,100,\n")
+    # day 1 reports impressions and clicks; day 2 reports only impressions. CTR must be 10 / 100, not 10 / 200.
+    upload(signed_in, f"date,channel,impressions,clicks\n{D1},tiktok,100,10\n{D2},tiktok,100,\n")
     row = channel_rows(signed_in)["tiktok"]
-    assert row["views"] == 200 and row["clicks"] == 10
+    assert row["impressions"] == 200 and row["clicks"] == 10
     assert row["ctr"] == 0.1
 
 
 def test_a_zero_denominator_is_cannot_compute_not_a_number(signed_in):
-    upload(signed_in, f"date,channel,views,clicks,orders,cost\n{D1},tiktok,0,5,0,100000\n")
+    upload(
+        signed_in, f"date,channel,impressions,clicks,orders,revenue,cost\n{D1},tiktok,0,0,0,50000,100000\n"
+    )
     row = channel_rows(signed_in)["tiktok"]
     assert row["ctr"] is None and row["ctrNote"] == "no_denominator"
+    assert row["cpcVnd"] is None and row["cpcNote"] == "no_denominator"
     assert row["costPerOrderVnd"] is None and row["costPerOrderNote"] == "no_denominator"
+    assert row["roas"] == 0.5  # cost is not zero, so ROAS exists
+
+
+def test_roas_without_cost_cannot_be_computed(signed_in):
+    upload(signed_in, f"date,channel,revenue,cost\n{D1},tiktok,50000,0\n")
+    row = channel_rows(signed_in)["tiktok"]
+    assert row["roas"] is None and row["roasNote"] == "no_denominator"
 
 
 def test_the_period_and_channel_filters_apply(signed_in):
@@ -227,7 +239,7 @@ def test_the_channel_numbers_can_be_exported_in_the_format_the_importer_reads(si
     assert r.status_code == 200 and r.headers["content-type"].startswith("text/csv")
     assert "attachment" in r.headers["content-disposition"] and ".csv" in r.headers["content-disposition"]
     lines = r.content.decode("utf-8-sig").strip().splitlines()
-    assert lines[0] == "date,channel,content,metric,value,demo,batch" and len(lines) == 1 + 10
+    assert lines[0] == "date,channel,content,metric,value,demo,batch" and len(lines) == 1 + 12
     assert f"{D1},tiktok,clip-01,views,1200,no," in "\n".join(lines)
 
 
