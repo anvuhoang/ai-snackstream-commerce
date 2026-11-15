@@ -1288,48 +1288,6 @@
         }
       }
     },
-    "/api/payments/vnpay/ipn": {
-      "get": {
-        "tags": [
-          "shop"
-        ],
-        "summary": "Vnpay Ipn",
-        "description": "The gateway calls this from its servers after a payment. It is the source of truth, not the browser return.",
-        "operationId": "vnpay_ipn_api_payments_vnpay_ipn_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/payments/vnpay/return": {
-      "get": {
-        "tags": [
-          "shop"
-        ],
-        "summary": "Vnpay Return",
-        "description": "The customer's browser lands on the web page, which asks this what to show. It never changes anything.",
-        "operationId": "vnpay_return_api_payments_vnpay_return_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentReturnOut"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/payments/payos/return": {
       "get": {
         "tags": [
@@ -4993,7 +4951,6 @@
             "type": "string",
             "enum": [
               "cod",
-              "vnpay",
               "payos"
             ],
             "title": "Paymentmethod",
@@ -7445,11 +7402,6 @@
             },
             "type": "array",
             "title": "Paymentmethods"
-          },
-          "onlinePaymentIsSandbox": {
-            "type": "boolean",
-            "title": "Onlinepaymentissandbox",
-            "default": true
           },
           "orderExpiryMinutes": {
             "type": "integer",
