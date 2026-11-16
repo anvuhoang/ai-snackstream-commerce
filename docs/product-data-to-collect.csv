@@ -1,31 +1,31 @@
 ﻿sku,name,ingredients_on_file,allergens_from_label,spice_level_checked,energy_kcal_per_100g,sugar_g_per_100g,fat_g_per_100g,sodium_mg_per_100g,net_weight_g_checked,expiry_on_label,shopee_product_url,verified_by_and_date
-BT-XIKE-01,Bánh tráng xì ke muối nhuyễn,"Bánh tráng phơi sương, muối tôm nhuyễn chay, tỏi phi ép dầu",,,,,,,,,,
-KG-LC-250,Khô gà lá chanh sấy giòn (250g),"Ức gà, lá chanh Thái, ớt xiêm xanh, gia vị",,,,,,,,,,
-BT-PS-01,Bánh tráng phơi sương muối nhuyễn,"Bánh tráng phơi sương, muối nhuyễn, dầu hành",,,,,,,,,,
-BT-TAC-01,Bánh tráng tắc sa tế,"Bánh tráng, tắc, sa tế, muối tôm, hành phi",,,,,,,,,,
-BT-MO-01,Bánh tráng muối hành,"Bánh tráng, muối, hành phi, dầu thực vật",,,,,,,,,,
-BT-CUON-01,Bánh tráng cuộn bơ,"Bánh tráng, sốt bơ, ruốc, hành phi, gia vị",,,,,,,,,,
-BT-CHAM-01,Bánh tráng chấm sốt me,"Bánh tráng, sốt me, đường, ớt, gia vị",,,,,,,,,,
-BT-TOI-01,Bánh tráng tỏi phi,"Bánh tráng, tỏi phi, dầu thực vật, muối",,,,,,,,,,
-BT-BO-01,Bánh tráng bơ tỏi,"Bánh tráng, sốt bơ, tỏi phi, gia vị",,,,,,,,,,
-BT-TRON-01,Bánh tráng trộn sa tế,"Bánh tráng, sa tế, muối tôm, hành phi, rau răm sấy",,,,,,,,,,
-KG-CHAY-01,Khô gà chay sợi nấm,"Sợi nấm, sả, lá chanh, ớt, gia vị chay",,,,,,,,,,
-KG-LC-500,Khô gà lá chanh (500g),"Ức gà, lá chanh, sả, ớt, gia vị",,,,,,,,,,
-KG-BB-250,Khô gà bơ tỏi (250g),"Ức gà, bơ, tỏi, gia vị",,,,,,,,,,
-KG-CAY-250,Khô gà cay xé (250g),"Ức gà, ớt, sả, lá chanh, gia vị",,,,,,,,,,
-KB-SL-200,Khô bò sợi mềm (200g),"Thịt bò, sả, ớt, tỏi, gia vị",,,,,,,,,,
-KB-QUE-150,Khô bò que (150g),"Thịt bò, sả, ớt, tỏi, gia vị",,,,,,,,,,
-KB-LAT-200,Khô bò lát (200g),"Thịt bò lát, sả, ớt, tiêu, gia vị",,,,,,,,,,
-MUC-CAY-150,Mực cán tẩm gia vị (150g),"Mực, đường, ớt, gia vị",,,,,,,,,,
-RONG-BIEN-01,Rong biển cháy tỏi,"Rong biển, tỏi, dầu thực vật, gia vị",,,,,,,,,,
-HAT-DIEU-200,Hạt điều rang muối (200g),"Hạt điều, muối",,,,,,,,,,
-DA-CA-100,Da cá trứng muối (100g),"Da cá, bột trứng muối, gia vị",,,,,,,,,,
-BAP-RANG-01,Bắp rang bơ,"Hạt bắp, bơ hoặc hương bơ, đường, muối",,,,,,,,,,
-KEO-MEO-01,Kẹo me cay,"Me, đường, muối, ớt",,,,,,,,,,
-XOAI-KEO-200,Xoài sấy dẻo (200g),"Xoài, đường (nếu có), nguyên liệu theo nhãn",,,,,,,,,,
-MIT-SAY-200,Mít sấy giòn (200g),"Mít, dầu thực vật (nếu có), nguyên liệu theo nhãn",,,,,,,,,,
-CHUOI-SAY-200,Chuối sấy giòn (200g),"Chuối, dầu thực vật (nếu có), nguyên liệu theo nhãn",,,,,,,,,,
-KHOAI-LAT-100,Khoai tây lát vị phô mai (100g),"Khoai tây, bột phô mai, dầu thực vật, gia vị",,,,,,,,,,
-BIM-BIM-100,Snack bắp vị BBQ (100g),"Bắp, dầu thực vật, gia vị BBQ",,,,,,,,,,
-KEO-CHUOI-01,Kẹo chuối đậu phộng,"Chuối, đậu phộng, đường, mè",,,,,,,,,,
-BANH-TRANG-ME-01,Bánh tráng me cay,"Bánh tráng, sốt me, ớt, đường, gia vị",,,,,,,,,,
+BT-XIKE-01,Bánh tráng xì ke muối nhuyễn,"Bánh tráng phơi sương, muối tôm nhuyễn chay, tỏi phi ép dầu",,Rất cay,360,1,8,1900,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KG-LC-250,Khô gà lá chanh sấy giòn (250g),"Ức gà, lá chanh Thái, ớt xiêm xanh, gia vị",,Cay nhẹ,330,8,8,1800,250,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BT-PS-01,Bánh tráng phơi sương muối nhuyễn,"Bánh tráng phơi sương, muối nhuyễn, dầu hành",,Không cay,340,1,5,1100,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BT-TAC-01,Bánh tráng tắc sa tế,"Bánh tráng, tắc, sa tế, muối tôm, hành phi",Theo thành phần: chứa tôm (muối tôm).,Cay vừa,350,6,7,1300,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BT-MO-01,Bánh tráng muối hành,"Bánh tráng, muối, hành phi, dầu thực vật",,Cay tùy chỉnh,400,1,14,1400,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BT-CUON-01,Bánh tráng cuộn bơ,"Bánh tráng, sốt bơ, ruốc, hành phi, gia vị","Theo thành phần: chứa sữa (sốt bơ), ruốc.",Không cay,420,5,16,1200,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BT-CHAM-01,Bánh tráng chấm sốt me,"Bánh tráng, sốt me, đường, ớt, gia vị",,Cay nhẹ,350,14,3,900,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BT-TOI-01,Bánh tráng tỏi phi,"Bánh tráng, tỏi phi, dầu thực vật, muối",,Không cay,430,1,17,1300,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BT-BO-01,Bánh tráng bơ tỏi,"Bánh tráng, sốt bơ, tỏi phi, gia vị",Theo thành phần: chứa sữa (sốt bơ).,Không cay,430,3,18,1100,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BT-TRON-01,Bánh tráng trộn sa tế,"Bánh tráng, sa tế, muối tôm, hành phi, rau răm sấy",Theo thành phần: chứa tôm (muối tôm).,Cay vừa,370,4,9,1500,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KG-CHAY-01,Khô gà chay sợi nấm,"Sợi nấm, sả, lá chanh, ớt, gia vị chay",,Cay vừa,290,9,6,1500,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KG-LC-500,Khô gà lá chanh (500g),"Ức gà, lá chanh, sả, ớt, gia vị",,Cay nhẹ,330,8,8,1800,500,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KG-BB-250,Khô gà bơ tỏi (250g),"Ức gà, bơ, tỏi, gia vị",Theo thành phần: chứa sữa (bơ).,Không cay,350,9,11,1700,250,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KG-CAY-250,Khô gà cay xé (250g),"Ức gà, ớt, sả, lá chanh, gia vị",,Cay rõ,335,8,8,1900,250,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KB-SL-200,Khô bò sợi mềm (200g),"Thịt bò, sả, ớt, tỏi, gia vị",,Cay vừa,310,14,6,2000,200,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KB-QUE-150,Khô bò que (150g),"Thịt bò, sả, ớt, tỏi, gia vị",,Cay vừa,320,15,7,2000,150,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KB-LAT-200,Khô bò lát (200g),"Thịt bò lát, sả, ớt, tiêu, gia vị",,Cay vừa,300,12,5,1900,200,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+MUC-CAY-150,Mực cán tẩm gia vị (150g),"Mực, đường, ớt, gia vị",Theo thành phần: chứa hải sản (mực).,Cay nhẹ,290,20,3,1700,150,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+RONG-BIEN-01,Rong biển cháy tỏi,"Rong biển, tỏi, dầu thực vật, gia vị",,Không cay,480,1,28,900,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+HAT-DIEU-200,Hạt điều rang muối (200g),"Hạt điều, muối",,Không cay,590,6,46,300,200,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+DA-CA-100,Da cá trứng muối (100g),"Da cá, bột trứng muối, gia vị",,Không cay,530,1,32,1700,100,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BAP-RANG-01,Bắp rang bơ,"Hạt bắp, bơ hoặc hương bơ, đường, muối",Theo thành phần: chứa sữa (bơ hoặc hương bơ).,Không cay,470,6,23,500,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KEO-MEO-01,Kẹo me cay,"Me, đường, muối, ớt",,Cay nhẹ,360,70,1,600,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+XOAI-KEO-200,Xoài sấy dẻo (200g),"Xoài, đường (nếu có), nguyên liệu theo nhãn",,Không cay,320,60,1,20,200,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+MIT-SAY-200,Mít sấy giòn (200g),"Mít, dầu thực vật (nếu có), nguyên liệu theo nhãn",,Không cay,440,45,20,30,200,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+CHUOI-SAY-200,Chuối sấy giòn (200g),"Chuối, dầu thực vật (nếu có), nguyên liệu theo nhãn",,Không cay,480,45,22,10,200,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KHOAI-LAT-100,Khoai tây lát vị phô mai (100g),"Khoai tây, bột phô mai, dầu thực vật, gia vị",Theo thành phần: chứa sữa (bột phô mai).,Không cay,520,3,30,900,100,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BIM-BIM-100,Snack bắp vị BBQ (100g),"Bắp, dầu thực vật, gia vị BBQ",,Không cay,500,4,25,800,100,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+KEO-CHUOI-01,Kẹo chuối đậu phộng,"Chuối, đậu phộng, đường, mè","Theo thành phần: chứa đậu phộng, mè.",Không cay,400,55,10,40,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"
+BANH-TRANG-ME-01,Bánh tráng me cay,"Bánh tráng, sốt me, ớt, đường, gia vị",,Cay vừa,350,15,3,800,,,,"Ước tính minh họa (đồ án), chưa kiểm nhãn thật"

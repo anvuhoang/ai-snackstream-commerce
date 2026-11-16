@@ -4,6 +4,7 @@ python -m app.cli migrate
 python -m app.cli seed-catalog                              # labelled demo products (idempotent)
 python -m app.cli sync-odoo                                 # copy on-hand counts from Odoo (needs ODOO_* settings)
 python -m app.cli expire-orders                             # cancel unpaid online orders whose time ran out
+python -m app.cli import-product-facts docs/product-data-to-collect.csv   # allergens, spice, nutrition, Shopee link
 python -m app.cli reindex-kb                                # (re)build the passages the chatbot searches
 python -m app.cli eval-rag [--questions eval/rag_questions.json]   # measure retrieval (hit@k, MRR)
 python -m app.cli create-admin you@example.com            # prompts for the password
@@ -22,6 +23,7 @@ from app.core.config import get_settings
 from app.core.db import make_engine, make_session_factory
 from app.main import run_migrations
 from app.modules.auth import service as auth_service
+from app.modules.catalog import facts_import
 from app.modules.catalog import seed as catalog_seed
 from app.modules.inventory import sync as inventory_sync
 from app.modules.orders import service as orders_service
@@ -45,6 +47,11 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser(
         "reindex-kb", help="rebuild the chatbot's searchable passages from products, FAQs and policy files"
     )
+    facts = sub.add_parser(
+        "import-product-facts",
+        help="fill allergens, spice level, nutrition and Shopee links from the completed CSV",
+    )
+    facts.add_argument("csv_path")
     ev = sub.add_parser("eval-rag", help="measure how often retrieval finds the right passage")
     ev.add_argument("--questions", default="eval/rag_questions.json")
     admin = sub.add_parser("create-admin", help="create a back-office user")
@@ -84,6 +91,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "expire-orders":
         with make_session_factory(make_engine(settings.database_url))() as db:
             print({"expired": orders_service.expire_due_orders(db)})
+        return 0
+
+    if args.cmd == "import-product-facts":
+        with make_session_factory(make_engine(settings.database_url))() as db:
+            print(facts_import.import_facts(db, facts_import.read_rows(Path(args.csv_path))))
         return 0
 
     if args.cmd in ("reindex-kb", "eval-rag"):
