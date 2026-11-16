@@ -20,10 +20,17 @@ def start(db: Session, conversation: str, question: str, sku: str | None) -> Cha
     return row
 
 
-def finish(db: Session, row: ChatLog, started: float, result=None, error: str | None = None):
+def finish(
+    db: Session,
+    row: ChatLog,
+    started: float,
+    result=None,
+    error: str | None = None,
+    outcome: str = "answered",
+):
     row.answered_at = utcnow()
     row.duration_ms = round((monotonic() - started) * 1000)
-    row.outcome = "error" if error else "answered"
+    row.outcome = "error" if error else outcome
     row.error_code = error
     if result:
         row.answer = result.answer
