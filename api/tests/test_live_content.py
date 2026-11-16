@@ -143,7 +143,7 @@ def test_script_generation_endpoint_is_not_exposed(prepared):
     assert requests == []
 
 
-def test_product_snapshot_in_make_payload_and_callback_restore(prepared, monkeypatch):
+def test_product_snapshot_in_make_payload_and_callback_restore(prepared, live_catalog, monkeypatch):
     c, sid, _, _, _ = prepared
     base = routes(sid)
     script = SCRIPT
@@ -197,7 +197,10 @@ def test_product_snapshot_in_make_payload_and_callback_restore(prepared, monkeyp
     }
     question = c.post(f"/api/live/{sid}/questions", json=body)
     assert question.status_code == 200
-    assert payloads[0]["product"] == PRODUCT
+    assert payloads[0]["product"]["sku"] == PRODUCT["sku"]
+    assert payloads[0]["product"]["name"] == "Catalog KG-LC-250"
+    assert "Keep dry from database" in payloads[0]["product"]["facts"]
+    assert PRODUCT["facts"] not in payloads[0]["product"]["facts"]
     assert payloads[0]["current_live_sku"] == PRODUCT["sku"]
     assert type(payloads[0]["deadline_unix_ms"]) is int
     assert c.post(f"/api/live/{sid}/questions", json=body).status_code == 200
@@ -289,9 +292,10 @@ def test_product_validation_and_snapshot_stays_with_received_sku():
         LiveQuestionIn(questionId="snapshot-product-001", sessionId="snapshot-viewer-001", text="Question"),
     )
     live.pin_sku(session.live_id, "BT-XIKE-01")
-    question.product.facts = "mutated output copy"
+    assert question.product is None  # Narration input is never answer evidence.
     payload = make_bridge.build_make_payload(live.claim_next_question(session.live_id), 7.5)
-    assert payload["product"] == PRODUCT
+    assert payload["current_live_sku"] == PRODUCT["sku"]
+    assert "product" not in payload  # Bound from the DB by dispatch, not admission.
     with pytest.raises(ValueError):
         LiveSessionCreate(title="Wrong", scheduledSkus=["BT-XIKE-01"], products=[PRODUCT])
     with pytest.raises(ValueError):

@@ -10,6 +10,7 @@ const base=process.env.LIVE_TEST_BASE_URL??'http://127.0.0.1:3107';
 assert.ok(['127.0.0.1','localhost'].includes(new URL(base).hostname));
 const credentials=JSON.parse((await readFile(process.env.LIVE_SIMLI_TEST_CONFIG,'utf8')).replace(/^\uFEFF/,''));
 const scenario=process.env.LIVE_SIMLI_CASE??'happy';
+const catalogCheck=process.env.LIVE_SIMLI_CATALOG_CHECK==='true';
 const matrixHidden=process.env.LIVE_SIMLI_MATRIX_HIDDEN==='true',matrixStall=process.env.LIVE_SIMLI_MATRIX_STALL==='true';
 const output=process.env.LIVE_SIMLI_EVIDENCE;
 const profile=await mkdtemp(join(tmpdir(),'snackstream-simli-integration-'));
@@ -30,7 +31,7 @@ async function page(port,path,{producer=false,context}={}){
   context??=(await browser.command('Target.createBrowserContext')).browserContextId;
   const {targetId}=await browser.command('Target.createTarget',{url:'about:blank',browserContextId:context,...((process.env.LIVE_SIMLI_HEADFUL==='true'||scenario==='acceptance')?{newWindow:true}:{})});
   const c=await link(`ws://127.0.0.1:${port}/devtools/page/${targetId}`);let external=0;const requests=[],questionBodies=[],sessionBodies=[],responses=[],writes=[];
-  let acceptStart=true,confirmCount=0;
+  let acceptStart=true,confirmCount=0,catalogReadFailure=false;
   c.on('Page.javascriptDialogOpening',dialog=>{
     assert.equal(dialog.type,'confirm');confirmCount++;
     void c.command('Page.handleJavaScriptDialog',{accept:acceptStart});
@@ -38,6 +39,9 @@ async function page(port,path,{producer=false,context}={}){
   c.on('Network.responseReceived',value=>responses.push({url:value.response.url,status:value.response.status}));await c.command('Network.enable');
   c.on('Fetch.requestPaused',r=>{
     requests.push(r.request.url);
+    if(catalogReadFailure&&r.request.method==='GET'&&new URL(r.request.url).pathname.startsWith('/api/live/products/')){
+      void c.command('Fetch.fulfillRequest',{requestId:r.requestId,responseCode:503,responseHeaders:[{name:'Content-Type',value:'application/json'}],body:Buffer.from(JSON.stringify({error:{code:'live_catalog_unavailable',message:'private database detail must not be displayed'}})).toString('base64')}).catch(()=>{});return;
+    }
     if(r.request.method!=='GET')writes.push({method:r.request.method,path:new URL(r.request.url).pathname});
     if(producer&&scenario==='slow-media'&&r.request.url.endsWith('/host/mock-video')){setTimeout(()=>void c.command('Fetch.continueRequest',{requestId:r.requestId}).catch(()=>{}),3000);return;}
     if(producer&&scenario==='admin-end'&&r.request.url.endsWith('/host/action')&&r.request.postData&&JSON.parse(r.request.postData).action==='stop'){setTimeout(()=>void c.command('Fetch.continueRequest',{requestId:r.requestId}).catch(()=>{}),1000);return;}
@@ -93,13 +97,26 @@ async function page(port,path,{producer=false,context}={}){
     for(let i=0;fiber&&i<40;fiber=fiber.return,i++)for(let h=fiber.memoizedState,n=0;h&&n<60;h=h.next,n++){const p=h.memoizedState?.current;if(${producer?'p?.broadcast':'p?.pc&&p?.video'}){${producer?'p.broadcast.markFrames=false':'p.measureFrames=false'};window.cadencePixelReadback=false;}}
   });`});
   await c.command('Page.navigate',{url:base+path});
-  const p={...c,evaluate,context,targetId,requests,questionBodies,sessionBodies,responses,writes,external:()=>external,acceptStart:value=>{acceptStart=value;},confirmations:()=>confirmCount};pages.push(p);debug=p;return p;
+  const p={...c,evaluate,context,targetId,requests,questionBodies,sessionBodies,responses,writes,external:()=>external,acceptStart:value=>{acceptStart=value;},confirmations:()=>confirmCount,setCatalogReadFailure:value=>{catalogReadFailure=value;}};pages.push(p);debug=p;return p;
 }
 async function getSession(p){return p.evaluate(`fetch('/api/live/current').then(r=>r.json()).then(x=>x.session)`);}
+async function seedCatalog(p){
+  return p.evaluate(`(async()=>{
+    const send=async(path,body)=>{const r=await fetch('/api/admin/catalog/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':window.testCsrf},body:body?JSON.stringify(body):undefined});if(!r.ok)throw Error('Seed catalog '+r.status);return r.json();};
+    const existing=await fetch('/api/live/products/KG-LC-250');
+    if(existing.ok){const p=await existing.json();if(p.name!=='Catalog chicken browser')throw Error('Test SKU belongs to another dataset');return p;}
+    const category=await send('categories',{name:'Live browser catalog'});
+    const product=await send('products',{name:'Catalog chicken browser',categoryId:category.id,description:'Database description, not narration input',ingredients:'Chicken and lime leaves',storage:'Database dry storage',ingredientsVerified:true,variants:[{sku:'KG-LC-250',name:'250 g',priceVnd:79000,weightG:250}]});
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=20;canvas.getContext('2d').fillRect(0,0,20,20);const image=await new Promise(r=>canvas.toBlob(r,'image/png')),form=new FormData();form.append('file',image,'catalog.png');
+    const uploaded=await fetch('/api/admin/catalog/products/'+product.id+'/images',{method:'POST',headers:{'X-CSRF-Token':window.testCsrf},body:form});if(!uploaded.ok)throw Error('Image seed '+uploaded.status);
+    await send('products/'+product.id+'/publish');return fetch('/api/live/products/KG-LC-250').then(r=>r.json());
+  })()`);
+}
 async function adminSetup(p){
   await until(()=>p.evaluate('document.readyState==="complete"'),'app readiness',60000);
   const auth=await p.evaluate(`fetch('/api/admin/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(${JSON.stringify({email:credentials.email,password:credentials.password})})}).then(r=>r.json())`,true);
   assert.ok(auth.csrf);await p.evaluate(`window.testCsrf=${JSON.stringify(auth.csrf)}`);
+  if(catalogCheck)await seedCatalog(p);
   const capabilities=await p.evaluate(`fetch('/api/admin/live/host-capabilities',{headers:{'X-CSRF-Token':window.testCsrf}}).then(async r=>{if(!r.ok)throw Error('Mock capability preflight HTTP '+r.status);return r.json();})`);
   assert.equal(capabilities.enabled,true);assert.equal(capabilities.transport,'mock','This browser harness must never acquire a real provider host');
   const leftover=await getSession(p);
@@ -251,10 +268,43 @@ try{
   const active=await until(async()=>{try{return await readFile(join(profile,'DevToolsActivePort'),'utf8');}catch{return null;}},'Chrome launch');
   const port=Number(active.split('\n')[0]);browser=await link(`ws://127.0.0.1:${port}${active.split('\n')[1].trim()}`);
   const producer=await page(port,'/live',{producer:true});const sid=await adminSetup(producer);
-  if(!['sku-form','manual-content'].includes(scenario)){
+  if(scenario==='catalog-read-error'){
+    producer.setCatalogReadFailure(true);
+    await producer.command('Page.reload');
+    await until(()=>producer.evaluate('document.querySelector("[data-testid=live-product-pin] [role=alert]")?.textContent.includes("Chưa đọc được dữ liệu sản phẩm")'),'catalog 503 has a clear read error');
+    assert.equal(await producer.evaluate('document.body.innerText.includes("private database detail")'),false);
+    assert.equal((await getSession(producer)).status,'not_started');
+    producer.setCatalogReadFailure(false);
+    await producer.command('Page.reload');
+    await until(()=>producer.evaluate('!!document.querySelector("[data-testid=live-product-pin] option[value=KG-LC-250]")&&!document.querySelector("[data-testid=live-product-pin] option[value=KG-LC-250]").disabled'),'catalog recovers after reload');
+    assert.equal(await producer.evaluate('!!document.querySelector("[data-testid=live-product-pin] [role=alert]")'),false);
+    assert.equal(producer.requests.filter(u=>/\/host\/(acquire|token)$/.test(new URL(u).pathname)).length,0);
+    const ended=await producer.evaluate(`fetch('/api/admin/auth/me').then(r=>r.json()).then(a=>fetch('/api/admin/live/${sid}/end',{method:'POST',headers:{'X-CSRF-Token':a.csrf}})).then(r=>r.status)`);
+    assert.equal(ended,200);
+    results.push({case:'catalog-503-safe-message-reload-recovery-no-host-start',passed:true});
+  }else if(!['sku-form','manual-content'].includes(scenario)){
   const v1=await page(port,'/live'),v2=await page(port,'/live');
   await until(()=>v1.evaluate('document.readyState==="complete"'),'first viewer page',60000);
   assert.equal((await getSession(v1)).status,'not_started');
+  if(catalogCheck){
+    await until(()=>v1.evaluate('!!document.querySelector("[data-testid=live-product-card] img")?.naturalWidth'),'catalog image loaded');
+    assert.match(await v1.evaluate('document.querySelector("[data-testid=live-product-card]").innerText'),/Catalog chicken browser/);
+    const detail=await v1.evaluate(`fetch('/api/live/products/KG-LC-250').then(r=>r.json())`);
+    assert.equal(await v1.evaluate('document.querySelector("[data-testid=live-product-link]").getAttribute("href")'),'/products/'+detail.slug);
+    const detailPage=await page(port,'/products/'+detail.slug,{context:v1.context});
+    await until(()=>detailPage.evaluate('document.body.innerText.includes("Catalog chicken browser")'),'existing product detail page');
+    await detailPage.command('Page.close');
+    pages.splice(pages.indexOf(detailPage),1);
+    await v1.evaluate('document.querySelector("[data-testid=live-add-to-cart]").click()',true);
+    await until(()=>v1.evaluate(`fetch('/api/cart').then(r=>r.json()).then(c=>c.items.some(i=>i.sku==='KG-LC-250'&&i.unitPriceVnd===79000))`),'exact shared-cart variant/price');
+    await until(()=>producer.evaluate('!!document.querySelector("[data-testid=live-product-pin] option[value=KG-LC-250]")&&!document.querySelector("[data-testid=live-product-pin] option[value=KG-LC-250]").disabled'),'catalog pin choice');
+    await producer.evaluate('document.querySelector("[data-testid=live-product-pin] button").click()',true);
+    await until(()=>v1.evaluate('!document.querySelector("[data-testid=live-product-card]")'),'unpin propagated by real SSE');
+    assert.equal((await getSession(v1)).pinnedSku,'KG-LC-250');
+    await until(()=>producer.evaluate('document.querySelector("[data-testid=live-product-pin] select").value===""'),'admin reflects unpin');
+    await producer.evaluate(`{const select=document.querySelector('[data-testid=live-product-pin] select');select.value='KG-LC-250';select.dispatchEvent(new Event('change',{bubbles:true}));}`,true);
+    await until(()=>v1.evaluate('!!document.querySelector("[data-testid=live-product-card]")'),'repin propagated by real SSE');
+  }
   assert.equal(await producer.evaluate('document.querySelectorAll("input[type=checkbox]").length'),0);
   producer.acceptStart(false);
   await producer.evaluate(`document.querySelector('[data-testid=host-start]').click()`,true);
@@ -495,7 +545,13 @@ if(['acceptance','content'].includes(scenario)){
     await until(async()=>(await getSession(v1)).questions.filter(q=>q.status==='answered').length===2,'queue answered');
     const session=await getSession(v1);assert.equal(session.questions.find(q=>q.questionId===q1).sku,'KG-LC-250');
     if(['audio-reply','content-audio-reply'].includes(scenario)){assert.equal(session.replyFormat,'simli_audio');assert.equal(session.questions.find(q=>q.questionId===q1).replyKind,'simli_audio');assert.equal(producer.requests.filter(u=>u.endsWith('/host/mock-video')).length,0);assert.equal(await producer.evaluate('window.hostEvents.filter(e=>e.event==="reply_audio_decoded_end").length'),2);assert.equal(await producer.evaluate('window.hostEvents.filter(e=>e.event==="reply_audio_gate_open").length'),2);}
-    if(scenario==='content-audio-reply')assert.deepEqual(session.questions.find(q=>q.questionId===q1).product,session.products[0]);
+    if(catalogCheck){
+      const product=session.questions.find(q=>q.questionId===q1).product;
+      assert.equal(product.sku,'KG-LC-250');assert.equal(product.name,'Catalog chicken browser');
+      assert.match(product.facts,/Database dry storage/);assert.match(product.facts,/79000/);
+      assert.notEqual(product.facts,session.products[0].facts);
+      results.push({case:'catalog-pin-unpin-detail-shared-cart-db-answer-evidence',passed:true,sku:product.sku});
+    }else if(scenario==='content-audio-reply')assert.equal(session.questions.find(q=>q.questionId===q1).product,null,'mock fixed reply has no generated catalog answer');
     const original=v1.questionBodies.find(q=>q.questionId===q1);assert.ok(original);
     const duplicate=await v1.evaluate(`fetch('/api/live/${sid}/questions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(${JSON.stringify(original)})}).then(async r=>({status:r.status,data:await r.json()}))`);
     assert.equal(duplicate.status,200);assert.equal(duplicate.data.questionId,q1);
@@ -516,8 +572,40 @@ if(['acceptance','content'].includes(scenario)){
     await producer.evaluate(`[...document.querySelectorAll('[data-testid=simli-producer] button')].find(b=>b.dataset.testid==='host-stop').click()`,true);
     await until(()=>v1.evaluate('document.querySelector("[data-testid=simli-receiver] video").srcObject===null'),'viewer cleanup after end');
     const events=await producer.evaluate('window.hostEvents');
+    const viewerFrames=await v1.evaluate('window.hostFrames'),lateViewerFrames=await late.evaluate('window.hostFrames');
+    if(catalogCheck){
+      const second=await producer.evaluate(`(async()=>{
+        const auth=await fetch('/api/admin/auth/me').then(r=>r.json());
+        const headers={'Content-Type':'application/json','X-CSRF-Token':auth.csrf};
+        let response=await fetch('/api/live/products/BT-XIKE-01');
+        if(response.status===404){
+          const categories=await fetch('/api/catalog/categories').then(r=>r.json());
+          const created=await fetch('/api/admin/catalog/products',{method:'POST',headers,body:JSON.stringify({name:'Catalog rice browser',categoryId:categories[0].id,description:'Rice database description',ingredients:'Rice',storage:'Keep dry',ingredientsVerified:true,variants:[{sku:'BT-XIKE-01',name:'Pack rice',priceVnd:25000}]})}).then(r=>r.json());
+          const published=await fetch('/api/admin/catalog/products/'+created.id+'/publish',{method:'POST',headers});if(!published.ok)throw Error('Second catalog product publish failed');
+          response=await fetch('/api/live/products/BT-XIKE-01');
+        }
+        const product=await response.json();if(product.name!=='Catalog rice browser')throw Error('Unexpected second product');
+        const created=await fetch('/api/admin/live',{method:'POST',headers,body:JSON.stringify({title:'Video catalog choices',hostMode:'video',scheduledSkus:['KG-LC-250','BT-XIKE-01']})});if(created.status!==201)throw Error('Video session creation failed');
+        return {product,session:await created.json()};
+      })()`);
+      await producer.command('Page.navigate',{url:base+'/admin/live'});
+      await until(()=>producer.evaluate('!!document.querySelector("[data-testid=live-product-pin] option[value=BT-XIKE-01]")'),'video catalog selection');
+      await producer.evaluate(`{const e=document.querySelector('[data-testid=live-product-pin] select');e.value='BT-XIKE-01';e.dispatchEvent(new Event('change',{bubbles:true}));}`,true);
+      await until(()=>v1.evaluate('document.querySelector("[data-testid=live-product-card]")?.innerText.includes("Catalog rice browser")'),'changed product rendered from real SSE');
+      assert.equal(await v1.evaluate('document.querySelector("[data-testid=live-product-link]").getAttribute("href")'),'/products/'+second.product.slug);
+      await v1.evaluate('document.querySelector("[data-testid=live-add-to-cart]").click()',true);
+      await until(()=>v1.evaluate(`fetch('/api/cart').then(r=>r.json()).then(c=>c.items.some(i=>i.sku==='BT-XIKE-01'&&i.unitPriceVnd===25000))`),'second SKU in shared cart');
+      const response=await producer.evaluate(`fetch('/api/admin/auth/me').then(r=>r.json()).then(a=>fetch('/api/admin/live/${second.session.liveId}/end',{method:'POST',headers:{'X-CSRF-Token':a.csrf}})).then(r=>r.status)`);
+      assert.equal(response,200);
+      await until(async()=>(await getSession(v1)).status==='ended','video end');
+      await v1.command('Page.reload');
+      await until(()=>v1.evaluate('document.body.innerText.includes("Phiên đã kết thúc")'),'ended survives F5');
+      await until(()=>v1.evaluate('!!document.querySelector("[data-testid=live-add-to-cart]")'),'catalog reload after F5');
+      assert.equal(await v1.evaluate('document.querySelector("[data-testid=live-add-to-cart]")?.disabled'),true);
+      results.push({case:'video-multi-sku-catalog-pin-shared-cart-ended-f5',passed:true});
+    }
     results.push({case:'one-producer-two-viewers-question-queue-restore-skip-end-late-join',passed:true,sync,autoplayBlocked:blocked,
-      transportCount:events.filter(e=>e.event==='transport_created').length,events,viewerFrames:await v1.evaluate('window.hostFrames'),lateViewerFrames:await late.evaluate('window.hostFrames')});
+      transportCount:events.filter(e=>e.event==='transport_created').length,events,viewerFrames,lateViewerFrames});
   }else if(scenario==='early-skip'){
     const q=await question(v1,'Skip while handoff is waiting');
     await until(()=>producer.evaluate('window.hostEvents.some(e=>e.event==="host_yield")'),'pending handoff');

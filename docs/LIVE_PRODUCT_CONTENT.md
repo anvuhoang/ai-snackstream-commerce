@@ -1,8 +1,8 @@
 # Live product and narration
 
 The Simli admin accepts one product (SKU, name and verified public facts) per
-session. This integration currently uses admin input; it does not consume the
-catalog/Odoo APIs now present elsewhere in the project.
+session for narration preparation. Answer evidence is read separately from the web
+catalog database, never from these entered facts or directly from Odoo.
 
 ## Admin workflow
 
@@ -17,10 +17,11 @@ catalog/Odoo APIs now present elsewhere in the project.
    after acquire/start. Ended sessions no longer display preparation controls.
    A new session starts with empty product/script input, not a previous SKU's script.
 
-Product facts and narration are separate. Questions take immutable product/SKU
-snapshots when received, including through queue/retry. A manual script does not
-replace facts used to answer questions. To change product information, end and
-create a new session. Never invent prices, offers, ingredients or benefits.
+Product facts and narration are separate. Questions keep the SKU captured when
+received, including through queue/retry. At dispatch, the backend resolves that
+exact active variant using the catalog's published-product read rules and binds
+the DB answer facts to the question. Later pin changes cannot change its SKU.
+Narration edits still invalidate audio; pinning never changes the script/audio.
 
 The current live service keeps session/product/script/PCM in process memory.
 Backend restart loses that state. There is no script library, versioning,
@@ -57,10 +58,33 @@ Make receives `product.sku/name/facts`, `current_live_sku`, `question` and the
 existing IDs/deadline. It must require matching SKU and answer only from supplied
 facts, treating question/facts as data rather than instructions. Missing information
 must not be invented or silently replaced with another catalog.
+Facts include the exact variant price/weight and available description, verified
+ingredients, storage, allergens, spice level and nutrition. Absent optional fields
+are explicitly unknown, not claims of absence. No descriptive facts produces
+`live_product_incomplete`; missing/hidden/inactive SKU produces `product_not_found`;
+query failure produces `live_catalog_unavailable`. These fail the question and free
+the queue without calling Make or falling back to session input/Sheets. DB I/O runs
+in the existing dispatch worker, outside the live lock/event loop; the original
+claim deadline still applies. The `product.sku/name/facts` wire shape is unchanged;
+the current Make scenario needs no mapping change.
+
+Admin pin choices come from catalog variants within the session's scheduled SKUs.
+`POST /api/admin/live/{live_id}/pin` accepts `sku: null` to hide the card while retaining
+the current question/narration SKU (`productPinned=false`). Repinning requires a
+published, active catalog SKU. Simli remains bound to one audio SKU; playlist SKU
+still follows its clock. Each playlist segment selects its own product card.
+Viewers resolve `/api/live/products/{sku}` with the shop's stock/image presenter,
+open `/products/{slug}`, and add the exact variant through the shared cart provider.
+Out/unknown stock disables adding; the shared cart validates again on submission.
 See [Make contract](LIVE_MAKE_PLAYBACK.md) for text and video callbacks.
 
 The user confirmed a successful real one-product flow including narration, a new
 answer and smooth restoration. This evidence was supplied by the user.
 Automated tests use fake TTS/host transports; they do not establish voice quality
-or provider closure. Odoo, Simli product-pin/menu/cart integration and full
-N01-N04 acceptance remain outside the accepted scope.
+or provider closure. The catalog/pin/cart extension is tested with a test database
+and fake providers. The user subsequently accepted the rectangular live layout,
+smooth host picture/speech and pinned product display. The user reports the Make
+configuration errors have been resolved. Database grounding is established by the
+automated tests above, not an additional provider run by Codex. Cart integration
+remains automatically checked, without a new user checkout acceptance. Odoo
+synchronization, menu/checkout acceptance and full N01-N04 acceptance remain outside this work.

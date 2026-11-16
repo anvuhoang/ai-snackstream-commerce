@@ -2,12 +2,20 @@ import asyncio
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from fastapi.responses import StreamingResponse
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
+from app.core.db import get_db
 from app.core.errors import AppError
+from app.core.storage import MediaStorage, get_storage
 from app.modules.auth.deps import require_csrf, require_role
+from app.modules.catalog import presenters
+from app.modules.catalog.schemas import ProductDetail
+from app.modules.inventory import service as inventory
 
 from .audio_reply import router as audio_reply_router
+from .catalog import product_for_sku
 from .content import ContentSettings, get_content_settings
 from .content_router import content_router
 from .deps import require_make_callback
@@ -146,9 +154,34 @@ async def live_events(request: Request):
     response_model=LiveSessionOut,
     dependencies=[Depends(require_csrf)],
 )
-def pin_live(live_id: str, body: LivePinIn, request: Request) -> LiveSessionOut:
+def pin_live(
+    live_id: str, body: LivePinIn, request: Request, db: Session = Depends(get_db)
+) -> LiveSessionOut:
     live: LiveService = request.app.state.live
+    live.check_pin(live_id, body.sku)
+    if body.sku is not None:
+        try:
+            product_for_sku(db, body.sku)
+        except SQLAlchemyError:
+            raise AppError(503, "live_catalog_unavailable", "Catalog query failed.") from None
     return live.pin_sku(live_id, body.sku)
+
+
+@router.get("/products/{sku}", response_model=ProductDetail)
+def live_product(
+    sku: str, request: Request, db: Session = Depends(get_db), storage: MediaStorage = Depends(get_storage)
+) -> ProductDetail:
+    """Resolve an exact active SKU using the shop's publication and stock rules."""
+    try:
+        product = product_for_sku(db, sku)
+        stock = inventory.stock_info(
+            db,
+            [v.id for v in product.variants if v.is_active],
+            request.app.state.settings.stock_stale_minutes,
+        )
+        return presenters.detail(product, storage, stock)
+    except SQLAlchemyError:
+        raise AppError(503, "live_catalog_unavailable", "Catalog query failed.") from None
 
 
 @router.post("/{live_id}/questions", response_model=LiveQuestionOut)

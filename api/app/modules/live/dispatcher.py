@@ -3,6 +3,7 @@ import logging
 from app.core.config import Settings
 from app.core.errors import AppError
 
+from .catalog import load_answer_product
 from .make_bridge import send_make_question
 from .service import LiveService
 
@@ -60,6 +61,18 @@ def dispatch_next_question(
         return
 
     try:
+        try:
+            product = load_answer_product(settings.database_url, question.sku)
+        except AppError as error:
+            live.fail_answer_product(
+                live_id, question.question_id, error.code, settings.live_make_result_timeout_seconds
+            )
+            return
+        if not live.bind_answer_product(
+            live_id, question.question_id, product, settings.live_make_result_timeout_seconds
+        ):
+            return
+        question.product = product
         send_make_question(question, settings)
     except AppError as error:
         live.record_make_dispatch_error(

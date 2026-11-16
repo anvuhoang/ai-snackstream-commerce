@@ -6,6 +6,7 @@ import type { components } from "@/lib/api/schema";
 import { SimliHostReceiver } from "./simli-host-receiver";
 import { SessionVideo } from "./session-video";
 import { LiveQuestions } from "./live-questions";
+import { LiveProductCard } from "./live-product-card";
 import { Button } from "@/components/ui/button";
 import {
   createLivePlaybackLog,
@@ -200,30 +201,24 @@ export function LiveSessionViewer() {
   const live = snapshot?.session;
   const shown = videoSnapshot?.session;
   const playback = shown?.playback;
+  const statusLabel = live?.status === "playing" && live.host
+    ? HOST_LABELS[live.host.phase] ?? STATUS_LABELS[live.status]
+    : live?.status ? STATUS_LABELS[live.status] : "";
 
   return (
-    <main className="mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:px-6">
-      <header className="grid gap-3">
-        <Link href="/" className="w-fit text-sm font-semibold text-brand">
-          ← Về cửa hàng
-        </Link>
-        <h1 className="text-3xl font-extrabold">{live?.title ?? "AI Live"}</h1>
-        <p role="status" className="text-sm text-muted">
-          {CONNECTION_LABELS[connection]}
-        </p>
+    <main className="mx-auto grid max-w-5xl gap-3 px-4 py-4 sm:px-6">
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <h1 className="min-w-0 text-2xl font-extrabold sm:text-3xl">{live?.title ?? "AI Live"}</h1>
+        <div className="grid gap-0.5 text-sm">
+          {live && <p role="status" className="font-semibold">{statusLabel} · {live.pinnedSku}</p>}
+          <p role="status" className="text-xs text-muted">{CONNECTION_LABELS[connection]}</p>
+        </div>
       </header>
 
       {snapshot !== null && (
         live ? (
-          <section className="grid gap-3 rounded-card border border-line bg-surface p-5">
-            <h2 className="text-xl font-bold">{live.status === "playing" && live.host ? HOST_LABELS[live.host.phase] ?? STATUS_LABELS[live.status] : live.status ? STATUS_LABELS[live.status] : ""}</h2>
+          <section className="grid gap-3 rounded-card border border-line bg-surface p-3">
             {debug && <p className="break-all text-sm text-muted">Mã phiên: {live.liveId}</p>}
-            <p className="text-sm text-muted">
-              SKU đang giới thiệu: {live.pinnedSku}
-            </p>
-            {live.products?.filter(product=>product.sku===live.pinnedSku).map(product=><div key={product.sku} className="grid gap-2">
-              <h3 className="font-semibold">{product.name}</h3><p className="whitespace-pre-line text-sm text-muted">{product.facts}</p>
-            </div>)}
             {live.scriptCompleted && live.status !== "ended" && (
               <p role="status" className="text-sm text-muted">
                 Đã hết lời dẫn. Đang trả lời các câu hỏi đã nhận; không nhận câu mới.
@@ -260,6 +255,8 @@ export function LiveSessionViewer() {
                 }}
               />
             )}
+
+            {live.productPinned !== false && <LiveProductCard key={`${live.liveId}:${live.pinnedSku}`} sku={live.pinnedSku} ended={live.status === "ended"} />}
 
             <LiveQuestions
               key={live.liveId}

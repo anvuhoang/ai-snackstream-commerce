@@ -2483,6 +2483,49 @@
         }
       }
     },
+    "/api/live/products/{sku}": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Live Product",
+        "description": "Resolve an exact active SKU using the shop's publication and stock rules.",
+        "operationId": "live_product_api_live_products__sku__get",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/live/{live_id}/questions": {
       "post": {
         "tags": [
@@ -6426,6 +6469,35 @@
         "type": "object",
         "title": "ImageUpdate"
       },
+      "LiveAnswerProduct": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "facts": {
+            "type": "string",
+            "maxLength": 16000,
+            "minLength": 1,
+            "title": "Facts"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sku",
+          "name",
+          "facts"
+        ],
+        "title": "LiveAnswerProduct"
+      },
       "LiveAudioCreate": {
         "properties": {
           "script": {
@@ -7146,9 +7218,17 @@
       "LivePinIn": {
         "properties": {
           "sku": {
-            "type": "string",
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
-            "title": "Sku"
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sku",
+            "description": "Null hides the product card without changing the narration SKU."
           }
         },
         "additionalProperties": false,
@@ -7359,7 +7439,7 @@
           "product": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/LiveProduct"
+                "$ref": "#/components/schemas/LiveAnswerProduct"
               },
               {
                 "type": "null"
@@ -7704,6 +7784,12 @@
           "pinnedSku": {
             "type": "string",
             "title": "Pinnedsku"
+          },
+          "productPinned": {
+            "type": "boolean",
+            "title": "Productpinned",
+            "description": "Show the catalog card; unpin keeps the current narration/question SKU.",
+            "default": true
           },
           "scriptPlaylist": {
             "items": {

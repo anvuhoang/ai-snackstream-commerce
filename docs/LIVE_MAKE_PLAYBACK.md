@@ -1,6 +1,6 @@
 # Live Make callbacks and playback
 
-LiveService owns the session, question queue, received SKU/product snapshot,
+LiveService owns the session, question queue, received SKU and DB answer facts,
 claim and callback idempotency. Make and prerecorded mock dispatch are mutually
 exclusive. Legacy video/playlist playback and Simli host are separate opt-in paths.
 
@@ -31,7 +31,11 @@ refresh the shared video clock, and no question is dispatched.
 }
 ```
 
-The six existing fields remain; product is included when supplied, reply_format
+The six existing fields remain; product is resolved from the web catalog for the
+question's captured SKU before dispatch (never narration input). A missing/inactive/
+hidden product or catalog query failure ends that question without sending Make;
+there is no Sheets/session-facts fallback. See [answer data](LIVE_PRODUCT_CONTENT.md).
+The product.sku/name/facts shape is unchanged. reply_format is included
 only for Simli audio. deadline_unix_ms is an integer UTC Unix epoch millisecond
 deadline, floored from the backend's exact claim-time deadline.
 The illustrative value 0 is expired and must be filtered before provider work.

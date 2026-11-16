@@ -10,7 +10,7 @@ from app.modules.live.service import REPLY_PREPARATION_SECONDS, LiveService
 
 
 @pytest.fixture(params=["make", "prerecorded"])
-def preparing(request, settings, monkeypatch):
+def preparing(request, settings, live_catalog, monkeypatch):
     class Clock(datetime):
         current = datetime(2026, 11, 11, tzinfo=UTC)
 

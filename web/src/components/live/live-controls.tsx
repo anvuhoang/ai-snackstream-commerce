@@ -1,6 +1,7 @@
 "use client";
 
 import { LiveContentEditor } from "./live-content-editor";
+import { LiveProductPin } from "./live-product-pin";
 import { SimliHostProducer } from "./simli-host-producer";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -16,7 +17,7 @@ type Action = "start" | "end" | "pause" | "resume";
 export function LiveControls({ live }: { live: LiveSession }) {
   const { user, csrf } = useAdmin();
   const router = useRouter();
-  const [busyAction, setBusyAction] = useState<Action | "pin" | null>(null);
+  const [busyAction, setBusyAction] = useState<Action | null>(null);
   const [refreshing, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [contentAudioReady, setContentAudioReady] = useState(false);
@@ -64,31 +65,6 @@ export function LiveControls({ live }: { live: LiveSession }) {
     }
   }
 
-  async function pinSku(sku: string) {
-  if (locked || user.role !== "admin" || live.status === "ended") return;
-  setBusyAction("pin");
-  setError("");
-
-  try {
-    const { response, error: failure } = await browserApi.POST("/api/admin/live/{live_id}/pin", {
-      params: { path: { live_id: live.liveId } },
-      headers: adminHeaders(csrf),
-      body: { sku },
-    });
-
-    if (!response.ok) {
-      setError(errorText(failure));
-      return;
-    }
-
-    startTransition(() => router.refresh());
-  } catch {
-    setError("Chưa xác nhận được kết quả. Hãy tải lại trang để kiểm tra SKU.");
-  } finally {
-    setBusyAction(null);
-  }
-}
-
   if (user.role !== "admin") return null;
 
   if (live.hostMode === "simli" && live.status === "ended") return null;
@@ -96,27 +72,12 @@ export function LiveControls({ live }: { live: LiveSession }) {
   if (live.hostMode === "simli") return <>
     {Boolean(live.products?.length) && <LiveContentEditor live={live} hostStarting={hostStarting} onAudioReadyChange={setContentAudioReady} />}
     <SimliHostProducer live={{ ...live, hostAudioReady: live.products?.length ? contentAudioReady : live.hostAudioReady }} onStarting={setHostStarting} />
+    <LiveProductPin live={live} />
   </>;
 
   return (
     <div className="mt-5 grid gap-3">
-    <label className="grid gap-2 text-sm font-medium">
-    SKU đang giới thiệu
-    <select value={live.pinnedSku} disabled={locked || live.status === "ended" || Boolean(live.scriptPlaylist?.length)}
-      onChange={(event) => void pinSku(event.target.value)}
-      className="w-full rounded-lg border border-line bg-surface p-3">
-      {live.scheduledSkus.map((sku) => (
-         <option key={sku} value={sku}>{sku}</option>
-       ))}
-      </select>
-    </label>
-    {Boolean(live.scriptPlaylist?.length) && (
-      <p className="text-sm text-muted">SKU tự chuyển theo danh sách phát.</p>
-    )}
-
-    {busyAction === "pin" && (
-      <p role="status" className="text-sm text-muted">Đang cập nhật SKU…</p>
-    )}
+    <LiveProductPin live={live} />
       <div className="flex flex-wrap gap-3">
         <Button
           type="button"

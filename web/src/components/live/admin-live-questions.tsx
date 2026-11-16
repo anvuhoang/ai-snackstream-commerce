@@ -1,5 +1,7 @@
 "use client";
 
+import { liveCatalogError } from "@/lib/live/catalog";
+
 import { useEffect, useRef, useState } from "react";
 import { useAdmin } from "@/components/admin/admin-shell";
 import { Button } from "@/components/ui/button";
@@ -138,6 +140,7 @@ export function AdminLiveQuestions({ liveId }: { liveId: string }) {
                       {question.replyKind === "simli_audio" ? "Trả lời mô phỏng bằng audio có sẵn, chưa phải đáp án AI cho câu hỏi này." : "Trả lời mô phỏng bằng video có sẵn, chưa phải đáp án AI cho câu hỏi này."}
                     </p>
                   )}
+                  {question.errorCode && ["product_not_found", "live_catalog_unavailable", "live_product_incomplete"].includes(question.errorCode) && <p role="alert" className="text-sm text-danger">{liveCatalogError({ error: { code: question.errorCode } })}</p>}
                   {["queued", "processing", "ready", "answering"].includes(question.status ?? "") &&
                     user.role === "admin" && (
                     <Button

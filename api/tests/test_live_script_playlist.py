@@ -27,7 +27,7 @@ def playlist():
 
 
 @pytest.fixture()
-def running(monkeypatch, settings):
+def running(monkeypatch, settings, live_catalog):
     class Clock(datetime):
         current = datetime(2026, 11, 13, tzinfo=UTC)
 
