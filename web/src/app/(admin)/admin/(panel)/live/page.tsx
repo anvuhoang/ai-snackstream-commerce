@@ -44,9 +44,6 @@ export default async function AdminLivePage() {
         </p>
       ) : live ? (
         <section className="rounded-card border border-line bg-surface p-5">
-          {live.isDemo && (
-            <p className="mb-4 text-sm text-muted">Dữ liệu thử nghiệm</p>
-          )}
 
           <dl className="grid gap-4">
             <div>

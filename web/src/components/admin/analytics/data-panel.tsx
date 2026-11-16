@@ -134,9 +134,6 @@ export function DataPanel({ batches, from, to, demo }: { batches: BatchOut[]; fr
             File CSV (UTF-8, tối đa 2 MB)
             <input type="file" name="file" accept=".csv,text/csv" className="text-sm file:mr-3 file:h-10 file:rounded-xl file:border-2 file:border-ink file:bg-transparent file:px-4 file:text-sm file:font-semibold" />
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="isDemo" className="size-4 accent-[var(--color-accent)]" /> Đây là dữ liệu demo
-          </label>
           <div className="flex flex-wrap items-center gap-3">
             <Button type="submit" disabled={busy}>
               {busy ? "Đang nhập…" : "Nhập file"}
@@ -171,9 +168,6 @@ export function DataPanel({ batches, from, to, demo }: { batches: BatchOut[]; fr
               </label>
             ))}
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="isDemo" className="size-4 accent-[var(--color-accent)]" /> Đây là dữ liệu demo
-          </label>
           <div>
             <Button type="submit" disabled={busy}>
               Thêm số liệu
@@ -215,7 +209,6 @@ export function DataPanel({ batches, from, to, demo }: { batches: BatchOut[]; fr
                   <td className="px-5 py-3 text-xs text-muted">{formatDateTime(b.createdAt)}</td>
                   <td className="px-4 py-3">
                     {b.filename}
-                    {b.isDemo && <span className="ml-2 rounded-full bg-warn-soft px-2 py-0.5 text-xs font-semibold text-warn">Demo</span>}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{b.rowsTotal}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{b.valuesImported}</td>

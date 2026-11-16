@@ -5,7 +5,7 @@ import { DataPanel } from "@/components/admin/analytics/data-panel";
 import { FunnelGroup } from "@/components/admin/funnel";
 import { Button } from "@/components/ui/button";
 import { serverApi } from "@/lib/api/server";
-import { addDays, DEMO_OPTIONS, formatPercent, isDate, isTab, sourceLabel, TABS, todayVn, type DemoFilter, type TabKey } from "@/lib/analytics";
+import { addDays, formatPercent, isDate, isTab, sourceLabel, TABS, todayVn, type DemoFilter, type TabKey } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { formatVnd } from "@/lib/format";
 
@@ -46,7 +46,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const today = todayVn();
   const to = isDate(sp.to) ? sp.to : today;
   const from = isDate(sp.from) ? sp.from : addDays(to, -29);
-  const demo: DemoFilter = DEMO_OPTIONS.find((o) => o.value === sp.demo)?.value ?? "exclude";
+  const demo: DemoFilter = "include"; // every recorded event counts; there is no separate sample data
   const source = (sp.source ?? "").trim().slice(0, 100);
   const query = { from, to, demo };
 
@@ -90,16 +90,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           <label className="grid gap-1 text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
             Đến ngày
             <input type="date" name="to" defaultValue={to} min={from} className={input} />
-          </label>
-          <label className="grid gap-1 text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
-            Dữ liệu
-            <select name="demo" defaultValue={demo} className={input}>
-              {DEMO_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
           </label>
           {tab === "overview" && (
             <label className="grid gap-1 text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
