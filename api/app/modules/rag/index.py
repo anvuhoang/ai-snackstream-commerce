@@ -8,12 +8,12 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .chunker import KNOWLEDGE_DIR, build_chunks, text_hash
+from .chunker import build_chunks, text_hash
 from .embedder import Embedder
 from .models import KbChunk
 
 
-def reindex(db: Session, embedder: Embedder, directory: Path = KNOWLEDGE_DIR) -> dict[str, int]:
+def reindex(db: Session, embedder: Embedder, directory: Path | None = None) -> dict[str, int]:
     wanted = {c.key: c for c in build_chunks(db, directory)}
     existing = {(r.source_type, r.source_key, r.kind): r for r in db.scalars(select(KbChunk))}
     stats = {"added": 0, "updated": 0, "removed": 0, "unchanged": 0}

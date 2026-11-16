@@ -7,6 +7,8 @@ import json
 import math
 from unittest.mock import patch
 
+import pytest
+
 from app.modules.chat import router as chat_router
 from app.modules.chat import service as chat_service
 from app.modules.chat.models import FAQ
@@ -18,6 +20,14 @@ from app.modules.rag.models import KbChunk
 from .helpers import make_product
 
 EMB = HashingEmbedder()
+
+
+@pytest.fixture(autouse=True)
+def no_policy_files(tmp_path, monkeypatch):
+    """The shop's real policy files would add passages to every count below; these tests start with none."""
+    empty = tmp_path / "knowledge"
+    empty.mkdir()
+    monkeypatch.setattr(chunker, "KNOWLEDGE_DIR", empty)
 
 
 def db_of(client):

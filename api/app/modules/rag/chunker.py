@@ -75,7 +75,8 @@ def faq_chunks(faq: FAQ) -> list[ChunkSpec]:
     ]
 
 
-def doc_chunks(directory: Path = KNOWLEDGE_DIR) -> list[ChunkSpec]:
+def doc_chunks(directory: Path | None = None) -> list[ChunkSpec]:
+    directory = directory or KNOWLEDGE_DIR
     out: list[ChunkSpec] = []
     for path in sorted(directory.glob("*.md")):
         for i, paragraph in enumerate(p.strip() for p in path.read_text(encoding="utf-8").split("\n\n")):
@@ -84,7 +85,7 @@ def doc_chunks(directory: Path = KNOWLEDGE_DIR) -> list[ChunkSpec]:
     return out
 
 
-def build_chunks(db: Session, directory: Path = KNOWLEDGE_DIR) -> list[ChunkSpec]:
+def build_chunks(db: Session, directory: Path | None = None) -> list[ChunkSpec]:
     """Everything the chatbot may quote right now: published products, approved FAQs and the shop's policy files."""
     products = db.scalars(
         select(Product)
