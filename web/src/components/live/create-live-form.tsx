@@ -142,7 +142,7 @@ export function CreateLiveForm({ disabled }: { disabled: boolean }) {
             <textarea name="productFacts" value={productFacts} onChange={event=>setProductFacts(event.target.value)} required maxLength={6000} rows={5}
               className="w-full rounded-xl border border-line bg-surface p-3" />
           </Field>
-          <p className="text-sm text-muted">Thông tin này được dùng để trả lời câu hỏi về sản phẩm. Sau khi tạo phiên, nhập lời dẫn và tạo giọng đọc.</p>
+          <p className="text-sm text-muted">Thông tin này chỉ để chuẩn bị lời dẫn. Câu trả lời lấy dữ liệu catalog theo SKU của câu hỏi. Sau khi tạo phiên, nhập lời dẫn và tạo giọng đọc.</p>
         </>}
         {hostMode === "video" && <p className="text-sm text-muted">
           Danh sách phát một lượt, sau đó trả lời hết câu hỏi đã nhận. Để trống để phát lặp video có sẵn.

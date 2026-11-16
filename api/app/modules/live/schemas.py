@@ -71,6 +71,12 @@ class LiveContentOut(LiveModel):
     audio_format: Literal["pcm_s16le_16000_mono"] | None = None
 
 
+class LiveAnswerProduct(LiveModel):
+    sku: Sku
+    name: str = Field(min_length=1, max_length=200)
+    facts: str = Field(min_length=1, max_length=16000)
+
+
 class LiveScriptUpdate(LiveModel):
     # Empty text explicitly clears narration and invalidates any previous audio.
     script: str = Field(max_length=2000)
@@ -155,7 +161,7 @@ class LiveMakeAudioAnswerIn(LiveModel):
 class LiveQuestionOut(LiveModel):
     reply_kind: Literal["video", "simli_audio"] = "video"
     audio_duration_seconds: float | None = Field(default=None, ge=1, le=90, allow_inf_nan=False)
-    product: LiveProduct | None = None
+    product: LiveAnswerProduct | None = None
     question_id: str
     live_id: str
     text: str
@@ -199,6 +205,9 @@ class LiveSessionOut(LiveModel):
     title: str
     scheduled_skus: list[str]
     pinned_sku: str
+    product_pinned: bool = Field(
+        default=True, description="Show the catalog card; unpin keeps the current narration/question SKU."
+    )
     script_playlist: list[LiveScriptSegment] = Field(default_factory=list)
     script_completed: bool = False
     is_demo: Literal[True] = True
@@ -218,12 +227,12 @@ class LiveCurrentOut(LiveModel):
 
 
 class LivePinIn(LiveModel):
-    sku: Sku
+    sku: Sku | None = Field(description="Null hides the product card without changing the narration SKU.")
 
     @field_validator("sku")
     @classmethod
-    def uppercase_sku(cls, value: str) -> str:
-        return value.upper()
+    def uppercase_sku(cls, value: str | None) -> str | None:
+        return value.upper() if value is not None else None
 
 
 class LiveMakeResultIn(LiveModel):

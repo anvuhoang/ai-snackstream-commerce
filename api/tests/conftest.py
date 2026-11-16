@@ -88,3 +88,34 @@ def staff(client: TestClient) -> TestClient:
     assert r.status_code == 200
     c.headers["X-CSRF-Token"] = r.json()["csrf"]
     return c
+
+
+@pytest.fixture()
+def live_catalog(client):
+    """Published DB evidence for live tests; deliberately differs from narration input."""
+    from app.modules.catalog.models import Category, Product, Variant
+
+    with client.app.state.session_factory() as db:
+        category = Category(slug="live-snacks", name="Live snacks")
+        db.add(category)
+        db.flush()
+        for sku, slug in [
+            ("KG-LC-250", "live-chicken"),
+            ("BT-XIKE-01", "live-rice"),
+            ("SKU-A", "live-a"),
+            ("SKU-B", "live-b"),
+        ]:
+            product = Product(
+                slug=slug,
+                name=f"Catalog {sku}",
+                description=f"Database description {sku}",
+                ingredients="Verified database ingredients",
+                storage="Keep dry from database",
+                ingredients_verified=True,
+                status="published",
+                category_id=category.id,
+                variants=[Variant(sku=sku, name="Pack", price_vnd=65000, weight_g=250)],
+            )
+            db.add(product)
+        db.commit()
+    return client.app.state.settings.database_url

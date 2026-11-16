@@ -11,7 +11,7 @@ TEST_TOKEN = "dispatcher-test-token-" + "x" * 32
 
 
 @pytest.fixture
-def dispatch_live(client, monkeypatch):
+def dispatch_live(client, live_catalog, monkeypatch):
     settings = client.app.state.settings
     settings.live_make_enabled = True
     settings.live_make_webhook_url = SecretStr("https://example.invalid/private-webhook")

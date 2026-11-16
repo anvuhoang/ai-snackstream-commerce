@@ -12,7 +12,7 @@ HEADERS = {"X-Live-Make-Token": TEST_TOKEN}
 
 
 @pytest.fixture
-def callback_live(client, monkeypatch):
+def callback_live(client, live_catalog, monkeypatch):
     client.app.state.settings.live_make_enabled = True
     monkeypatch.setattr("app.modules.live.dispatcher.send_make_question", MagicMock(return_value=202))
     client.app.state.settings.live_make_callback_token = SecretStr(TEST_TOKEN)

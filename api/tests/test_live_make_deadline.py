@@ -17,7 +17,7 @@ HEADERS = {"X-Live-Make-Token": TOKEN}
 
 
 @pytest.fixture
-def deadline_live(client, monkeypatch):
+def deadline_live(client, live_catalog, monkeypatch):
     # The shared fixture starts with both modes off: no lifespan ticks run, so
     # each HTTP case can test callback admission before any expiry tick.
     class Clock(datetime):

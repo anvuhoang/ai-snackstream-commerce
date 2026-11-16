@@ -36,7 +36,7 @@ def result(live_id, index=0, **changes):
 
 
 @pytest.fixture
-def make_live(settings, monkeypatch):
+def make_live(settings, live_catalog, monkeypatch):
     class Clock(datetime):
         current = datetime(2026, 11, 11, tzinfo=UTC)
 
@@ -412,7 +412,9 @@ def test_playback_and_deadlines_advance_while_webhook_ack_is_blocked(make_live, 
     asyncio.run(check())
 
 
-def test_make_lifespan_runs_authenticated_callbacks_to_completion_without_viewers(settings, monkeypatch):
+def test_make_lifespan_runs_authenticated_callbacks_to_completion_without_viewers(
+    settings, live_catalog, monkeypatch
+):
     settings.live_make_enabled = True
     settings.live_make_callback_token = SecretStr("synthetic-callback-token-" + "x" * 32)
     sender = MagicMock(return_value=202)

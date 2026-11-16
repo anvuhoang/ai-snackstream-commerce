@@ -7,6 +7,7 @@ from app.core.errors import AppError
 from . import simli_host
 from .content import PreparedContent
 from .schemas import (
+    LiveAnswerProduct,
     LiveMakeResultAck,
     LiveMakeResultIn,
     LivePlaybackOut,
@@ -92,6 +93,7 @@ class LiveService:
     def _select_script_segment(self, session: LiveSessionOut, index: int, started_at: datetime) -> None:
         segment = session.script_playlist[index]
         session.pinned_sku = segment.sku
+        session.product_pinned = True
         session.playback = LivePlaybackOut(
             playback_id=uuid4().hex,
             video_url=str(segment.video_url),
@@ -174,32 +176,36 @@ class LiveService:
             self._active_question_id = None
             return session.model_copy(deep=True)
 
-    def pin_sku(self, live_id: str, sku: str) -> LiveSessionOut:
+    def pin_sku(self, live_id: str, sku: str | None) -> LiveSessionOut:
         with self._lock:
             session = self._require_current(live_id)
-
-            if session.host_mode == "simli" and sku != session.pinned_sku:
-                raise AppError(409, "host_audio_controls_sku", "Configured host audio controls the SKU.")
-
-            if session.script_playlist:
-                raise AppError(409, "live_playlist_controls_sku", "Playlist controls the current SKU.")
-
-            if session.status == "ended":
-                raise AppError(
-                    409,
-                    "live_invalid_state",
-                    "Cannot change SKU after the session ends.",
-                )
-
-            if sku not in session.scheduled_skus:
-                raise AppError(
-                    422,
-                    "live_invalid_sku",
-                    "SKU is not scheduled for this session.",
-                )
-
+            self._advance_script_locked(session, datetime.now(UTC))
+            self._validate_pin_locked(session, sku)
+            if sku is None:
+                session.product_pinned = False
+                return session.model_copy(deep=True)
             session.pinned_sku = sku
+            session.product_pinned = True
             return session.model_copy(deep=True)
+
+    def check_pin(self, live_id: str, sku: str | None) -> None:
+        with self._lock:
+            session = self._require_current(live_id)
+            self._advance_script_locked(session, datetime.now(UTC))
+            self._validate_pin_locked(session, sku)
+
+    @staticmethod
+    def _validate_pin_locked(session: LiveSessionOut, sku: str | None) -> None:
+        if session.status == "ended":
+            raise AppError(409, "live_invalid_state", "Cannot pin after the session ends.")
+        if sku is None:
+            return
+        if session.host_mode == "simli" and sku != session.pinned_sku:
+            raise AppError(409, "host_audio_controls_sku", "Configured host audio controls the SKU.")
+        if session.script_playlist and sku != session.pinned_sku:
+            raise AppError(409, "live_playlist_controls_sku", "Playlist controls the current SKU.")
+        if sku not in session.scheduled_skus:
+            raise AppError(422, "live_invalid_sku", "SKU is not scheduled for this session.")
 
     def submit_question(self, live_id: str, data: LiveQuestionIn) -> LiveQuestionOut:
         with self._lock:
@@ -241,15 +247,53 @@ class LiveService:
                 text=data.text,
                 sku=session.pinned_sku,
                 received_at=now,
-                product=next(
-                    (p.model_copy(deep=True) for p in session.products if p.sku == session.pinned_sku), None
-                ),
                 is_demo=session.is_demo,
             )
 
             session.questions.append(question)
             self._question_requests[data.question_id] = data.model_copy(deep=True)
             return question.model_copy(deep=True)
+
+    def bind_answer_product(
+        self, live_id: str, question_id: str, product: LiveAnswerProduct, timeout_seconds: float
+    ) -> bool:
+        with self._lock:
+            session = self._require_current(live_id)
+            now = datetime.now(UTC)
+            self._advance_script_locked(session, now)
+            question = next(q for q in session.questions if q.question_id == question_id)
+            self._expire_make_question_locked(question, now, timeout_seconds)
+            if question.status == "skipped" and self._active_question_id == question_id:
+                # Catalog I/O finished before any webhook was sent; nothing external owns this slot.
+                self._active_question_id = None
+            if (
+                session.status == "ended"
+                or question.status != "processing"
+                or self._active_question_id != question_id
+                or question.sku != product.sku
+            ):
+                return False
+            question.product = product.model_copy(deep=True)
+            return True
+
+    def fail_answer_product(self, live_id: str, question_id: str, code: str, timeout_seconds: float) -> None:
+        with self._lock:
+            session = self._current
+            if session is None or session.live_id != live_id:
+                return
+            now = datetime.now(UTC)
+            self._advance_script_locked(session, now)
+            question = next((q for q in session.questions if q.question_id == question_id), None)
+            self._expire_make_question_locked(question, now, timeout_seconds)
+            if (
+                question is not None
+                and question.status in ("processing", "skipped")
+                and self._active_question_id == question_id
+            ):
+                if question.status == "processing":
+                    question.status = "failed"
+                    question.error_code = code
+                self._active_question_id = None
 
     def skip_question(self, live_id: str, question_id: str) -> LiveQuestionOut:
         with self._lock:

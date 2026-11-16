@@ -16,9 +16,10 @@ from app.modules.live.service import LiveService
 
 
 @pytest.fixture
-def make_settings():
+def make_settings(live_catalog):
     return Settings(
         _env_file=None,
+        DATABASE_URL=live_catalog,
         LIVE_MAKE_ENABLED=True,
         LIVE_MAKE_WEBHOOK_URL="https://hook.eu1.make.com/example-private",
     )
@@ -161,6 +162,9 @@ def test_dispatch_deadline_stays_at_claim_despite_delayed_send(
         milliseconds=1
     )
     assert type(payload["deadline_unix_ms"]) is int
+    product = payload.pop("product")
+    assert product["sku"] == "BT-XIKE-01"
+    assert product["name"] == "Catalog BT-XIKE-01"
     assert payload == {
         "session_id": session.live_id,
         "question_id": "deadline-question-001",

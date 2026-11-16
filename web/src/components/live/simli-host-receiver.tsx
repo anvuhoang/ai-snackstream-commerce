@@ -33,7 +33,7 @@ export function SimliHostReceiver({live,connected,onLog}:{live:Session;connected
   return <section className="grid gap-2" data-testid="simli-receiver" data-phase={displayPhase}>
     {displayPhase !== "playing" && <p role="status">{labels[displayPhase]??'Có lỗi kết nối. Hãy tải lại trang.'}</p>}
     {live.host?.transport === "mock" && <p className="text-sm text-muted">Người dẫn mô phỏng, dùng audio có sẵn.</p>}
-    <video ref={video} autoPlay playsInline controls className="aspect-square w-full rounded-lg bg-black"/>
+    <video ref={video} autoPlay playsInline controls data-testid="live-media-frame" className="aspect-video w-full max-h-[min(54svh,max(180px,calc(100svh-420px)),560px)] rounded-lg bg-black object-contain lg:max-h-[min(54svh,max(180px,calc(100svh-360px)),560px)]"/>
     {displayPhase==='blocked'&&<Button onClick={()=>void receiver.current?.enable()}>Bật hình và tiếng</Button>}
   </section>;
 }

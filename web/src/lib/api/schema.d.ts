@@ -815,6 +815,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/live/products/{sku}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Live Product
+         * @description Resolve an exact active SKU using the shop's publication and stock rules.
+         */
+        get: operations["live_product_api_live_products__sku__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/live/{live_id}/questions": {
         parameters: {
             query?: never;
@@ -2210,6 +2230,15 @@ export interface components {
             /** Sortorder */
             sortOrder?: number | null;
         };
+        /** LiveAnswerProduct */
+        LiveAnswerProduct: {
+            /** Sku */
+            sku: string;
+            /** Name */
+            name: string;
+            /** Facts */
+            facts: string;
+        };
         /** LiveAudioCreate */
         LiveAudioCreate: {
             /** Script */
@@ -2446,8 +2475,11 @@ export interface components {
         };
         /** LivePinIn */
         LivePinIn: {
-            /** Sku */
-            sku: string;
+            /**
+             * Sku
+             * @description Null hides the product card without changing the narration SKU.
+             */
+            sku: string | null;
         };
         /** LivePlaybackOut */
         LivePlaybackOut: {
@@ -2519,7 +2551,7 @@ export interface components {
             replyKind?: "video" | "simli_audio";
             /** Audiodurationseconds */
             audioDurationSeconds?: number | null;
-            product?: components["schemas"]["LiveProduct"] | null;
+            product?: components["schemas"]["LiveAnswerProduct"] | null;
             /** Questionid */
             questionId: string;
             /** Liveid */
@@ -2632,6 +2664,12 @@ export interface components {
             scheduledSkus: string[];
             /** Pinnedsku */
             pinnedSku: string;
+            /**
+             * Productpinned
+             * @description Show the catalog card; unpin keeps the current narration/question SKU.
+             * @default true
+             */
+            productPinned?: boolean;
             /** Scriptplaylist */
             scriptPlaylist?: components["schemas"]["LiveScriptSegment"][];
             /**
@@ -4953,6 +4991,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    live_product_api_live_products__sku__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sku: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };

@@ -67,7 +67,7 @@ export function SimliHostProducer({live,onStarting}:{live:Session;onStarting?:(s
     {Boolean(live.products?.length)&&!live.hostAudioReady&&<p role="status" className="text-sm text-muted">Hãy tạo audio cho sản phẩm trước khi bắt đầu.</p>}
     <p className="text-sm text-muted">SKU đang giới thiệu: <strong>{live.pinnedSku}</strong></p>
     <p role="status">{live.status === "ended" ? labels.ended : labels[phase]??"Có lỗi kết nối"}</p>
-    <canvas ref={canvas} className="aspect-square w-full rounded-lg bg-black" aria-label="Hình ảnh phiên live"/>
+    <canvas ref={canvas} data-testid="live-media-frame" className="aspect-video w-full max-h-[min(54svh,max(180px,calc(100svh-420px)),560px)] rounded-lg bg-black object-contain lg:max-h-[min(54svh,max(180px,calc(100svh-360px)),560px)]" aria-label="Hình ảnh phiên live"/>
     <div hidden><video ref={hostVideo} muted playsInline/><audio ref={hostAudio} muted/><video ref={replyVideo} playsInline/></div>
     {message&&<p role="alert" className="text-sm text-danger">{message}</p>}
   </section>;

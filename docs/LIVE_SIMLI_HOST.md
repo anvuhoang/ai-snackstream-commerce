@@ -58,7 +58,7 @@ this is not a claim that a human has heard audio.
 - Host cap is 90 seconds including startup; startup limit is 20 seconds.
   Heartbeat runs every 750 ms, lease is 6 seconds, slot hold is 120 seconds from
   acquire even after cleanup. No automatic new token/session is issued on error.
-- Queue, SKU/product snapshots, callback deadline and idempotency stay in LiveService.
+- Queue, captured question SKU, DB answer facts, callback deadline and idempotency stay in LiveService.
   Simli position comes from observed decoded audio, never the amount of PCM sent.
 - Replies use a muted 1.2-second matchable narration prefix plus 0.3 seconds silence
   before answer PCM. The exclusive output opens only after valid alignment.
@@ -92,5 +92,7 @@ session; D-ID video is a separate retained compatibility path.
 
 Automated tests use fake providers/local media and cover lifecycle, permissions,
 queue, late/duplicate events, byte limits, reply/restore, legacy video and UI guards.
-Odoo product input, product-pin/menu/cart integration in Simli, broad-network
-broadcasting and N01-N04 completion have not been accepted.
+Database-grounded answers and catalog pin/cart are extensions checked with fake
+providers; they are separate from that user acceptance. Odoo synchronization,
+menu/checkout acceptance, broad-network broadcasting and N01-N04 completion
+have not been established by this work. See [product content](LIVE_PRODUCT_CONTENT.md).
