@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { TrackOnMount } from "@/components/analytics/tracker";
 import { ProductImage } from "@/components/store/product-image";
 import { VariantPicker } from "@/components/store/variant-picker";
-import { Badge } from "@/components/ui/badge";
 import { serverApi } from "@/lib/api/server";
 import { categoryStyle } from "@/lib/category-style";
 import { cn } from "@/lib/cn";
@@ -95,11 +94,6 @@ export default async function ProductPage({ params }: Props) {
             )}
             <h1 className="text-[clamp(32px,4.4vw,46px)] font-extrabold leading-[1.05] tracking-[-0.04em]">{p.name}</h1>
             {p.description && <p className="text-base leading-relaxed text-muted">{p.description}</p>}
-            {p.isDemo && (
-              <div>
-                <Badge tone="warn">Sản phẩm demo</Badge>
-              </div>
-            )}
           </div>
 
           <TrackOnMount event="product_view" sku={p.variants[0]?.sku} />
@@ -110,7 +104,14 @@ export default async function ProductPage({ params }: Props) {
               {p.ingredients}
             </Accordion>
             <Accordion title="Bảo quản">{p.storage}</Accordion>
-            <Accordion title="Dị ứng">Nếu bạn có dị ứng thực phẩm, hãy đối chiếu thành phần trên bao bì sản phẩm trước khi dùng.</Accordion>
+            <Accordion title="Dị ứng">
+              {p.allergens ? `${p.allergens} ` : ""}Nếu bạn có dị ứng thực phẩm, hãy đối chiếu thành phần trên bao bì sản phẩm trước khi dùng.
+            </Accordion>
+            {(p.spiceLevel || p.nutrition) && (
+              <Accordion title="Mức cay và dinh dưỡng">
+                {[p.spiceLevel && `Mức cay: ${p.spiceLevel}.`, p.nutrition].filter(Boolean).join(" ")}
+              </Accordion>
+            )}
           </div>
         </div>
       </div>

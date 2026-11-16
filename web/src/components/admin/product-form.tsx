@@ -21,6 +21,9 @@ const editSchema = z.object({
   description: z.string().max(5000, "Tối đa 5000 ký tự"),
   ingredients: z.string().max(3000, "Tối đa 3000 ký tự"),
   storage: z.string().max(2000, "Tối đa 2000 ký tự"),
+  allergens: z.string().max(1000, "Tối đa 1000 ký tự"),
+  spiceLevel: z.string().max(30, "Tối đa 30 ký tự"),
+  nutrition: z.string().max(1000, "Tối đa 1000 ký tự"),
   ingredientsVerified: z.boolean(),
   shopeeUrl: z
     .string()
@@ -59,6 +62,9 @@ export function ProductForm({ product, categories }: { product?: AdminProduct; c
       description: product?.description ?? "",
       ingredients: product?.ingredients ?? "",
       storage: product?.storage ?? "",
+      allergens: product?.allergens ?? "",
+      spiceLevel: product?.spiceLevel ?? "",
+      nutrition: product?.nutrition ?? "",
       ingredientsVerified: product?.ingredientsVerified ?? false,
       shopeeUrl: product?.shopeeUrl ?? "",
     },
@@ -72,6 +78,9 @@ export function ProductForm({ product, categories }: { product?: AdminProduct; c
       description: v.description,
       ingredients: v.ingredients,
       storage: v.storage,
+      allergens: v.allergens,
+      spiceLevel: v.spiceLevel.trim(),
+      nutrition: v.nutrition,
       ingredientsVerified: v.ingredientsVerified,
       shopeeUrl: v.shopeeUrl.trim(),
     };
@@ -127,6 +136,18 @@ export function ProductForm({ product, categories }: { product?: AdminProduct; c
         </FormRow>
         <FormRow label="Hướng dẫn bảo quản" error={errors.storage?.message}>
           <Textarea {...register("storage")} disabled={!canEdit} rows={4} />
+        </FormRow>
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-3">
+        <FormRow label="Dị ứng" hint="Chép đúng theo nhãn. Để trống nếu chưa biết (trống không có nghĩa là không có)." error={errors.allergens?.message}>
+          <Textarea {...register("allergens")} disabled={!canEdit} rows={3} />
+        </FormRow>
+        <FormRow label="Mức cay" hint="Ví dụ: Không cay, Cay vừa, Rất cay." error={errors.spiceLevel?.message}>
+          <Input {...register("spiceLevel")} disabled={!canEdit} />
+        </FormRow>
+        <FormRow label="Dinh dưỡng" hint="Theo nhãn, ví dụ: Trên 100 g: năng lượng 450 kcal." error={errors.nutrition?.message}>
+          <Textarea {...register("nutrition")} disabled={!canEdit} rows={3} />
         </FormRow>
       </div>
 
