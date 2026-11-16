@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -28,7 +29,7 @@ from app.modules.auth.models import AdminUser
 from app.modules.catalog.models import Product, Variant
 from app.modules.inventory import service as inventory
 
-from . import stock, vnpay
+from . import payos, stock, vnpay
 from .models import (
     Cart,
     CartItem,
@@ -48,6 +49,11 @@ TRANSITIONS: dict[str, tuple[str, ...]] = {
     "completed": (),
     "cancelled": (),
 }
+
+log = logging.getLogger(__name__)
+
+# Payment methods that go through a gateway: the order keeps its stock only until `expires_at` unless paid.
+ONLINE_METHODS = ("vnpay", "payos")
 
 # Letters and digits without look-alikes (no 0/O, 1/I/L), so a code read over the phone is not misheard.
 _CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
@@ -230,6 +236,8 @@ def place_order(
         )
     if body.payment_method == "vnpay" and not settings.vnpay_enabled:
         raise AppError(422, "payment_method_unavailable", "Online payment is not available right now.")
+    if body.payment_method == "payos" and not settings.payos_enabled:
+        raise AppError(422, "payment_method_unavailable", "Online payment is not available right now.")
 
     now = utcnow()
     subtotal = sum(ln.line_total for ln in lines)
@@ -249,7 +257,7 @@ def place_order(
         total_vnd=subtotal + fee,
         payment_method=body.payment_method,
         expires_at=now + timedelta(minutes=settings.order_expiry_minutes)
-        if body.payment_method == "vnpay"
+        if body.payment_method in ONLINE_METHODS
         else None,
         is_demo=all(ln.product.is_demo for ln in lines),
     )
@@ -300,6 +308,8 @@ def place_order(
 
 def payment_url(db: Session, settings: Settings, order: Order, ip: str) -> str | None:
     """The gateway address for an unpaid online order, built fresh each time (it carries a timestamp)."""
+    if order.payment_method == "payos":
+        return _payos_url(settings, order)
     if order.payment_method != "vnpay" or order.status == "cancelled":
         return None
     payment = next((p for p in order.payments if p.provider == "vnpay"), None)
@@ -317,6 +327,49 @@ def payment_url(db: Session, settings: Settings, order: Order, ip: str) -> str |
         now=utcnow(),
         expires_at=aware(order.expires_at),
     )
+
+
+def _payos_client(settings: Settings) -> payos.PayosClient:
+    """One place that builds the client, so tests can swap it for a fake."""
+    return payos.PayosClient(
+        client_id=settings.payos_client_id,
+        api_key=settings.payos_api_key,
+        checksum_key=settings.payos_checksum_key,
+        base_url=settings.payos_api_url,
+        timeout_s=settings.payos_timeout_s,
+    )
+
+
+def _payos_url(settings: Settings, order: Order) -> str | None:
+    """A fresh payOS payment page for an unpaid order, or None when there is nothing to pay or payOS fails.
+
+    Each call asks for a new link (payOS wants a new number each time); a payment made on any of them settles the same payment.
+    """
+    if order.status == "cancelled" or not settings.payos_enabled:
+        return None
+    payment = next((p for p in order.payments if p.provider == "payos"), None)
+    if payment is None or payment.status != "pending":
+        return None
+    due = aware(order.expires_at)
+    client = _payos_client(settings)
+    try:
+        return client.create_link(
+            order_code=payos.new_order_code(payment.id),
+            amount=order.total_vnd,
+            description=payos.description_for(order.code),
+            return_url=settings.payos_return_url,
+            cancel_url=settings.payos_cancel_url,
+            expires_at=int(due.timestamp()) if due else None,
+        )
+    except payos.PayosError:
+        log.exception("payOS: could not create a payment link for order %s", order.code)
+        return None
+
+
+def pay_link(db: Session, settings: Settings, code: str, phone: str) -> str | None:
+    """A new payment page for an order the customer already placed (code + phone, like the look-up)."""
+    order = lookup_order(db, code, phone)
+    return payment_url(db, settings, order, "")
 
 
 # ================================================================== look-up (customer)
@@ -345,7 +398,7 @@ def _record(order: Order, to: str, actor: AdminUser | None, note: str, now: date
 
 def next_statuses(order: Order) -> list[str]:
     allowed = list(TRANSITIONS[order.status])
-    if order.payment_method == "vnpay" and not any(p.status == "paid" for p in order.payments):
+    if order.payment_method in ONLINE_METHODS and not any(p.status == "paid" for p in order.payments):
         allowed = [s for s in allowed if s not in ("confirmed", "shipping", "completed")]
     return allowed
 
@@ -487,3 +540,105 @@ def vnpay_return_result(db: Session, settings: Settings, query: dict[str, str]) 
         return "failed", code
     # Pending: the callback has not arrived yet (or it never will in local development).
     return ("failed", code) if query.get("vnp_ResponseCode", "00") != "00" else ("pending", code)
+
+
+# ------------------------------------------------------------------ payOS
+def _mark_paid(order: Order, payment: Payment, reference: str | None, payload: dict, label: str) -> None:
+    now = utcnow()
+    payment.status, payment.paid_at = "paid", now
+    payment.provider_ref = reference or None
+    payment.last_payload = json.dumps(payload, sort_keys=True, default=str)[:4000]
+    order.expires_at = None
+    order.history.append(
+        OrderStatusHistory(
+            from_status=order.status, to_status=order.status, actor_id=None, note=label, created_at=now
+        )
+    )
+
+
+def _payos_payment(db: Session, order_code: object) -> Payment | None:
+    pid = payos.payment_id_of(order_code) if isinstance(order_code, int) else None
+    payment = db.get(Payment, pid) if pid else None
+    return payment if payment is not None and payment.provider == "payos" else None
+
+
+def apply_payos_webhook(db: Session, settings: Settings, body: object) -> bool:
+    """Handle payOS's server-to-server call. Returns False only for a call we do not trust (bad signature).
+
+    Anything that is signed but changes nothing (a test call, a payment we do not know, a repeat) is answered normally, so
+    payOS does not keep retrying it. Safe to receive twice: only a pending payment changes.
+    """
+    if not settings.payos_enabled or not payos.verify_webhook(settings.payos_checksum_key, body):
+        return False
+    assert isinstance(body, dict)
+    data: dict = body["data"]
+    payment = _payos_payment(db, data.get("orderCode"))
+    if payment is None:
+        return True  # payOS's own test call uses a made-up order number
+    order = load_order(db, payment.order_id)
+    amount_ok = data.get("amount") == order.total_vnd
+    succeeded = body.get("success") is True and data.get("code") == "00"
+    if not succeeded or payment.status == "paid":
+        return True
+    if not amount_ok:
+        log.warning(
+            "payOS: amount mismatch for order %s: got %r, expected %s",
+            order.code,
+            data.get("amount"),
+            order.total_vnd,
+        )
+        return True
+    if payment.status == "pending":
+        _mark_paid(order, payment, str(data.get("reference") or "") or None, data, "Paid online (payOS)")
+    else:
+        # The money arrived after the order was cancelled or expired. Nothing is changed back; the note tells the shop to refund.
+        payment.last_payload = json.dumps(data, sort_keys=True, default=str)[:4000]
+        order.history.append(
+            OrderStatusHistory(
+                from_status=order.status,
+                to_status=order.status,
+                actor_id=None,
+                note=f"payOS received {order.total_vnd} VND after the order closed (ref {data.get('reference')}): refund the customer",
+                created_at=utcnow(),
+            )
+        )
+    try:
+        db.commit()
+    except IntegrityError:  # the same bank reference was recorded by a parallel delivery
+        db.rollback()
+    return True
+
+
+def payos_return_result(db: Session, settings: Settings, query: dict[str, str]) -> tuple[str, str | None]:
+    """What to tell the customer's browser after payOS sends it back.
+
+    The query string is not signed, so it is never believed. If the payment is still pending and the customer says they
+    paid, we ask payOS directly; that makes payments show up even when the webhook cannot reach us (local development).
+    """
+    if not settings.payos_enabled:
+        return "invalid", None
+    try:
+        order_code = int(query.get("orderCode", ""))
+    except ValueError:
+        return "invalid", None
+    payment = _payos_payment(db, order_code)
+    if payment is None:
+        return "invalid", None
+    order = load_order(db, payment.order_id)
+    if payment.status == "pending" and query.get("cancel") != "true":
+        try:
+            info = _payos_client(settings).get_payment(order_code)
+        except payos.PayosError:
+            log.exception("payOS: could not look up payment %s", order_code)
+            info = {}
+        if info.get("status") == "PAID" and info.get("amountPaid") == order.total_vnd:
+            _mark_paid(order, payment, None, info, "Paid online (payOS)")
+            try:
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+    if payment.status == "paid":
+        return "paid", order.code
+    if payment.status in ("failed", "expired") or query.get("cancel") == "true":
+        return "failed", order.code
+    return "pending", order.code

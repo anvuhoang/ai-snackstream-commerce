@@ -1205,6 +1205,48 @@
         }
       }
     },
+    "/api/orders/pay-link": {
+      "post": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Pay Link",
+        "description": "A new payment page for an order that was placed but not paid (the first page was lost, or payOS had failed).",
+        "operationId": "pay_link_api_orders_pay_link_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LookupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayLinkOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/orders/lookup": {
       "post": {
         "tags": [
@@ -1274,6 +1316,28 @@
         "summary": "Vnpay Return",
         "description": "The customer's browser lands on the web page, which asks this what to show. It never changes anything.",
         "operationId": "vnpay_return_api_payments_vnpay_return_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentReturnOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/payos/return": {
+      "get": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "Payos Return",
+        "description": "The customer's browser lands on the web page, which asks this what to show.",
+        "operationId": "payos_return_api_payments_payos_return_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -3593,7 +3657,8 @@
             "type": "string",
             "enum": [
               "cod",
-              "vnpay"
+              "vnpay",
+              "payos"
             ],
             "title": "Paymentmethod"
           },
@@ -3747,7 +3812,8 @@
             "type": "string",
             "enum": [
               "cod",
-              "vnpay"
+              "vnpay",
+              "payos"
             ],
             "title": "Paymentmethod"
           },
@@ -4135,6 +4201,51 @@
           "collected": {
             "type": "boolean",
             "title": "Collected"
+          },
+          "chatTotal": {
+            "type": "integer",
+            "title": "Chattotal"
+          },
+          "chatHandoffs": {
+            "type": "integer",
+            "title": "Chathandoffs"
+          },
+          "handoffRate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Handoffrate"
+          },
+          "latencyAvgMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latencyavgms"
+          },
+          "latencyP95Ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latencyp95Ms"
+          },
+          "latencySamples": {
+            "type": "integer",
+            "title": "Latencysamples"
           }
         },
         "type": "object",
@@ -4146,7 +4257,13 @@
           "chatSessions",
           "liveJoins",
           "liveProductClicks",
-          "collected"
+          "collected",
+          "chatTotal",
+          "chatHandoffs",
+          "handoffRate",
+          "latencyAvgMs",
+          "latencyP95Ms",
+          "latencySamples"
         ],
         "title": "AiOut"
       },
@@ -4667,6 +4784,46 @@
             ],
             "title": "Ctrnote"
           },
+          "cpcVnd": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cpcvnd"
+          },
+          "cpcNote": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "no_data",
+              "no_denominator"
+            ],
+            "title": "Cpcnote"
+          },
+          "roas": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roas"
+          },
+          "roasNote": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "no_data",
+              "no_denominator"
+            ],
+            "title": "Roasnote"
+          },
           "costPerOrderVnd": {
             "anyOf": [
               {
@@ -4703,6 +4860,10 @@
           "costVnd",
           "ctr",
           "ctrNote",
+          "cpcVnd",
+          "cpcNote",
+          "roas",
+          "roasNote",
           "costPerOrderVnd",
           "costPerOrderNote",
           "days"
@@ -4832,7 +4993,8 @@
             "type": "string",
             "enum": [
               "cod",
-              "vnpay"
+              "vnpay",
+              "payos"
             ],
             "title": "Paymentmethod",
             "default": "cod"
@@ -4916,7 +5078,8 @@
             "type": "string",
             "enum": [
               "cod",
-              "vnpay"
+              "vnpay",
+              "payos"
             ],
             "title": "Paymentmethod"
           },
@@ -6432,7 +6595,8 @@
             "type": "string",
             "enum": [
               "cod",
-              "vnpay"
+              "vnpay",
+              "payos"
             ],
             "title": "Paymentmethod"
           },
@@ -6573,13 +6737,31 @@
         ],
         "title": "Overview"
       },
+      "PayLinkOut": {
+        "properties": {
+          "paymentUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymenturl"
+          }
+        },
+        "type": "object",
+        "title": "PayLinkOut"
+      },
       "PaymentOut": {
         "properties": {
           "provider": {
             "type": "string",
             "enum": [
               "cod",
-              "vnpay"
+              "vnpay",
+              "payos"
             ],
             "title": "Provider"
           },
@@ -7257,7 +7439,8 @@
               "type": "string",
               "enum": [
                 "cod",
-                "vnpay"
+                "vnpay",
+                "payos"
               ]
             },
             "type": "array",
@@ -7307,6 +7490,25 @@
             "type": "integer",
             "title": "Webclicks"
           },
+          "landingSessions": {
+            "type": "integer",
+            "title": "Landingsessions"
+          },
+          "outboundSessions": {
+            "type": "integer",
+            "title": "Outboundsessions"
+          },
+          "outboundRate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outboundrate"
+          },
           "reported": {
             "anyOf": [
               {
@@ -7324,6 +7526,9 @@
           "dateTo",
           "demo",
           "webClicks",
+          "landingSessions",
+          "outboundSessions",
+          "outboundRate",
           "reported"
         ],
         "title": "ShopeeOut"
@@ -7715,6 +7920,10 @@
             "type": "integer",
             "title": "Orderscompleted"
           },
+          "ordersCancelled": {
+            "type": "integer",
+            "title": "Orderscancelled"
+          },
           "revenueVnd": {
             "type": "integer",
             "title": "Revenuevnd"
@@ -7746,6 +7955,7 @@
         "required": [
           "ordersCreated",
           "ordersCompleted",
+          "ordersCancelled",
           "revenueVnd",
           "averageOrderVnd",
           "completionRate"

@@ -103,9 +103,19 @@ def overview(db: Session, date_from: date, date_to: date, demo: str, source: str
     ).where(Event.name == "order_completed")
     revenue = int(db.scalar(rev) or 0)
     created, completed = counts["order_created"], counts["order_completed"]
+    cancelled = _scope(
+        select(func.count(distinct(Event.order_id)))
+        .select_from(Event)
+        .join(Order, Order.id == Event.order_id),
+        start,
+        end,
+        demo,
+        source,
+    ).where(Event.name == "order_created", Order.status == "cancelled")
     totals = Totals(
         orders_created=created,
         orders_completed=completed,
+        orders_cancelled=int(db.scalar(cancelled) or 0),
         revenue_vnd=revenue,
         average_order_vnd=None if completed == 0 else round(revenue / completed),
         completion_rate=rate(completed, created),

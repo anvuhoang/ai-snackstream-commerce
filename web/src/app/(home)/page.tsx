@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ChatLauncher } from "@/components/chat-launcher";
 import { Story } from "@/components/story/story";
 import "./story.css";
 
@@ -8,5 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <Story />;
+  return (
+    <>
+      <Story />
+      <ChatLauncher />
+    </>
+  );
 }

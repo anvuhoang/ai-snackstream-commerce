@@ -67,6 +67,16 @@ class Settings(BaseSettings):
     vnpay_url: str = Field("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html", alias="VNPAY_URL")
     # Where VNPay sends the customer's browser back to (a page of the web app).
     vnpay_return_url: str = Field("http://localhost:3000/checkout/result", alias="VNPAY_RETURN_URL")
+    # payOS (https://payos.vn): pays through a VietQR page. All three keys come from the payment channel on my.payos.vn.
+    # Empty = payOS is switched off.
+    payos_client_id: str = Field("", alias="PAYOS_CLIENT_ID")
+    payos_api_key: str = Field("", alias="PAYOS_API_KEY")
+    payos_checksum_key: str = Field("", alias="PAYOS_CHECKSUM_KEY")
+    payos_api_url: str = Field("https://api-merchant.payos.vn", alias="PAYOS_API_URL")
+    # Where payOS sends the customer's browser after paying / cancelling (pages of the web app).
+    payos_return_url: str = Field("http://localhost:3000/checkout/result", alias="PAYOS_RETURN_URL")
+    payos_cancel_url: str = Field("http://localhost:3000/checkout", alias="PAYOS_CANCEL_URL")
+    payos_timeout_s: float = Field(15.0, alias="PAYOS_TIMEOUT_S", gt=0)
     # Odoo (stock source). Empty = stock is kept only in our own tables. Uses Odoo's JSON-2 API with an API key.
     odoo_url: str = Field("", alias="ODOO_URL")
     # ODOO_DATABASE is accepted too: the chatbot used that name first.
@@ -99,6 +109,14 @@ class Settings(BaseSettings):
     @property
     def vnpay_enabled(self) -> bool:
         return bool(self.vnpay_tmn_code and self.vnpay_hash_secret)
+
+    @property
+    def payos_enabled(self) -> bool:
+        return bool(self.payos_client_id and self.payos_api_key and self.payos_checksum_key)
+
+    @property
+    def online_payment_enabled(self) -> bool:
+        return self.vnpay_enabled or self.payos_enabled
 
     @property
     def odoo_database(self) -> str:

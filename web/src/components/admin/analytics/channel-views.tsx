@@ -46,6 +46,8 @@ export function ChannelsView({ data }: { data: ChannelsOut }) {
               <th className={th}>Hiển thị</th>
               <th className={th}>Click</th>
               <th className={th}>CTR</th>
+              <th className={th}>CPC</th>
+              <th className={th}>ROAS</th>
               <th className={th}>Đơn (kênh báo)</th>
               <th className={th}>Doanh thu (kênh báo)</th>
               <th className={th}>Chi phí</th>
@@ -60,7 +62,13 @@ export function ChannelsView({ data }: { data: ChannelsOut }) {
                 <td className="px-4 py-3 text-right tabular-nums"><Cell value={orDash(r.views)} /></td>
                 <td className="px-4 py-3 text-right tabular-nums"><Cell value={orDash(r.impressions)} /></td>
                 <td className="px-4 py-3 text-right tabular-nums"><Cell value={orDash(r.clicks)} /></td>
-                <td className="px-4 py-3 text-right tabular-nums"><Ratio value={r.ctr} note={r.ctrNote} /></td>
+                <td className="px-4 py-3 text-right tabular-nums"><Ratio value={r.ctr ?? null} note={r.ctrNote ?? "no_data"} /></td>
+                <td className="px-4 py-3 text-right tabular-nums">
+                  {r.cpcVnd == null ? <span className="text-xs text-muted">{RATIO_NOTE[r.cpcNote ?? "no_data"]}</span> : formatVnd(r.cpcVnd)}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums">
+                  {r.roas == null ? <span className="text-xs text-muted">{RATIO_NOTE[r.roasNote ?? "no_data"]}</span> : `${r.roas.toLocaleString("vi-VN", { maximumFractionDigits: 2 })}×`}
+                </td>
                 <td className="px-4 py-3 text-right tabular-nums"><Cell value={orDash(r.orders)} /></td>
                 <td className="px-4 py-3 text-right font-semibold tabular-nums"><Cell value={orDash(r.revenueVnd, formatVnd)} /></td>
                 <td className="px-4 py-3 text-right tabular-nums"><Cell value={orDash(r.costVnd, formatVnd)} /></td>
@@ -77,7 +85,8 @@ export function ChannelsView({ data }: { data: ChannelsOut }) {
         <li>
           “—” nghĩa là kênh <b className="font-medium text-ink">chưa báo</b> số đó, không phải bằng 0.
         </li>
-        <li>CTR và chi phí / đơn chỉ tính trên những ngày kênh báo đủ cả hai số. Mẫu số bằng 0 hoặc thiếu thì ghi “không tính được”.</li>
+        <li>CTR = click ÷ hiển thị. CPC = chi phí ÷ click. ROAS = doanh thu kênh báo ÷ chi phí.</li>
+        <li>Các tỷ lệ chỉ tính trên những ngày kênh báo đủ cả hai số. Mẫu số bằng 0 hoặc thiếu thì ghi “không tính được”.</li>
         <li>Đơn và doanh thu ở đây là số do kênh tự báo, không cộng vào đơn của web. Với chi phí chỉ tính được “chi phí / đơn”, chưa tính được chi phí mua khách mới (CAC) vì chưa nhận diện được khách mới.</li>
       </ul>
     </section>
@@ -115,6 +124,15 @@ export function ShopeeView({ data }: { data: ShopeeOut }) {
         <h2 className="text-sm font-extrabold">Từ web sang Shopee</h2>
         <p className="text-4xl font-extrabold tabular-nums tracking-[-0.03em]">{data.webClicks.toLocaleString("vi-VN")}</p>
         <p className="text-sm text-muted">Số lần khách bấm “Mua trên Shopee” trên web. Đây là lượt chuyển khách đi, không phải đơn của web và không phải đơn bán được trên Shopee.</p>
+        <div className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-3">
+          <Tile label="Phiên vào trang" value={(data.landingSessions ?? 0).toLocaleString("vi-VN")} />
+          <Tile label="Phiên có bấm sang Shopee" value={(data.outboundSessions ?? 0).toLocaleString("vi-VN")} />
+          <Tile
+            label="Tỷ lệ phiên bấm sang Shopee"
+            value={data.outboundRate == null ? "—" : formatPercent(data.outboundRate)}
+            note={data.outboundRate == null ? "Không tính được: chưa có phiên nào" : "Phiên có bấm ÷ phiên vào trang"}
+          />
+        </div>
       </section>
 
       <section className="grid gap-3" aria-label="Shopee báo cáo">
@@ -156,6 +174,20 @@ export function AiView({ data }: { data: AiOut }) {
         <Tile label="Phiên có hỏi chatbot" value={v(data.chatSessions)} note="Đếm theo phiên truy cập" />
         <Tile label="Lượt vào xem live" value={v(data.liveJoins)} />
         <Tile label="Bấm sản phẩm trong live" value={v(data.liveProductClicks)} />
+      </div>
+      <div className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        <Tile label="Tổng câu hỏi (nhật ký chat)" value={(data.chatTotal ?? 0).toLocaleString("vi-VN")} />
+        <Tile label="Chuyển hỗ trợ" value={(data.chatHandoffs ?? 0).toLocaleString("vi-VN")} />
+        <Tile
+          label="Tỷ lệ chuyển hỗ trợ"
+          value={data.handoffRate == null ? "—" : formatPercent(data.handoffRate)}
+          note={data.handoffRate == null ? "Không tính được: chưa có câu hỏi" : "Chuyển hỗ trợ ÷ tổng câu hỏi"}
+        />
+        <Tile
+          label="Độ trễ trả lời (TB)"
+          value={data.latencyAvgMs == null ? "—" : `${(data.latencyAvgMs / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} giây`}
+          note={data.latencyP95Ms == null ? "Chưa có câu trả lời" : `95% dưới ${(data.latencyP95Ms / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} giây · ${data.latencySamples ?? 0} câu`}
+        />
       </div>
       <p className="text-xs leading-relaxed text-muted">
         So sánh với nội dung người làm (video, bài đăng) cần có thêm nhật ký chatbot và live (loại nội dung, có tự giải quyết hay không) từ hai giai đoạn đó. Khi có, tab này sẽ bổ sung phần so sánh.

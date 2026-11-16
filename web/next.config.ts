@@ -15,7 +15,10 @@ const nextConfig: NextConfig = {
   },
   turbopack: {
     rules: {
+      // Tailwind processes plain CSS. CSS Modules (*.module.css, such as the chat widget's) must keep Next's own handling,
+      // otherwise their class names are not scoped and `styles.foo` is undefined.
       "*.css": {
+        condition: { not: { path: /\.module\.css$/ } },
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },

@@ -3,11 +3,11 @@ export const STORY_HTML = `<header class="bar">
   <button class="cell" type="button" data-go="0">SnackStream<sup style="font-size:8px;margin-left:1px">™</sup></button>
   <button class="cell hide-m" type="button" data-go="0.36">Thành phần</button>
   <button class="cell hide-m" type="button" data-to="pg">Cửa hàng</button>
-  <button class="cell hide-m" type="button" data-to="ch">Chatbot</button>
-  <button class="cell hide-m" type="button" data-to="lv">Live</button>
+  <button class="cell hide-m" type="button" data-chat>Chatbot</button>
+  <button class="cell hide-m" type="button" data-href="/live">Live</button>
   <span class="sp"></span>
-  <button class="cell hide-m" type="button" data-to="cl">Tra cứu đơn</button>
-  <button class="cell" type="button" data-to="pg">Giỏ (0)</button>
+  <button class="cell hide-m" type="button" data-href="/orders/lookup">Tra cứu đơn</button>
+  <button class="cell" type="button" data-href="/checkout">Giỏ hàng</button>
 </header>
 <div id="track"><div id="pin">
 <div id="scene"><canvas id="stage" aria-hidden="true"></canvas>

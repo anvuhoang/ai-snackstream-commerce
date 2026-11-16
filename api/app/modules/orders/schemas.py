@@ -13,7 +13,7 @@ from app.modules.analytics.schemas import AttributionIn
 from app.modules.catalog.schemas import ImageOut
 
 OrderStatus = Literal["new", "confirmed", "shipping", "completed", "cancelled"]
-PaymentMethod = Literal["cod", "vnpay"]
+PaymentMethod = Literal["cod", "vnpay", "payos"]
 PaymentStatus = Literal["pending", "paid", "failed", "expired"]
 
 
@@ -214,3 +214,7 @@ class PaymentReturnOut(ApiModel):
 
     result: Literal["paid", "failed", "pending", "invalid"]
     order_code: str | None = None
+
+
+class PayLinkOut(ApiModel):
+    payment_url: str | None = None  # None: nothing to pay, or the gateway could not be reached
