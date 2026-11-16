@@ -31,6 +31,18 @@ FAQS = [
         "Đơn chọn thanh toán online được giữ hàng trong 15 phút. Quá thời gian này mà chưa thanh toán thì đơn tự hủy và hàng được trả lại kho; bạn có thể đặt lại.",
     ),
     (
+        "Sản phẩm có phù hợp cho trẻ nhỏ không?",
+        "Shop không đưa khuyến nghị theo độ tuổi. Với trẻ nhỏ, bạn nên xem kỹ nhãn về độ mặn, độ cay và thành phần, và lưu ý đồ ăn giòn cứng có thể gây hóc. Nếu cần hỏi thêm về một sản phẩm cụ thể, bạn bấm Cần hỗ trợ để nhân viên trả lời.",
+    ),
+    (
+        "Tôi có bệnh lý hoặc đang ăn kiêng thì dùng được không?",
+        "Shop không tư vấn theo tình trạng sức khỏe. Bạn nên đối chiếu thành phần và nhãn trên bao bì, và hỏi bác sĩ hoặc chuyên gia dinh dưỡng nếu cần. Shop chỉ cung cấp thông tin sản phẩm đúng như trên nhãn.",
+    ),
+    (
+        "Tôi bị dị ứng thực phẩm thì chọn sản phẩm thế nào?",
+        "Hãy đối chiếu thành phần và cảnh báo dị ứng trên bao bì sản phẩm trước khi dùng. Nếu trang sản phẩm chưa ghi thông tin dị ứng thì shop chưa có dữ liệu đó; bạn bấm Cần hỗ trợ để nhân viên xác nhận trước khi mua.",
+    ),
+    (
         "Làm sao tra cứu đơn hàng?",
         "Vào trang Tra cứu đơn hàng, nhập mã đơn (dạng SS-XXXX-XXXX) và số điện thoại đã dùng khi đặt. Không cần tạo tài khoản.",
     ),
@@ -70,6 +82,15 @@ USE = {
     "BANH-TRANG-ME-01": "thích vị chua cay khi tan học",
 }
 
+# SKU -> other names customers use for the same product, so a question that uses them still finds it.
+ALIASES = {
+    "DA-CA-100": "da cá giòn",
+    "BIM-BIM-100": "bim bim bắp",
+    "KHOAI-LAT-100": "khoai tây chiên",
+    "BAP-RANG-01": "bắp rang",
+    "MUC-CAY-150": "mực khô",
+}
+
 
 def main() -> None:
     settings = get_settings()
@@ -86,6 +107,14 @@ def main() -> None:
             )
             sentence = f"Phù hợp khi: {pain}."
             if product is not None and "Phù hợp khi:" not in product.description:  # one sentence per product
+                product.description = f"{product.description.rstrip()} {sentence}"
+                updated += 1
+        for sku, alias in ALIASES.items():
+            product = db.scalar(
+                select(Product).join(Variant, Variant.product_id == Product.id).where(Variant.sku == sku)
+            )
+            sentence = f"Còn gọi là: {alias}."
+            if product is not None and "Còn gọi là:" not in product.description:
                 product.description = f"{product.description.rstrip()} {sentence}"
                 updated += 1
         db.commit()
