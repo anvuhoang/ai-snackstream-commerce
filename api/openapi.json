@@ -2619,6 +2619,280 @@
         ]
       }
     },
+    "/api/live/make-answer": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Make Answer",
+        "operationId": "make_answer_api_live_make_answer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveMakeAudioAnswerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveMakeResultAck"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/live/{live_id}/host/viewers": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Register",
+        "operationId": "register_api_live__live_id__host_viewers_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostClientIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveHostViewerOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/live/{live_id}/host/viewers/{viewer_id}": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Viewer",
+        "operationId": "viewer_api_live__live_id__host_viewers__viewer_id__get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "viewer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Viewer Id"
+            }
+          },
+          {
+            "name": "x-live-viewer-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Viewer-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveHostViewerStateOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/live/{live_id}/host/viewers/{viewer_id}/answer": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Answer",
+        "operationId": "answer_api_live__live_id__host_viewers__viewer_id__answer_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "viewer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Viewer Id"
+            }
+          },
+          {
+            "name": "x-live-viewer-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Viewer-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostAnswerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/live/{live_id}/host/viewers/{viewer_id}/leave": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Leave",
+        "operationId": "leave_api_live__live_id__host_viewers__viewer_id__leave_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "viewer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Viewer Id"
+            }
+          },
+          {
+            "name": "x-live-viewer-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Viewer-Key"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/live": {
       "post": {
         "tags": [
@@ -2914,6 +3188,587 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/host-capabilities": {
+      "get": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Capabilities",
+        "operationId": "capabilities_api_admin_live_host_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveHostCapabilitiesOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/host/acquire": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Acquire",
+        "operationId": "acquire_api_admin_live__live_id__host_acquire_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostClientIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveHostProducerOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/host/token": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Token",
+        "operationId": "token_api_admin_live__live_id__host_token_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "x-live-host-lease",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Host-Lease"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostClientIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveHostTokenOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/host/audio": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Audio",
+        "operationId": "audio_api_admin_live__live_id__host_audio_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "x-live-host-lease",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Host-Lease"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostClientIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/host/reply-audio/{question_id}": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Reply Audio",
+        "operationId": "reply_audio_api_admin_live__live_id__host_reply_audio__question_id__post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Question Id"
+            }
+          },
+          {
+            "name": "x-live-host-lease",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Host-Lease"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostClientIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/host/action": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Action",
+        "operationId": "action_api_admin_live__live_id__host_action_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "x-live-host-lease",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Host-Lease"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostActionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveHostProducerOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/host/offer": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Offer",
+        "operationId": "offer_api_admin_live__live_id__host_offer_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "x-live-host-lease",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Host-Lease"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostOfferIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/host/mock-video": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Mock Video",
+        "operationId": "mock_video_api_admin_live__live_id__host_mock_video_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "x-live-host-lease",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Live-Host-Lease"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveHostClientIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/content": {
+      "get": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Read Content",
+        "operationId": "read_content_api_admin_live__live_id__content_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveContentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/content/script": {
+      "put": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Save Script",
+        "operationId": "save_script_api_admin_live__live_id__content_script_put",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveScriptUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveContentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/{live_id}/content/audio": {
+      "post": {
+        "tags": [
+          "admin-live"
+        ],
+        "summary": "Generate Audio",
+        "operationId": "generate_audio_api_admin_live__live_id__content_audio_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveAudioCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveContentOut"
                 }
               }
             }
@@ -5571,6 +6426,82 @@
         "type": "object",
         "title": "ImageUpdate"
       },
+      "LiveAudioCreate": {
+        "properties": {
+          "script": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Script"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "script"
+        ],
+        "title": "LiveAudioCreate"
+      },
+      "LiveContentOut": {
+        "properties": {
+          "product": {
+            "$ref": "#/components/schemas/LiveProduct"
+          },
+          "script": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Script"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "empty",
+              "script_ready",
+              "speaking",
+              "ready"
+            ],
+            "title": "Status"
+          },
+          "durationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationseconds"
+          },
+          "audioFormat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "pcm_s16le_16000_mono"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audioformat"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "product",
+          "status"
+        ],
+        "title": "LiveContentOut"
+      },
       "LiveCurrentOut": {
         "properties": {
           "session": {
@@ -5593,6 +6524,469 @@
         "type": "object",
         "title": "LiveCurrentOut"
       },
+      "LiveHostActionIn": {
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Clientid"
+          },
+          "requestId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Requestid"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "heartbeat",
+              "ready",
+              "handoff",
+              "reply_playing",
+              "reply_ended",
+              "restored",
+              "audio_ended",
+              "stop",
+              "error"
+            ],
+            "title": "Action"
+          },
+          "questionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{8,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questionid"
+          },
+          "offsetSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 3600.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offsetseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "clientId",
+          "requestId",
+          "action"
+        ],
+        "title": "LiveHostActionIn"
+      },
+      "LiveHostAnswerIn": {
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Offerid"
+          },
+          "sdp": {
+            "type": "string",
+            "maxLength": 100000,
+            "minLength": 1,
+            "title": "Sdp"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "offerId",
+          "sdp"
+        ],
+        "title": "LiveHostAnswerIn"
+      },
+      "LiveHostCapabilitiesOut": {
+        "properties": {
+          "contentEnabled": {
+            "type": "boolean",
+            "title": "Contentenabled",
+            "default": false
+          },
+          "audioConfigured": {
+            "type": "boolean",
+            "title": "Audioconfigured",
+            "default": false
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "simli"
+            ],
+            "title": "Transport"
+          },
+          "audioSku": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audiosku"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "enabled",
+          "transport"
+        ],
+        "title": "LiveHostCapabilitiesOut"
+      },
+      "LiveHostClientIn": {
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Clientid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "clientId"
+        ],
+        "title": "LiveHostClientIn"
+      },
+      "LiveHostOfferIn": {
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Clientid"
+          },
+          "viewerId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Viewerid"
+          },
+          "offerId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Offerid"
+          },
+          "sdp": {
+            "type": "string",
+            "maxLength": 100000,
+            "minLength": 1,
+            "title": "Sdp"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "clientId",
+          "viewerId",
+          "offerId",
+          "sdp"
+        ],
+        "title": "LiveHostOfferIn"
+      },
+      "LiveHostOut": {
+        "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "simli"
+            ],
+            "title": "Transport",
+            "default": "mock"
+          },
+          "epoch": {
+            "type": "string",
+            "title": "Epoch"
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "preparing",
+              "script",
+              "handoff",
+              "reply",
+              "restoring",
+              "complete",
+              "ended"
+            ],
+            "title": "Phase"
+          },
+          "offsetSeconds": {
+            "type": "number",
+            "title": "Offsetseconds"
+          },
+          "durationSeconds": {
+            "type": "number",
+            "title": "Durationseconds"
+          },
+          "savedOffsetSeconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Savedoffsetseconds"
+          },
+          "questionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questionid"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "leaseExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Leaseexpiresat"
+          },
+          "deadlineAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Deadlineat"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "epoch",
+          "phase",
+          "offsetSeconds",
+          "durationSeconds",
+          "revision",
+          "leaseExpiresAt",
+          "deadlineAt"
+        ],
+        "title": "LiveHostOut"
+      },
+      "LiveHostPeerOut": {
+        "properties": {
+          "viewerId": {
+            "type": "string",
+            "title": "Viewerid"
+          },
+          "offerId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offerid"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "viewerId"
+        ],
+        "title": "LiveHostPeerOut"
+      },
+      "LiveHostProducerOut": {
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/LiveSessionOut"
+          },
+          "leaseId": {
+            "type": "string",
+            "title": "Leaseid"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/LiveHostPeerOut"
+            },
+            "type": "array",
+            "title": "Peers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "session",
+          "leaseId",
+          "peers"
+        ],
+        "title": "LiveHostProducerOut"
+      },
+      "LiveHostTokenOut": {
+        "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "simli"
+            ],
+            "title": "Transport"
+          },
+          "sessionToken": {
+            "type": "string",
+            "title": "Sessiontoken"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "transport",
+          "sessionToken"
+        ],
+        "title": "LiveHostTokenOut"
+      },
+      "LiveHostViewerOut": {
+        "properties": {
+          "viewerId": {
+            "type": "string",
+            "title": "Viewerid"
+          },
+          "viewerKey": {
+            "type": "string",
+            "title": "Viewerkey"
+          },
+          "epoch": {
+            "type": "string",
+            "title": "Epoch"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "viewerId",
+          "viewerKey",
+          "epoch"
+        ],
+        "title": "LiveHostViewerOut"
+      },
+      "LiveHostViewerStateOut": {
+        "properties": {
+          "epoch": {
+            "type": "string",
+            "title": "Epoch"
+          },
+          "phase": {
+            "type": "string",
+            "title": "Phase"
+          },
+          "offerId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offerid"
+          },
+          "offer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "epoch",
+          "phase"
+        ],
+        "title": "LiveHostViewerStateOut"
+      },
+      "LiveMakeAudioAnswerIn": {
+        "properties": {
+          "liveId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Liveid"
+          },
+          "questionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "title": "Questionid"
+          },
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          },
+          "replyText": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Replytext"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "liveId",
+          "questionId",
+          "sku",
+          "replyText"
+        ],
+        "title": "LiveMakeAudioAnswerIn"
+      },
       "LiveMakeResultAck": {
         "properties": {
           "received": {
@@ -5612,7 +7006,8 @@
               "duplicate",
               "stale_session",
               "session_ended",
-              "question_skipped"
+              "question_skipped",
+              "processing"
             ],
             "title": "Reason"
           }
@@ -5790,6 +7185,19 @@
             ],
             "title": "Pausedat"
           },
+          "resumeAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resumeat",
+            "description": "Shared script restore start. Before this instant the script stays at resumeAt - startedAt seconds while clients preload/seek. Null uses the legacy clock."
+          },
           "kind": {
             "type": "string",
             "enum": [
@@ -5803,10 +7211,34 @@
             "type": "string",
             "enum": [
               "prerecorded",
-              "make"
+              "make",
+              "playlist"
             ],
             "title": "Mediasource",
             "default": "prerecorded"
+          },
+          "scriptIndex": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scriptindex"
+          },
+          "scriptName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scriptname"
           },
           "questionId": {
             "anyOf": [
@@ -5823,7 +7255,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 300.0,
+                "maximum": 3600.0,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -5841,6 +7273,36 @@
           "startedAt"
         ],
         "title": "LivePlaybackOut"
+      },
+      "LiveProduct": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "facts": {
+            "type": "string",
+            "maxLength": 6000,
+            "minLength": 1,
+            "title": "Facts",
+            "description": "Verified public facts, one per line."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sku",
+          "name",
+          "facts"
+        ],
+        "title": "LiveProduct"
       },
       "LiveQuestionIn": {
         "properties": {
@@ -5872,6 +7334,38 @@
       },
       "LiveQuestionOut": {
         "properties": {
+          "replyKind": {
+            "type": "string",
+            "enum": [
+              "video",
+              "simli_audio"
+            ],
+            "title": "Replykind",
+            "default": "video"
+          },
+          "audioDurationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audiodurationseconds"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiveProduct"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "questionId": {
             "type": "string",
             "title": "Questionid"
@@ -6027,8 +7521,75 @@
         ],
         "title": "LiveQuestionOut"
       },
+      "LiveScriptSegment": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,38}$",
+            "title": "Sku"
+          },
+          "videoUrl": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Videourl"
+          },
+          "durationSeconds": {
+            "type": "number",
+            "maximum": 3600.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Durationseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "sku",
+          "videoUrl",
+          "durationSeconds"
+        ],
+        "title": "LiveScriptSegment"
+      },
+      "LiveScriptUpdate": {
+        "properties": {
+          "script": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Script"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "script"
+        ],
+        "title": "LiveScriptUpdate"
+      },
       "LiveSessionCreate": {
         "properties": {
+          "hostMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "video",
+                  "simli"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hostmode"
+          },
           "title": {
             "type": "string",
             "maxLength": 160,
@@ -6044,6 +7605,22 @@
             "maxItems": 6,
             "minItems": 1,
             "title": "Scheduledskus"
+          },
+          "scriptPlaylist": {
+            "items": {
+              "$ref": "#/components/schemas/LiveScriptSegment"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Scriptplaylist"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/LiveProduct"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Products"
           }
         },
         "additionalProperties": false,
@@ -6056,6 +7633,59 @@
       },
       "LiveSessionOut": {
         "properties": {
+          "replyFormat": {
+            "type": "string",
+            "enum": [
+              "video",
+              "simli_audio"
+            ],
+            "title": "Replyformat",
+            "default": "video"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/LiveProduct"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "hostAudioReady": {
+            "type": "boolean",
+            "title": "Hostaudioready",
+            "default": false
+          },
+          "hostAudioDurationSeconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hostaudiodurationseconds"
+          },
+          "hostMode": {
+            "type": "string",
+            "enum": [
+              "video",
+              "simli"
+            ],
+            "title": "Hostmode",
+            "default": "video"
+          },
+          "host": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiveHostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "liveId": {
             "type": "string",
             "title": "Liveid"
@@ -6074,6 +7704,18 @@
           "pinnedSku": {
             "type": "string",
             "title": "Pinnedsku"
+          },
+          "scriptPlaylist": {
+            "items": {
+              "$ref": "#/components/schemas/LiveScriptSegment"
+            },
+            "type": "array",
+            "title": "Scriptplaylist"
+          },
+          "scriptCompleted": {
+            "type": "boolean",
+            "title": "Scriptcompleted",
+            "default": false
           },
           "isDemo": {
             "type": "boolean",

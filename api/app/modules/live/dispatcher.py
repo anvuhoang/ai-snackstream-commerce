@@ -27,7 +27,31 @@ def dispatch_next_question(
     if question is None:
         return
 
+    if settings.live_mock_enabled and question.reply_kind == "simli_audio":
+        from .audio_reply import complete_mock_audio
+        from .content import get_content_settings
+
+        complete_mock_audio(live, question, settings, get_content_settings())
+        return
+
     if settings.live_mock_enabled:
+        current = live.get_current()
+        if current is not None and current.host_mode == "simli" and settings.live_simli_mock_video_path:
+            from .host_media import mock_video_bytes
+            from .media_metadata import probe_mp4
+
+            try:
+                duration = probe_mp4(mock_video_bytes(settings), settings.live_ffprobe_path)
+            except AppError:
+                live.fail_mock_question(live_id, question.question_id)
+                return
+            live.complete_mock_question(
+                live_id,
+                question.question_id,
+                duration,
+                video_url=f"/api/admin/live/{live_id}/host/mock-video",
+            )
+            return
         live.complete_mock_question(
             live_id,
             question.question_id,

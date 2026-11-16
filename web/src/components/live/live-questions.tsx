@@ -20,7 +20,7 @@ type Props = {
 const STATUS_LABELS = {
   queued: "Chờ xử lý",
   processing: "Đang xử lý",
-  ready: "Video đã sẵn sàng",
+  ready: "Câu trả lời đã sẵn sàng",
   answering: "Đang phát trả lời",
   answered: "Đã phát xong",
   failed: "Không tạo được câu trả lời",
@@ -37,7 +37,7 @@ export function LiveQuestions({ live, connected, onLog }: Props) {
   const pending = useRef<QuestionIn | null>(null);
   const sending = useRef(false);
 
-  const accepting = live.status === "playing" || live.status === "paused";
+  const accepting = !live.scriptCompleted && (live.status === "playing" || live.status === "paused");
   const questions = live.questions ?? [];
 
   async function submitQuestion(event: FormEvent<HTMLFormElement>) {
@@ -176,8 +176,7 @@ export function LiveQuestions({ live, connected, onLog }: Props) {
 
               {question.mediaSource === "prerecorded" && (
                 <p className="text-sm text-muted">
-                  Video mô phỏng: dùng clip có sẵn để kiểm tra luồng phát,
-                  chưa tạo câu trả lời AI cho câu hỏi này.
+                  {question.replyKind === "simli_audio" ? "Trả lời mô phỏng bằng audio có sẵn, chưa phải đáp án AI cho câu hỏi này." : "Trả lời mô phỏng bằng video có sẵn, chưa phải đáp án AI cho câu hỏi này."}
                 </p>
               )}
             </li>

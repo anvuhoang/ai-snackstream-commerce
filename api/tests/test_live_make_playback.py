@@ -111,7 +111,7 @@ def test_make_queue_finishes_without_viewers_and_duplicates_never_replay(make_li
         current = live.get_current()
         assert current.questions[index].status == "answered"
         assert current.playback.kind == "script"
-        assert (clock.current - current.playback.started_at).total_seconds() == 4
+        assert (current.playback.resume_at - current.playback.started_at).total_seconds() == 4
         assert (
             live.receive_make_result(
                 result(live_id, index),
@@ -152,7 +152,8 @@ def test_ready_while_paused_and_reply_pause_preserve_exact_position(make_live):
     clock.current += timedelta(seconds=3.25)
     tick_playback(live, settings)
     assert live.get_current().questions[0].status == "answered"
-    assert (clock.current - live.get_current().playback.started_at).total_seconds() == 4
+    restored = live.get_current().playback
+    assert (restored.resume_at - restored.started_at).total_seconds() == 4
     sender.assert_called_once()
 
 
@@ -166,7 +167,8 @@ def test_skip_make_reply_restores_script_and_next_question(paused, make_live):
     live.skip_question(live_id, "make-question-0")
     restored = live.get_current()
     assert restored.playback.kind == "script"
-    position = (restored.playback.paused_at or clock.current) - restored.playback.started_at
+    reference = restored.playback.paused_at or clock.current
+    position = max(reference, restored.playback.resume_at) - restored.playback.started_at
     assert position == timedelta(seconds=4)
     assert (
         live.receive_make_result(

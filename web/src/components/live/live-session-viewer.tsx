@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { components } from "@/lib/api/schema";
+import { SimliHostReceiver } from "./simli-host-receiver";
 import { SessionVideo } from "./session-video";
 import { LiveQuestions } from "./live-questions";
 import { Button } from "@/components/ui/button";
@@ -20,23 +21,33 @@ type Connection = "connecting" | "connected" | "reconnecting" | "invalid";
 
 const CONNECTION_LABELS = {
   connecting: "Đang kết nối phiên live…",
-  connected: "Đã kết nối. Trạng thái được cập nhật tự động.",
+  connected: "Đã kết nối",
   reconnecting: "Mất kết nối, đang thử lại. Thông tin bên dưới có thể chưa cập nhật.",
   invalid: "Không đọc được trạng thái. Hãy tải lại trang.",
 };
 
+const HOST_LABELS: Record<string, string> = {preparing: "Đang kết nối…", script: "Đang live", handoff: "Đang chuẩn bị trả lời…", reply: "Đang trả lời", restoring: "Đang tiếp tục kịch bản…", complete: "Đã hết lời dẫn"};
+
 const STATUS_LABELS = {
   not_started: "Phiên chưa bắt đầu",
-  playing: "Phiên đang hoạt động",
+  playing: "Đang live",
   paused: "Phiên đang tạm dừng",
   ended: "Phiên đã kết thúc",
 };
+
+function subscribeDebug(listener: () => void) {
+  window.addEventListener("popstate", listener);
+  return () => window.removeEventListener("popstate", listener);
+}
+const readDebug = () => new URLSearchParams(window.location.search).get("debug") === "1";
+const serverDebug = () => false;
 
 export function LiveSessionViewer() {
   const [snapshot, setSnapshot] = useState<TimedSnapshot | null>(null);
   const [connection, setConnection] = useState<Connection>("connecting");
   const [enabled, setEnabled] = useState(false);
   const [videoSnapshot, setVideoSnapshot] = useState<TimedSnapshot | null>(null);
+  const debug = useSyncExternalStore(subscribeDebug, readDebug, serverDebug);
   const [summaries, setSummaries] = useState<ReturnType<typeof summarizeLiveQuestions>>([]);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const displayed = useRef<TimedSnapshot | null>(null);
@@ -135,6 +146,7 @@ export function LiveSessionViewer() {
           if (playback && selectedPlaybackId.current !== playback.playbackId) {
             log.record("live_playback_selected", context, {
               startedAt: playback.startedAt,
+              resumeAt: playback.resumeAt ?? null,
               pausedAt: playback.pausedAt ?? null,
               durationSeconds: playback.durationSeconds ?? null,
             });
@@ -204,12 +216,21 @@ export function LiveSessionViewer() {
       {snapshot !== null && (
         live ? (
           <section className="grid gap-3 rounded-card border border-line bg-surface p-5">
-            <h2 className="text-xl font-bold">{live.status ? STATUS_LABELS[live.status] : ""}</h2>
-            <p className="break-all text-sm text-muted">Mã phiên: {live.liveId}</p>
+            <h2 className="text-xl font-bold">{live.status === "playing" && live.host ? HOST_LABELS[live.host.phase] ?? STATUS_LABELS[live.status] : live.status ? STATUS_LABELS[live.status] : ""}</h2>
+            {debug && <p className="break-all text-sm text-muted">Mã phiên: {live.liveId}</p>}
             <p className="text-sm text-muted">
               SKU đang giới thiệu: {live.pinnedSku}
             </p>
-            {(live.status === "playing" || live.status === "paused") && playback && videoSnapshot?.serverTime && (
+            {live.products?.filter(product=>product.sku===live.pinnedSku).map(product=><div key={product.sku} className="grid gap-2">
+              <h3 className="font-semibold">{product.name}</h3><p className="whitespace-pre-line text-sm text-muted">{product.facts}</p>
+            </div>)}
+            {live.scriptCompleted && live.status !== "ended" && (
+              <p role="status" className="text-sm text-muted">
+                Đã hết lời dẫn. Đang trả lời các câu hỏi đã nhận; không nhận câu mới.
+              </p>
+            )}
+            {live.hostMode === "simli" && <SimliHostReceiver key={`host-${live.liveId}`} live={live} connected={connection === "connected"} onLog={recordLog} />}
+            {live.hostMode !== "simli" && (live.status === "playing" || live.status === "paused") && playback && videoSnapshot?.serverTime && (
               <SessionVideo
                 key={playback.playbackId}
                 playback={playback}
@@ -258,8 +279,8 @@ export function LiveSessionViewer() {
         )
       )}
 
-      <section className="grid gap-3 rounded-card border border-line bg-surface p-5">
-        <h2 className="text-lg font-bold">Log kiểm thử phiên live</h2>
+      {debug && <section data-testid="live-diagnostics" className="grid gap-3 rounded-card border border-line bg-surface p-5">
+        <h2 className="text-lg font-bold">Diagnostics phiên live</h2>
         <Button type="button" variant="outline" className="w-fit" onClick={() => {
           if (logRef.current) downloadLivePlaybackLog(logRef.current);
         }}>
@@ -293,7 +314,7 @@ export function LiveSessionViewer() {
           Log giữ tối đa 500 sự kiện gần nhất trong bộ nhớ tab. Tải trước khi đóng hoặc tải lại trang.
           Log kiểm thử chưa gửi về backend hoặc dashboard.
         </p>
-      </section>
+      </section>}
     </main>
   );
 }

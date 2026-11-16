@@ -1,5 +1,7 @@
 "use client";
 
+import { LiveContentEditor } from "./live-content-editor";
+import { SimliHostProducer } from "./simli-host-producer";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useAdmin } from "@/components/admin/admin-shell";
@@ -17,6 +19,8 @@ export function LiveControls({ live }: { live: LiveSession }) {
   const [busyAction, setBusyAction] = useState<Action | "pin" | null>(null);
   const [refreshing, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [contentAudioReady, setContentAudioReady] = useState(false);
+  const [hostStarting, setHostStarting] = useState(false);
   const locked = busyAction !== null || refreshing;
 
   async function control(action: Action) {
@@ -87,11 +91,18 @@ export function LiveControls({ live }: { live: LiveSession }) {
 
   if (user.role !== "admin") return null;
 
+  if (live.hostMode === "simli" && live.status === "ended") return null;
+
+  if (live.hostMode === "simli") return <>
+    {Boolean(live.products?.length) && <LiveContentEditor live={live} hostStarting={hostStarting} onAudioReadyChange={setContentAudioReady} />}
+    <SimliHostProducer live={{ ...live, hostAudioReady: live.products?.length ? contentAudioReady : live.hostAudioReady }} onStarting={setHostStarting} />
+  </>;
+
   return (
     <div className="mt-5 grid gap-3">
     <label className="grid gap-2 text-sm font-medium">
     SKU đang giới thiệu
-    <select value={live.pinnedSku} disabled={locked || live.status === "ended"}
+    <select value={live.pinnedSku} disabled={locked || live.status === "ended" || Boolean(live.scriptPlaylist?.length)}
       onChange={(event) => void pinSku(event.target.value)}
       className="w-full rounded-lg border border-line bg-surface p-3">
       {live.scheduledSkus.map((sku) => (
@@ -99,6 +110,9 @@ export function LiveControls({ live }: { live: LiveSession }) {
        ))}
       </select>
     </label>
+    {Boolean(live.scriptPlaylist?.length) && (
+      <p className="text-sm text-muted">SKU tự chuyển theo danh sách phát.</p>
+    )}
 
     {busyAction === "pin" && (
       <p role="status" className="text-sm text-muted">Đang cập nhật SKU…</p>

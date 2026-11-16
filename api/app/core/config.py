@@ -37,6 +37,12 @@ class Settings(BaseSettings):
     seed_demo_catalog: bool = Field(False, alias="SEED_DEMO_CATALOG")
     # Browser origin(s) allowed to call the API directly (the web app normally proxies, so this is empty).
     cors_origins: list[str] = Field(default_factory=list, alias="CORS_ORIGINS")
+    live_simli_enabled: bool = Field(False, alias="LIVE_SIMLI_ENABLED")
+    live_simli_transport: Literal["mock", "simli"] = Field("mock", alias="LIVE_SIMLI_TRANSPORT")
+    live_simli_api_key: SecretStr = Field(default=SecretStr(""), alias="LIVE_SIMLI_API_KEY")
+    live_simli_audio_path: str = Field("", alias="LIVE_SIMLI_AUDIO_PATH")
+    live_simli_audio_sku: str = Field("", alias="LIVE_SIMLI_AUDIO_SKU")
+    live_simli_mock_video_path: str = Field("", alias="LIVE_SIMLI_MOCK_VIDEO_PATH")
     live_make_enabled: bool = Field(False, alias="LIVE_MAKE_ENABLED")
     live_make_webhook_url: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_WEBHOOK_URL")
     live_make_callback_token: SecretStr = Field(default=SecretStr(""), alias="LIVE_MAKE_CALLBACK_TOKEN")
