@@ -4,6 +4,8 @@ python -m app.cli migrate
 python -m app.cli seed-catalog                              # labelled demo products (idempotent)
 python -m app.cli sync-odoo                                 # copy on-hand counts from Odoo (needs ODOO_* settings)
 python -m app.cli expire-orders                             # cancel unpaid online orders whose time ran out
+python -m app.cli reindex-kb                                # (re)build the passages the chatbot searches
+python -m app.cli eval-rag [--questions eval/rag_questions.json]   # measure retrieval (hit@k, MRR)
 python -m app.cli create-admin you@example.com            # prompts for the password
 python -m app.cli create-admin you@example.com --role staff
 """
@@ -12,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import getpass
+import json
 import sys
 from pathlib import Path
 
@@ -22,6 +25,9 @@ from app.modules.auth import service as auth_service
 from app.modules.catalog import seed as catalog_seed
 from app.modules.inventory import sync as inventory_sync
 from app.modules.orders import service as orders_service
+from app.modules.rag import evaluate as rag_evaluate
+from app.modules.rag import index as rag_index
+from app.modules.rag.embedder import make_embedder
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -36,6 +42,11 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser(
         "sync-odoo", help="copy on-hand stock counts from Odoo, matched on SKU (run every few minutes)"
     )
+    sub.add_parser(
+        "reindex-kb", help="rebuild the chatbot's searchable passages from products, FAQs and policy files"
+    )
+    ev = sub.add_parser("eval-rag", help="measure how often retrieval finds the right passage")
+    ev.add_argument("--questions", default="eval/rag_questions.json")
     admin = sub.add_parser("create-admin", help="create a back-office user")
     admin.add_argument("email")
     admin.add_argument("--role", choices=["admin", "staff"], default="admin")
@@ -73,6 +84,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "expire-orders":
         with make_session_factory(make_engine(settings.database_url))() as db:
             print({"expired": orders_service.expire_due_orders(db)})
+        return 0
+
+    if args.cmd in ("reindex-kb", "eval-rag"):
+        embedder = make_embedder(settings)
+        with make_session_factory(make_engine(settings.database_url))() as db:
+            if args.cmd == "reindex-kb":
+                print({"embedder": embedder.name, **rag_index.reindex(db, embedder)})
+                return 0
+            questions = json.loads(Path(args.questions).read_text(encoding="utf-8"))
+            report = rag_evaluate.evaluate(db, embedder, questions)
+            print(json.dumps(report, ensure_ascii=False, indent=1))
         return 0
 
     password = getpass.getpass("Password: ")

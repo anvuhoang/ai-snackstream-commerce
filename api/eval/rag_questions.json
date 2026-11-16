@@ -1,0 +1,516 @@
+[
+ {
+  "q": "Thành phần của Bánh tráng xì ke muối nhuyễn là gì?",
+  "expect": [
+   {
+    "sku": "BT-XIKE-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Khô gà lá chanh sấy giòn làm từ những gì?",
+  "expect": [
+   {
+    "sku": "KG-LC-250",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng phơi sương muối nhuyễn có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "BT-PS-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Bánh tráng tắc sa tế là gì?",
+  "expect": [
+   {
+    "sku": "BT-TAC-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng muối hành làm từ những gì?",
+  "expect": [
+   {
+    "sku": "BT-MO-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng cuộn bơ có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "BT-CUON-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Bánh tráng chấm sốt me là gì?",
+  "expect": [
+   {
+    "sku": "BT-CHAM-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng tỏi phi làm từ những gì?",
+  "expect": [
+   {
+    "sku": "BT-TOI-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng bơ tỏi có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "BT-BO-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Bánh tráng trộn sa tế là gì?",
+  "expect": [
+   {
+    "sku": "BT-TRON-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Khô gà chay sợi nấm làm từ những gì?",
+  "expect": [
+   {
+    "sku": "KG-CHAY-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Khô gà bơ tỏi có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "KG-BB-250",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Khô gà cay xé là gì?",
+  "expect": [
+   {
+    "sku": "KG-CAY-250",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Khô bò sợi mềm làm từ những gì?",
+  "expect": [
+   {
+    "sku": "KB-SL-200",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Khô bò que có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "KB-QUE-150",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Khô bò lát là gì?",
+  "expect": [
+   {
+    "sku": "KB-LAT-200",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Mực cán tẩm gia vị làm từ những gì?",
+  "expect": [
+   {
+    "sku": "MUC-CAY-150",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Rong biển cháy tỏi có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "RONG-BIEN-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Hạt điều rang muối là gì?",
+  "expect": [
+   {
+    "sku": "HAT-DIEU-200",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Da cá trứng muối làm từ những gì?",
+  "expect": [
+   {
+    "sku": "DA-CA-100",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Bắp rang bơ có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "BAP-RANG-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Kẹo me cay là gì?",
+  "expect": [
+   {
+    "sku": "KEO-MEO-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Xoài sấy dẻo làm từ những gì?",
+  "expect": [
+   {
+    "sku": "XOAI-KEO-200",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Mít sấy giòn có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "MIT-SAY-200",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Chuối sấy giòn là gì?",
+  "expect": [
+   {
+    "sku": "CHUOI-SAY-200",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Khoai tây lát vị phô mai làm từ những gì?",
+  "expect": [
+   {
+    "sku": "KHOAI-LAT-100",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Snack bắp vị BBQ có những nguyên liệu nào?",
+  "expect": [
+   {
+    "sku": "BIM-BIM-100",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Thành phần của Kẹo chuối đậu phộng là gì?",
+  "expect": [
+   {
+    "sku": "KEO-CHUOI-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng me cay làm từ những gì?",
+  "expect": [
+   {
+    "sku": "BANH-TRANG-ME-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng xì ke muối nhuyễn bảo quản như thế nào?",
+  "expect": [
+   {
+    "sku": "BT-XIKE-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng phơi sương muối nhuyễn để được bao lâu?",
+  "expect": [
+   {
+    "sku": "BT-PS-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng muối hành bảo quản như thế nào?",
+  "expect": [
+   {
+    "sku": "BT-MO-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng chấm sốt me để được bao lâu?",
+  "expect": [
+   {
+    "sku": "BT-CHAM-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng bơ tỏi bảo quản như thế nào?",
+  "expect": [
+   {
+    "sku": "BT-BO-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Khô gà chay sợi nấm để được bao lâu?",
+  "expect": [
+   {
+    "sku": "KG-CHAY-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Khô gà cay xé bảo quản như thế nào?",
+  "expect": [
+   {
+    "sku": "KG-CAY-250",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Khô bò que để được bao lâu?",
+  "expect": [
+   {
+    "sku": "KB-QUE-150",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Mực cán tẩm gia vị bảo quản như thế nào?",
+  "expect": [
+   {
+    "sku": "MUC-CAY-150",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Hạt điều rang muối để được bao lâu?",
+  "expect": [
+   {
+    "sku": "HAT-DIEU-200",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Bắp rang bơ bảo quản như thế nào?",
+  "expect": [
+   {
+    "sku": "BAP-RANG-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Xoài sấy dẻo để được bao lâu?",
+  "expect": [
+   {
+    "sku": "XOAI-KEO-200",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Chuối sấy giòn bảo quản như thế nào?",
+  "expect": [
+   {
+    "sku": "CHUOI-SAY-200",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Snack bắp vị BBQ để được bao lâu?",
+  "expect": [
+   {
+    "sku": "BIM-BIM-100",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng me cay bảo quản như thế nào?",
+  "expect": [
+   {
+    "sku": "BANH-TRANG-ME-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Món nào làm từ lá chanh Thái?",
+  "expect": [
+   {
+    "sku": "KG-LC-250",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Có loại khô gà nào dành cho người ăn chay không?",
+  "expect": [
+   {
+    "sku": "KG-CHAY-01"
+   }
+  ]
+ },
+ {
+  "q": "Bánh tráng nào có sốt me?",
+  "expect": [
+   {
+    "sku": "BT-CHAM-01",
+    "kind": "ingredients"
+   },
+   {
+    "sku": "BANH-TRANG-ME-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Snack nào làm từ khoai tây?",
+  "expect": [
+   {
+    "sku": "KHOAI-LAT-100"
+   }
+  ]
+ },
+ {
+  "q": "Có món nào chứa đậu phộng không?",
+  "expect": [
+   {
+    "sku": "KEO-CHUOI-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Hạt gì được rang muối?",
+  "expect": [
+   {
+    "sku": "HAT-DIEU-200"
+   }
+  ]
+ },
+ {
+  "q": "Món nào chỉ để được 7 ngày thôi?",
+  "expect": [
+   {
+    "sku": "BT-CUON-01",
+    "kind": "storage"
+   },
+   {
+    "sku": "BT-CHAM-01",
+    "kind": "storage"
+   },
+   {
+    "sku": "BT-BO-01",
+    "kind": "storage"
+   },
+   {
+    "sku": "BT-TRON-01",
+    "kind": "storage"
+   }
+  ]
+ },
+ {
+  "q": "Có món nào làm từ mực không?",
+  "expect": [
+   {
+    "sku": "MUC-CAY-150"
+   }
+  ]
+ },
+ {
+  "q": "Khô bò loại cắt lát là món nào?",
+  "expect": [
+   {
+    "sku": "KB-LAT-200"
+   }
+  ]
+ },
+ {
+  "q": "Món nào có rau răm sấy?",
+  "expect": [
+   {
+    "sku": "BT-TRON-01",
+    "kind": "ingredients"
+   }
+  ]
+ },
+ {
+  "q": "Sản phẩm nào làm từ rong biển?",
+  "expect": [
+   {
+    "sku": "RONG-BIEN-01"
+   }
+  ]
+ },
+ {
+  "q": "Mua gì có bột trứng muối?",
+  "expect": [
+   {
+    "sku": "DA-CA-100",
+    "kind": "ingredients"
+   }
+  ]
+ }
+]
