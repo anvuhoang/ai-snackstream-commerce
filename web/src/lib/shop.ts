@@ -27,7 +27,8 @@ export const ORDER_STEPS: OrderStatus[] = ["new", "confirmed", "shipping", "comp
 
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   cod: "Thanh toán khi nhận hàng (COD)",
-  vnpay: "VNPay (sandbox)",
+  vnpay: "VNPay (đã ngừng)",
+  payos: "Chuyển khoản QR (payOS)",
 };
 
 export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {

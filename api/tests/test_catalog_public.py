@@ -156,3 +156,27 @@ def test_the_category_name_is_searchable_too(signed_in, anon):
     cat = make_category(signed_in, "Khô & mực")["id"]
     make_product(signed_in, category_id=cat, publish=True, name="Sản phẩm bất kỳ")
     assert names(anon.get(f"{PUBLIC}/products", params={"q": "kho muc"})) == ["Sản phẩm bất kỳ"]
+
+
+SHOP = "https://shopee.vn/tohuyenchau555"
+
+
+def test_a_product_without_its_own_shopee_link_points_to_the_shop_page(signed_in, anon):
+    cat = make_category(signed_in, "Bánh tráng")
+    own = make_product(
+        signed_in, category_id=cat["id"], publish=True, name="Có link", shopeeUrl="https://shopee.vn/own"
+    )
+    bare = make_product(signed_in, category_id=cat["id"], publish=True, name="Chưa có link")
+    app = signed_in.app
+    app.state.settings = app.state.settings.model_copy(update={"shopee_shop_url": SHOP})
+    assert anon.get(f"{PUBLIC}/products/{own['slug']}").json()["shopeeUrl"] == "https://shopee.vn/own"
+    assert anon.get(f"{PUBLIC}/products/{bare['slug']}").json()["shopeeUrl"] == SHOP
+
+
+def test_with_no_shop_page_set_a_product_without_a_link_has_no_shopee_button(signed_in, anon):
+    cat = make_category(signed_in, "Bánh tráng")
+    bare = make_product(signed_in, category_id=cat["id"], publish=True, name="Chưa có link")
+    assert (
+        signed_in.app.state.settings.shopee_shop_url == ""
+    )  # nothing is assumed; it comes from SHOPEE_SHOP_URL
+    assert anon.get(f"{PUBLIC}/products/{bare['slug']}").json()["shopeeUrl"] == ""

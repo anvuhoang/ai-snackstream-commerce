@@ -65,7 +65,8 @@ class FunnelStep(ApiModel):
 class Totals(ApiModel):
     orders_created: int
     orders_completed: int
-    revenue_vnd: int  # orders marked completed in the period
+    orders_cancelled: int  # orders created in the period whose status is now "cancelled"
+    revenue_vnd: int  # value of orders marked completed in the period; not necessarily money received
     average_order_vnd: int | None  # None when no order is completed
     completion_rate: (
         float | None
@@ -90,6 +91,16 @@ class ProductRow(ApiModel):
     shopee_clicks: int
 
 
+class DayRow(ApiModel):
+    """One Vietnam calendar day of the period; a day with no events is still listed, with zeros."""
+
+    day: date
+    viewers: int  # distinct sessions that viewed a product that day
+    orders_created: int
+    orders_completed: int
+    revenue_vnd: int  # value of the orders marked completed that day
+
+
 class Overview(ApiModel):
     date_from: date
     date_to: date
@@ -99,6 +110,7 @@ class Overview(ApiModel):
     totals: Totals
     by_source: list[SourceRow]
     top_products: list[ProductRow]
+    daily: list[DayRow]
     shopee_clicks: int  # never counted as a purchase
 
 
@@ -111,8 +123,12 @@ class ChannelRow(ApiModel):
     orders: int | None  # orders the CHANNEL reports; never added to the web's own orders
     revenue_vnd: int | None
     cost_vnd: int | None
-    ctr: float | None  # clicks / views, over the days that report BOTH
+    ctr: float | None  # clicks / impressions, over the days that report BOTH
     ctr_note: Literal["ok", "no_data", "no_denominator"]
+    cpc_vnd: int | None  # cost / clicks, over the days that report BOTH
+    cpc_note: Literal["ok", "no_data", "no_denominator"]
+    roas: float | None  # revenue / cost, over the days that report BOTH
+    roas_note: Literal["ok", "no_data", "no_denominator"]
     cost_per_order_vnd: int | None  # cost / orders, over the days that report BOTH
     cost_per_order_note: Literal["ok", "no_data", "no_denominator"]
     days: int
@@ -130,6 +146,9 @@ class ShopeeOut(ApiModel):
     date_to: date
     demo: DemoFilter
     web_clicks: int  # "Buy on Shopee" clicks on our web: a hand-off, never a sale of ours
+    landing_sessions: int  # distinct sessions that viewed a product or clicked through to Shopee
+    outbound_sessions: int  # distinct sessions with at least one Shopee click
+    outbound_rate: float | None  # outbound_sessions / landing_sessions; None when no session was recorded
     reported: ChannelRow | None  # what Shopee's own report says (imported); None when nothing was imported
 
 
@@ -142,6 +161,12 @@ class AiOut(ApiModel):
     live_joins: int
     live_product_clicks: int
     collected: bool  # False until chat or live has ever sent an event
+    chat_total: int  # questions the chatbot received in the period (from the chat log)
+    chat_handoffs: int  # support requests opened in the period
+    handoff_rate: float | None  # chat_handoffs / chat_total; None when no question was received
+    latency_avg_ms: int | None  # mean of (answered - received) over answered questions
+    latency_p95_ms: int | None
+    latency_samples: int
 
 
 class BatchOut(ApiModel):

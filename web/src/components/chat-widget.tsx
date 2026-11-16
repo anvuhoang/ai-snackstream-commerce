@@ -70,6 +70,12 @@ export function ChatWidget({ embedded = false, sku = null }: { embedded?: boolea
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, busy, error]);
   useEffect(() => { if (open) input.current?.focus(); }, [open]);
+  // Other parts of the site (the home page bar) open the chat with this event.
+  useEffect(() => {
+    const openChat = () => setOpen(true);
+    window.addEventListener("snackstream:chat-open", openChat);
+    return () => window.removeEventListener("snackstream:chat-open", openChat);
+  }, []);
 
   async function send(value: string) {
     const question = value.trim();

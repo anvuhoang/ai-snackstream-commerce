@@ -232,6 +232,9 @@ def create_product(db: Session, data: ProductCreate, *, is_demo: bool = False) -
         description=data.description.strip(),
         ingredients=data.ingredients.strip(),
         storage=data.storage.strip(),
+        allergens=data.allergens.strip(),
+        spice_level=data.spice_level.strip(),
+        nutrition=data.nutrition.strip(),
         ingredients_verified=data.ingredients_verified,
         shopee_url=data.shopee_url,
         is_demo=is_demo,
@@ -251,7 +254,7 @@ def update_product(db: Session, product_id: int, data: ProductUpdate) -> Product
     changes = data.model_dump(exclude_unset=True)
     if "category_id" in changes:
         _require_category(db, changes["category_id"])
-    for field in ("name", "description", "ingredients", "storage"):
+    for field in ("name", "description", "ingredients", "storage", "allergens", "spice_level", "nutrition"):
         if changes.get(field) is not None:
             setattr(p, field, changes[field].strip())
     for field in ("category_id", "ingredients_verified", "shopee_url"):

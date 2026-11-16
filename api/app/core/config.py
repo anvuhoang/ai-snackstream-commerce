@@ -67,12 +67,18 @@ class Settings(BaseSettings):
     free_ship_from_vnd: int = Field(300_000, alias="FREE_SHIP_FROM_VND", ge=0)
     # An unpaid online order keeps its stock only this long, then it is cancelled and the stock released.
     order_expiry_minutes: int = Field(15, alias="ORDER_EXPIRY_MINUTES", ge=1)
-    # VNPay sandbox (https://sandbox.vnpayment.vn). Empty = online payment is switched off and only COD is offered.
-    vnpay_tmn_code: str = Field("", alias="VNPAY_TMN_CODE")
-    vnpay_hash_secret: str = Field("", alias="VNPAY_HASH_SECRET")
-    vnpay_url: str = Field("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html", alias="VNPAY_URL")
-    # Where VNPay sends the customer's browser back to (a page of the web app).
-    vnpay_return_url: str = Field("http://localhost:3000/checkout/result", alias="VNPAY_RETURN_URL")
+    # payOS (https://payos.vn): pays through a VietQR page. All three keys come from the payment channel on my.payos.vn.
+    # Empty = payOS is switched off.
+    payos_client_id: str = Field("", alias="PAYOS_CLIENT_ID")
+    payos_api_key: str = Field("", alias="PAYOS_API_KEY")
+    payos_checksum_key: str = Field("", alias="PAYOS_CHECKSUM_KEY")
+    payos_api_url: str = Field("https://api-merchant.payos.vn", alias="PAYOS_API_URL")
+    # Where payOS sends the customer's browser after paying / cancelling (pages of the web app).
+    payos_return_url: str = Field("http://localhost:3000/checkout/result", alias="PAYOS_RETURN_URL")
+    payos_cancel_url: str = Field("http://localhost:3000/checkout", alias="PAYOS_CANCEL_URL")
+    payos_timeout_s: float = Field(15.0, alias="PAYOS_TIMEOUT_S", gt=0)
+    # The shop's own page on Shopee. A product with no Shopee link of its own sends the customer here. Empty = no button for those products.
+    shopee_shop_url: str = Field("", alias="SHOPEE_SHOP_URL")
     # Odoo (stock source). Empty = stock is kept only in our own tables. Uses Odoo's JSON-2 API with an API key.
     odoo_url: str = Field("", alias="ODOO_URL")
     # ODOO_DATABASE is accepted too: the chatbot used that name first.
@@ -82,6 +88,16 @@ class Settings(BaseSettings):
     # A count copied from Odoo older than this many minutes is shown as "unknown, contact the shop" and cannot be added to a cart.
     # 0 = never expire (the last synced number is used).
     stock_stale_minutes: int = Field(0, alias="STOCK_STALE_MINUTES", ge=0)
+
+    # Retrieval-augmented answers for the chatbot (see app/modules/rag). Off = the chatbot sends the whole catalog every time.
+    chat_rag_enabled: bool = Field(False, alias="CHAT_RAG_ENABLED")
+    # "hash" runs on this machine with no key (lexical); "gemini" asks Gemini for embeddings (needs GEMINI_API_KEY).
+    rag_embedder: Literal["hash", "gemini"] = Field("hash", alias="RAG_EMBEDDER")
+    rag_embed_model: str = Field("gemini-embedding-001", alias="RAG_EMBED_MODEL")
+    rag_top_k: int = Field(5, alias="RAG_TOP_K", ge=1, le=20)
+    # When no passage scores at least this high, the question is not about anything the shop has written down, so the chatbot
+    # answers with a fixed hand-off message and does not call Gemini. Tuned for the "hash" embedder; re-tune for "gemini".
+    rag_min_score: float = Field(0.2, alias="RAG_MIN_SCORE", ge=0, le=1)
 
     # The chatbot reads products over XML-RPC and needs the login too (it shares ODOO_URL, ODOO_DB and ODOO_API_KEY above).
     odoo_login: str = ""
@@ -103,8 +119,8 @@ class Settings(BaseSettings):
         return self
 
     @property
-    def vnpay_enabled(self) -> bool:
-        return bool(self.vnpay_tmn_code and self.vnpay_hash_secret)
+    def payos_enabled(self) -> bool:
+        return bool(self.payos_client_id and self.payos_api_key and self.payos_checksum_key)
 
     @property
     def odoo_database(self) -> str:

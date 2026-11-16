@@ -37,6 +37,14 @@ export function startStory(THREE, Lenis) {
     b.addEventListener('click', function () { var t = el(b.getAttribute('data-to')); if (t) goTo(t.getBoundingClientRect().top + window.scrollY); }, { signal: ac.signal });
   });
 
+  // Bar buttons that leave the story: open the real chat window, or go to a real page.
+  Array.prototype.forEach.call(document.querySelectorAll('[data-chat]'), function (b) {
+    b.addEventListener('click', function () { window.dispatchEvent(new Event('snackstream:chat-open')); }, { signal: ac.signal });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-href]'), function (b) {
+    b.addEventListener('click', function () { window.location.assign(b.getAttribute('data-href')); }, { signal: ac.signal });
+  });
+
   /* ----- build: statement words, shelf, journey ----- */
   var rv = el('rv'), WORDS = 'Mỗi món được đối chiếu thành phần và cách bảo quản với bao bì thật trước khi lên kệ.'.split(' ');
   rv.innerHTML = WORDS.map(function (w) { return '<span class="w">' + w + '</span>'; }).join(' ') + '<sup>[2]</sup>';
@@ -98,7 +106,7 @@ export function startStory(THREE, Lenis) {
     // P: the same bag tilts and pours into a bowl
     show(L.pr, ramp(p, 0.98, 1.02));
     var pu0 = clamp((p - 1.04) / 0.20, 0, 1);
-    el('prG').textContent = Math.round(250 * clamp((pu0 - 0.04) / 0.78, 0, 1)) + 'g';
+    el('tb').style.opacity = (ramp(p, 0.95, 1.02) * (1 - ramp(p, 1.24, 1.30))).toFixed(3); // the tabletop fades in with the bowl
 
   }
 
@@ -197,25 +205,48 @@ export function startStory(THREE, Lenis) {
     shadow.rotation.x = -Math.PI / 2; shadow.position.y = -1.6; scene.add(shadow);
 
     scene.add(orbit);
-    var chiliM = new THREE.MeshStandardMaterial({ color: 0x2f9a35, roughness: .4 }), stemM = new THREE.MeshStandardMaterial({ color: 0x2c6b2a, roughness: .6 });
-    var leafM = new THREE.MeshStandardMaterial({ color: 0x2b8a3c, roughness: .55 }), meatM = new THREE.MeshStandardMaterial({ color: 0xc9955a, roughness: .7 });
-    var saltM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .35 }), pepM = new THREE.MeshStandardMaterial({ color: 0x2a211b, roughness: .6 });
+    var SC = function (hex) { return new THREE.Color(hex).convertSRGBToLinear(); };   // sRGB hex -> linear, otherwise every colour renders washed out
+    var chiliM = new THREE.MeshStandardMaterial({ color: SC(0x2f8f36), roughness: .32 }), stemM = new THREE.MeshStandardMaterial({ color: SC(0x4a6b2a), roughness: .6 });
+    var leafM = new THREE.MeshStandardMaterial({ color: SC(0x2b7a3a), roughness: .55 }), meatM = new THREE.MeshStandardMaterial({ color: SC(0xc9955a), roughness: .7 });
+    var saltM = new THREE.MeshStandardMaterial({ color: SC(0xf4efe6), roughness: .3 }), pepM = new THREE.MeshStandardMaterial({ color: SC(0x2a1f18), roughness: .75 });
     function reg(m, s) {
       m.userData = { far: new THREE.Vector3((Math.random() - .5) * 15, (Math.random() - .5) * 9, Math.random() * 6 - 3), r: 1.4 + Math.random() * 1.2, a: Math.random() * 6.283, h: (Math.random() - .5) * 2.8,
         sp: (0.12 + Math.random() * 0.2) * (Math.random() < .5 ? -1 : 1), s: s, stag: Math.random(), spin: new THREE.Vector3(Math.random() - .5, Math.random() - .5, Math.random() - .5).multiplyScalar(2.2) };
       m.scale.setScalar(0.0001); orbit.add(m); items.push(m);
     }
     var i, m;
-    for (i = 0; i < 10; i++) { m = new THREE.Group(); var cb = new THREE.Mesh(new THREE.ConeGeometry(.07, .55, 12), chiliM); cb.rotation.z = Math.PI / 2; cb.position.x = .1; var st = new THREE.Mesh(new THREE.CylinderGeometry(.018, .028, .12, 8), stemM); st.rotation.z = Math.PI / 2; st.position.x = -.22; m.add(cb); m.add(st); reg(m, .95 + Math.random() * .4); }
-    for (i = 0; i < 16; i++) { m = new THREE.Mesh(new THREE.SphereGeometry(.11, 12, 8), leafM); m.geometry = m.geometry.clone(); m.geometry.scale(1.5, .1, .65); reg(m, 1 + Math.random() * .5); }
-    for (i = 0; i < 14; i++) { m = new THREE.Mesh(new THREE.CylinderGeometry(.028, .028, .5, 8), meatM); reg(m, .9 + Math.random() * .5); }
-    for (i = 0; i < 30; i++) { m = new THREE.Mesh(new THREE.OctahedronGeometry(.03), saltM); reg(m, 1 + Math.random()); }
-    for (i = 0; i < 14; i++) { m = new THREE.Mesh(new THREE.SphereGeometry(.035, 8, 6), pepM); reg(m, 1 + Math.random() * .6); }
+    // a green bird's-eye chilli: a curved pod that tapers to a tip, a dark calyx on top and a short stem
+    function chiliPod(seed) {
+      var rnd = seeded(seed), len = 0.5 + rnd(1) * 0.2, bend = (rnd(2) - 0.5) * 0.34, SEG = 22, RAD = 10;
+      var curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(-len / 2, 0, 0), new THREE.Vector3(0, bend * 1.6, bend * 0.5), new THREE.Vector3(len / 2, bend * 0.4, -bend * 0.2));
+      var g = new THREE.TubeGeometry(curve, SEG, 1, RAD, false), pos = g.attributes.position;
+      for (var a = 0; a <= SEG; a++) {
+        var u = a / SEG, c = curve.getPointAt(u), r = 0.046 * (0.55 + 0.45 * Math.sin(Math.min(1, u * 5 + 0.2))) * Math.pow(1 - u, 0.8) + 0.004;
+        for (var b = 0; b <= RAD; b++) { var k = a * (RAD + 1) + b; pos.setXYZ(k, c.x + (pos.getX(k) - c.x) * r, c.y + (pos.getY(k) - c.y) * r, c.z + (pos.getZ(k) - c.z) * r); }
+      }
+      g.computeVertexNormals(); return { geo: g, len: len };
+    }
+    for (i = 0; i < 10; i++) {
+      m = new THREE.Group(); var pod = chiliPod(i + 5);
+      var cb = new THREE.Mesh(pod.geo, chiliM); m.add(cb);
+      var cal = new THREE.Mesh(new THREE.SphereGeometry(.034, 10, 8), stemM); cal.scale.set(.8, .7, 1); cal.position.x = -pod.len / 2 - .005; m.add(cal);
+      var st = new THREE.Mesh(new THREE.CylinderGeometry(.008, .011, .1, 6), stemM); st.rotation.z = Math.PI / 2 + (Math.random() - .5) * .5; st.position.x = -pod.len / 2 - .06; m.add(st);
+      reg(m, .95 + Math.random() * .4);
+    }
+    for (i = 0; i < 24; i++) { m = new THREE.Mesh(new THREE.BoxGeometry(.03, .03, .03), saltM); m.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); reg(m, .8 + Math.random() * 1.2); }
+    for (i = 0; i < 14; i++) {
+      var pg = new THREE.IcosahedronGeometry(.036, 1), pp = pg.attributes.position;
+      for (var q = 0; q < pp.count; q++) { var f = 0.86 + Math.random() * 0.28; pp.setXYZ(q, pp.getX(q) * f, pp.getY(q) * f, pp.getZ(q) * f); }   // wrinkled, like a dried peppercorn
+      pg.computeVertexNormals(); m = new THREE.Mesh(pg, pepM); reg(m, 1 + Math.random() * .6);
+    }
 
     // pour scene: a bowl and the pieces that fall into it
     bowl = new THREE.Group();
-    var prof = [[0.001, 0], [0.55, 0], [0.95, 0.16], [1.15, 0.5], [1.2, 0.62], [1.13, 0.62], [1.08, 0.5], [0.9, 0.22], [0.5, 0.09], [0.001, 0.09]].map(function (q) { return new THREE.Vector2(q[0], q[1]); });
-    bowl.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 56), new THREE.MeshStandardMaterial({ color: 0xE6DECE, roughness: 0.55, side: THREE.DoubleSide })));
+    // a glazed ceramic bowl: deep green on the outside, cream inside and on the rim, with a low foot ring
+    var profOut = [[0.001, 0], [0.5, 0], [0.56, 0.03], [0.62, 0.02], [0.95, 0.16], [1.15, 0.5], [1.2, 0.62]].map(function (q) { return new THREE.Vector2(q[0], q[1]); });
+    var profIn = [[1.2, 0.62], [1.165, 0.645], [1.13, 0.62], [1.08, 0.5], [0.9, 0.22], [0.5, 0.09], [0.001, 0.09]].map(function (q) { return new THREE.Vector2(q[0], q[1]); });
+    bowl.add(new THREE.Mesh(new THREE.LatheGeometry(profOut, 64), new THREE.MeshStandardMaterial({ color: 0x1d4a37, roughness: 0.2, metalness: 0.04, side: THREE.DoubleSide })));
+    bowl.add(new THREE.Mesh(new THREE.LatheGeometry(profIn, 64), new THREE.MeshStandardMaterial({ color: 0xEFE5D0, roughness: 0.3, metalness: 0.02, side: THREE.DoubleSide })));
     scene.add(bowl);
     var bc = document.createElement('canvas'); bc.width = bc.height = 256; var bg2 = bc.getContext('2d'), bgr = bg2.createRadialGradient(128, 128, 0, 128, 128, 128);
     bgr.addColorStop(0, 'rgba(0,0,0,.4)'); bgr.addColorStop(1, 'rgba(0,0,0,0)'); bg2.fillStyle = bgr; bg2.fillRect(0, 0, 256, 256);
@@ -235,6 +266,39 @@ export function startStory(THREE, Lenis) {
       }
       return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 28, rad, 5, false);
     }
+    // Shredded dried chicken is made of flat, flaky, slightly twisted ribbons, not round noodles: a strip that follows a curly path and
+    // turns about its own axis, with lengthwise fibre streaks (the texture below) so the light breaks up on it like on real meat.
+    function ribbonGeo(len, wid, seed) {
+      var rnd = seeded(seed), pts = [], K = 7, i, N = 26;
+      for (i = 0; i <= K; i++) {
+        var u = i / K;
+        pts.push(new THREE.Vector3((u - 0.5) * len,
+          Math.sin(u * 6.283 * (0.9 + rnd(1)) + rnd(2) * 6) * len * 0.18 * (0.4 + rnd(3)) + (rnd(10 + i) - 0.5) * len * 0.10,
+          Math.cos(u * 6.283 * (0.8 + rnd(5)) + rnd(6) * 6) * len * 0.15 * (0.4 + rnd(7))));
+      }
+      var curve = new THREE.CatmullRomCurve3(pts), P = curve.getPoints(N), pos = [], uv = [], idx = [], nrm = new THREE.Vector3(0, 1, 0), tw = rnd(9) * 6.283, tws = (rnd(11) - 0.5) * 7;
+      for (i = 0; i <= N; i++) {
+        var T = curve.getTangent(i / N).normalize();
+        nrm.sub(T.clone().multiplyScalar(nrm.dot(T))); if (nrm.lengthSq() < 1e-4) nrm.set(1, 0, 0); nrm.normalize();   // slide the frame along the path
+        var B = new THREE.Vector3().crossVectors(T, nrm).normalize(), a = tw + tws * (i / N), w2 = wid * (0.55 + 0.45 * Math.sin(Math.PI * (0.1 + 0.8 * i / N))) * 0.5;
+        var side = nrm.clone().multiplyScalar(Math.cos(a)).add(B.multiplyScalar(Math.sin(a)));
+        pos.push(P[i].x - side.x * w2, P[i].y - side.y * w2, P[i].z - side.z * w2, P[i].x + side.x * w2, P[i].y + side.y * w2, P[i].z + side.z * w2);
+        uv.push(0, i / N, 1, i / N);
+        if (i < N) { var b0 = i * 2; idx.push(b0, b0 + 1, b0 + 2, b0 + 1, b0 + 3, b0 + 2); }
+      }
+      var g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+    }
+    function fibreTexture() {
+      var c = document.createElement('canvas'); c.width = 64; c.height = 128; var x = c.getContext('2d');
+      x.fillStyle = '#e6cfa9'; x.fillRect(0, 0, 64, 128);
+      for (var k = 0; k < 46; k++) {
+        var px = Math.random() * 64, lum = Math.random() < 0.55 ? 40 : 255, al = 0.10 + Math.random() * 0.22;
+        x.strokeStyle = 'rgba(' + lum + ',' + (lum * 0.72 | 0) + ',' + (lum * 0.42 | 0) + ',' + al + ')'; x.lineWidth = 0.8 + Math.random() * 2.2;
+        x.beginPath(); x.moveTo(px, 0); x.bezierCurveTo(px + (Math.random() - .5) * 8, 40, px + (Math.random() - .5) * 8, 90, px + (Math.random() - .5) * 6, 128); x.stroke();
+      }
+      var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t;
+    }
     function bentLeaf(w, h, seed) {
       var rnd = seeded(seed), g = new THREE.PlaneGeometry(w, h, 8, 4), pos = g.attributes.position, am = 0.05 + rnd(1) * 0.07;
       for (var i = 0; i < pos.count; i++) {
@@ -244,14 +308,22 @@ export function startStory(THREE, Lenis) {
       g.computeVertexNormals(); return g;
     }
     function lin(hex) { return new THREE.Color(hex).convertSRGBToLinear(); }
-    var CHICKEN = ['#d98a35', '#c97a2b', '#b86d26', '#e0a04a', '#a9602a', '#cf8630', '#8f4f1f', '#e8b45f'].map(lin), CHILI = ['#3f9d3d', '#56ad45', '#2f7f33'].map(lin);
-    var strandMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.78, metalness: 0 });
+    var CHICKEN = ['#e2993f', '#d58a30', '#c27a2c', '#ecb35a', '#b56c2a', '#d9a04c', '#9a5724', '#f0c47a', '#e6a755', '#c98f45'].map(lin), CHILI = ['#3f9d3d', '#56ad45', '#2f7f33'].map(lin);
+    var strandMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: fibreTexture(), roughness: 0.82, metalness: 0, side: THREE.DoubleSide });
     var chiliMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45, metalness: 0 });
     function leafMat(im) { var t = new THREE.Texture(im); t.encoding = THREE.sRGBEncoding; t.needsUpdate = true; return new THREE.MeshStandardMaterial({ map: t, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.7 }); }
     var leafImgs = [leafAImg, leafBImg].filter(function (im) { return im.naturalWidth; });
+    // the same lime-leaf photos and flaky chicken ribbons as in the bowl, so the cloud of ingredients is made of the real thing
+    for (i = 0; i < 16; i++) {
+      var li0 = i % Math.max(1, leafImgs.length), im0 = leafImgs[li0];
+      m = im0 ? new THREE.Mesh(bentLeaf(0.5, 0.5 * im0.naturalHeight / im0.naturalWidth, i + 30), leafMat(im0)) : new THREE.Mesh(new THREE.SphereGeometry(.11, 12, 8).scale(1.5, .1, .65), leafM);
+      reg(m, 1 + Math.random() * .5);
+    }
+    var cloudMeat = new THREE.MeshStandardMaterial({ color: lin('#d08a3a'), map: fibreTexture(), roughness: 0.8, side: THREE.DoubleSide });
+    for (i = 0; i < 20; i++) { m = new THREE.Mesh(ribbonGeo(0.26 + Math.random() * 0.2, 0.035 + Math.random() * 0.025, i + 60), cloudMeat); reg(m, .9 + Math.random() * .5); }
 
     // a dark shaded base under the pieces so no white shows through the heap
-    pile = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x2a1608, roughness: 1 }));
+    pile = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x6d4220, roughness: 1, metalness: 0 }));
     pile.position.set(0, 0.2, 0); pile.scale.set(0.7, 0.001, 0.7); pile.visible = false; bowl.add(pile);
 
     function inst(geo, mat, count) {
@@ -261,7 +333,9 @@ export function startStory(THREE, Lenis) {
     // what is in the bag: 6 strand shapes, chilli bits and leaves
     var specs = [], sv, li2, k2;
     var SM = [];
-    for (sv = 0; sv < 8; sv++) { SM.push(inst(strandGeo(0.42 + sv * 0.07, 0.010 + (sv % 3) * 0.002, sv + 3), strandMat, 190)); for (k2 = 0; k2 < 190; k2++) specs.push({ m: SM[sv], kind: 's' }); }
+    for (sv = 0; sv < 8; sv++) { SM.push(inst(ribbonGeo(0.30 + sv * 0.06, 0.026 + (sv % 4) * 0.008, sv + 3), strandMat, 270)); for (k2 = 0; k2 < 270; k2++) specs.push({ m: SM[sv], kind: 's' }); }
+    for (sv = 0; sv < 3; sv++) { var FM = inst(strandGeo(0.34 + sv * 0.1, 0.0075 + sv * 0.0012, sv + 21), strandMat, 130); for (k2 = 0; k2 < 130; k2++) specs.push({ m: FM, kind: 'f' }); }   // fine threads
+    var KM = inst(ribbonGeo(0.08, 0.034, 55), strandMat, 240); for (k2 = 0; k2 < 240; k2++) specs.push({ m: KM, kind: 'k' });   // crumbs and short broken bits
     var CM = inst(strandGeo(0.1, 0.017, 41), chiliMat, 130); for (k2 = 0; k2 < 130; k2++) specs.push({ m: CM, kind: 'c' });
     leafImgs.forEach(function (im, idx) { var lm = inst(bentLeaf(0.42, 0.42 * im.naturalHeight / im.naturalWidth, idx + 7), leafMat(im), 60); for (var q2 = 0; q2 < 60; q2++) specs.push({ m: lm, kind: 'l' }); });
     for (var sh = specs.length - 1; sh > 0; sh--) { var sj = (Math.random() * (sh + 1)) | 0, st = specs[sh]; specs[sh] = specs[sj]; specs[sj] = st; }
@@ -282,7 +356,7 @@ export function startStory(THREE, Lenis) {
       var col = (sp.kind === 'c' ? CHILI[(Math.random() * CHILI.length) | 0] : CHICKEN[(Math.random() * CHICKEN.length) | 0]).clone();
       if (sp.kind !== 'l') { col.multiplyScalar(shade); sp.m.setColorAt(idx2, col); }
       parts.push({ st: -1, m: sp.m, i: idx2, b: b0, dur: dur, lx: -0.74 + Math.random() * 0.8, ly: 1.05 + Math.random() * 0.1,
-        T: new THREE.Vector3(px, 0.32 + surf * (0.3 + 0.7 * dep), pz), sc: 0.85 + Math.random() * 0.3,
+        T: new THREE.Vector3(px, 0.32 + surf * (0.3 + 0.7 * dep), pz), sc: 0.68 + Math.random() * 0.62,
         spin: new THREE.Vector3((Math.random() - .5) * 8, (Math.random() - .5) * 8, (Math.random() - .5) * 8), q: tq });
     }
     instMeshes.forEach(function (m) { if (m.instanceColor) m.instanceColor.needsUpdate = true; });
@@ -331,7 +405,7 @@ export function startStory(THREE, Lenis) {
     bowl.updateMatrixWorld(true);
     var pu = clamp((p - 1.04) / 0.20, 0, 1), pgr = ease(clamp((pu - 0.04) / 0.80, 0, 1));
     pile.visible = inPour && pgr > 0.01;
-    pile.scale.set(0.7 * (0.45 + 0.55 * pgr), 0.36 * pgr * pgr + 0.001, 0.7 * (0.45 + 0.55 * pgr));
+    pile.scale.set(0.5 * (0.45 + 0.55 * pgr), 0.16 * pgr * pgr + 0.001, 0.5 * (0.45 + 0.55 * pgr));
     for (var mi = 0; mi < instMeshes.length; mi++) instMeshes[mi].visible = inPour;
     if (inPour) {
       // Only pieces that are moving, or that just changed state, are recomputed: hidden and settled pieces keep their matrix.

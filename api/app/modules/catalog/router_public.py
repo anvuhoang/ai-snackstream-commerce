@@ -51,4 +51,7 @@ def product(
     stock = inventory.stock_info(
         db, [v.id for v in p.variants if v.is_active], request.app.state.settings.stock_stale_minutes
     )
-    return presenters.detail(p, storage, stock)
+    detail = presenters.detail(p, storage, stock)
+    if not detail.shopee_url:
+        detail.shopee_url = request.app.state.settings.shopee_shop_url
+    return detail

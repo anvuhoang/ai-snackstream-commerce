@@ -412,6 +412,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/orders/pay-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pay Link
+         * @description A new payment page for an order that was placed but not paid (the first page was lost, or payOS had failed).
+         */
+        post: operations["pay_link_api_orders_pay_link_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/orders/lookup": {
         parameters: {
             query?: never;
@@ -429,7 +449,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/payments/vnpay/ipn": {
+    "/api/payments/payos/return": {
         parameters: {
             query?: never;
             header?: never;
@@ -437,30 +457,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Vnpay Ipn
-         * @description The gateway calls this from its servers after a payment. It is the source of truth, not the browser return.
+         * Payos Return
+         * @description The customer's browser lands on the web page, which asks this what to show.
          */
-        get: operations["vnpay_ipn_api_payments_vnpay_ipn_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/payments/vnpay/return": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Vnpay Return
-         * @description The customer's browser lands on the web page, which asks this what to show. It never changes anything.
-         */
-        get: operations["vnpay_return_api_payments_vnpay_return_get"];
+        get: operations["payos_return_api_payments_payos_return_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1497,7 +1497,7 @@ export interface components {
              * Paymentmethod
              * @enum {string}
              */
-            paymentMethod: "cod" | "vnpay";
+            paymentMethod: "cod" | "vnpay" | "payos";
             /** Expiresat */
             expiresAt: string | null;
             /**
@@ -1548,7 +1548,7 @@ export interface components {
              * Paymentmethod
              * @enum {string}
              */
-            paymentMethod: "cod" | "vnpay";
+            paymentMethod: "cod" | "vnpay" | "payos";
             /** Paymentstatus */
             paymentStatus: ("pending" | "paid" | "failed" | "expired") | null;
             /** Itemcount */
@@ -1590,6 +1590,12 @@ export interface components {
             ingredients: string;
             /** Storage */
             storage: string;
+            /** Allergens */
+            allergens: string;
+            /** Spicelevel */
+            spiceLevel: string;
+            /** Nutrition */
+            nutrition: string;
             /** Ingredientsverified */
             ingredientsVerified: boolean;
             /** Categoryid */
@@ -1698,6 +1704,18 @@ export interface components {
             liveProductClicks: number;
             /** Collected */
             collected: boolean;
+            /** Chattotal */
+            chatTotal: number;
+            /** Chathandoffs */
+            chatHandoffs: number;
+            /** Handoffrate */
+            handoffRate: number | null;
+            /** Latencyavgms */
+            latencyAvgMs: number | null;
+            /** Latencyp95Ms */
+            latencyP95Ms: number | null;
+            /** Latencysamples */
+            latencySamples: number;
         };
         /**
          * AttributionIn
@@ -1903,6 +1921,20 @@ export interface components {
              * @enum {string}
              */
             ctrNote: "ok" | "no_data" | "no_denominator";
+            /** Cpcvnd */
+            cpcVnd: number | null;
+            /**
+             * Cpcnote
+             * @enum {string}
+             */
+            cpcNote: "ok" | "no_data" | "no_denominator";
+            /** Roas */
+            roas: number | null;
+            /**
+             * Roasnote
+             * @enum {string}
+             */
+            roasNote: "ok" | "no_data" | "no_denominator";
             /** Costperordervnd */
             costPerOrderVnd: number | null;
             /**
@@ -1965,7 +1997,7 @@ export interface components {
              * @default cod
              * @enum {string}
              */
-            paymentMethod?: "cod" | "vnpay";
+            paymentMethod?: "cod" | "payos";
             attribution?: components["schemas"]["AttributionIn"] | null;
         };
         /** CheckoutOut */
@@ -2001,7 +2033,7 @@ export interface components {
              * Paymentmethod
              * @enum {string}
              */
-            paymentMethod: "cod" | "vnpay";
+            paymentMethod: "cod" | "vnpay" | "payos";
             /** Expiresat */
             expiresAt: string | null;
             /**
@@ -2024,6 +2056,25 @@ export interface components {
             name: string;
             /** Phone */
             phone: string;
+        };
+        /**
+         * DayRow
+         * @description One Vietnam calendar day of the period; a day with no events is still listed, with zeros.
+         */
+        DayRow: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Viewers */
+            viewers: number;
+            /** Orderscreated */
+            ordersCreated: number;
+            /** Orderscompleted */
+            ordersCompleted: number;
+            /** Revenuevnd */
+            revenueVnd: number;
         };
         /** EventIn */
         EventIn: {
@@ -2768,7 +2819,7 @@ export interface components {
              * Paymentmethod
              * @enum {string}
              */
-            paymentMethod: "cod" | "vnpay";
+            paymentMethod: "cod" | "vnpay" | "payos";
             /** Expiresat */
             expiresAt: string | null;
             /**
@@ -2809,8 +2860,15 @@ export interface components {
             bySource: components["schemas"]["SourceRow"][];
             /** Topproducts */
             topProducts: components["schemas"]["ProductRow"][];
+            /** Daily */
+            daily: components["schemas"]["DayRow"][];
             /** Shopeeclicks */
             shopeeClicks: number;
+        };
+        /** PayLinkOut */
+        PayLinkOut: {
+            /** Paymenturl */
+            paymentUrl?: string | null;
         };
         /** PaymentOut */
         PaymentOut: {
@@ -2818,7 +2876,7 @@ export interface components {
              * Provider
              * @enum {string}
              */
-            provider: "cod" | "vnpay";
+            provider: "cod" | "vnpay" | "payos";
             /**
              * Status
              * @enum {string}
@@ -2924,6 +2982,21 @@ export interface components {
              */
             storage?: string;
             /**
+             * Allergens
+             * @default
+             */
+            allergens?: string;
+            /**
+             * Spicelevel
+             * @default
+             */
+            spiceLevel?: string;
+            /**
+             * Nutrition
+             * @default
+             */
+            nutrition?: string;
+            /**
              * Ingredientsverified
              * @default false
              */
@@ -2950,6 +3023,12 @@ export interface components {
             ingredients: string;
             /** Storage */
             storage: string;
+            /** Allergens */
+            allergens: string;
+            /** Spicelevel */
+            spiceLevel: string;
+            /** Nutrition */
+            nutrition: string;
             category: components["schemas"]["CategoryRef"] | null;
             /** Variants */
             variants: components["schemas"]["VariantOut"][];
@@ -2995,6 +3074,12 @@ export interface components {
             ingredients?: string | null;
             /** Storage */
             storage?: string | null;
+            /** Allergens */
+            allergens?: string | null;
+            /** Spicelevel */
+            spiceLevel?: string | null;
+            /** Nutrition */
+            nutrition?: string | null;
             /** Ingredientsverified */
             ingredientsVerified?: boolean | null;
             /** Shopeeurl */
@@ -3056,12 +3141,7 @@ export interface components {
             /** Freeshipfromvnd */
             freeShipFromVnd: number;
             /** Paymentmethods */
-            paymentMethods: ("cod" | "vnpay")[];
-            /**
-             * Onlinepaymentissandbox
-             * @default true
-             */
-            onlinePaymentIsSandbox?: boolean;
+            paymentMethods: ("cod" | "vnpay" | "payos")[];
             /** Orderexpiryminutes */
             orderExpiryMinutes: number;
         };
@@ -3084,6 +3164,12 @@ export interface components {
             demo: "exclude" | "include" | "only";
             /** Webclicks */
             webClicks: number;
+            /** Landingsessions */
+            landingSessions: number;
+            /** Outboundsessions */
+            outboundSessions: number;
+            /** Outboundrate */
+            outboundRate: number | null;
             reported: components["schemas"]["ChannelRow"] | null;
         };
         /** SourceRow */
@@ -3230,6 +3316,8 @@ export interface components {
             ordersCreated: number;
             /** Orderscompleted */
             ordersCompleted: number;
+            /** Orderscancelled */
+            ordersCancelled: number;
             /** Revenuevnd */
             revenueVnd: number;
             /** Averageordervnd */
@@ -4154,6 +4242,39 @@ export interface operations {
             };
         };
     };
+    pay_link_api_orders_pay_link_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LookupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayLinkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     lookup_api_orders_lookup_post: {
         parameters: {
             query?: never;
@@ -4187,27 +4308,7 @@ export interface operations {
             };
         };
     };
-    vnpay_ipn_api_payments_vnpay_ipn_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    vnpay_return_api_payments_vnpay_return_get: {
+    payos_return_api_payments_payos_return_get: {
         parameters: {
             query?: never;
             header?: never;

@@ -13,7 +13,9 @@ from app.modules.analytics.schemas import AttributionIn
 from app.modules.catalog.schemas import ImageOut
 
 OrderStatus = Literal["new", "confirmed", "shipping", "completed", "cancelled"]
-PaymentMethod = Literal["cod", "vnpay"]
+# "vnpay" is only ever read: orders placed while VNPay was offered keep that value. New orders choose from CheckoutMethod.
+PaymentMethod = Literal["cod", "vnpay", "payos"]
+CheckoutMethod = Literal["cod", "payos"]
 PaymentStatus = Literal["pending", "paid", "failed", "expired"]
 
 
@@ -32,7 +34,6 @@ class ShopConfig(ApiModel):
     shipping_fee_vnd: int
     free_ship_from_vnd: int
     payment_methods: list[PaymentMethod]
-    online_payment_is_sandbox: bool = True
     order_expiry_minutes: int
 
 
@@ -110,7 +111,7 @@ class CheckoutIn(ApiModel):
     customer: CustomerIn
     shipping: ShippingIn
     note: str = Field("", max_length=500)
-    payment_method: PaymentMethod = "cod"
+    payment_method: CheckoutMethod = "cod"
     attribution: AttributionIn | None = None
 
 
@@ -214,3 +215,7 @@ class PaymentReturnOut(ApiModel):
 
     result: Literal["paid", "failed", "pending", "invalid"]
     order_code: str | None = None
+
+
+class PayLinkOut(ApiModel):
+    payment_url: str | None = None  # None: nothing to pay, or the gateway could not be reached

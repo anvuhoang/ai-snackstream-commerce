@@ -14,7 +14,7 @@ import { cn } from "@/lib/cn";
 import { errorText } from "@/lib/errors";
 import { formatVnd } from "@/lib/format";
 import { attribution, track } from "@/lib/track";
-import { PAYMENT_METHOD_LABEL, type CheckoutOut, type PaymentMethod, type ShopConfig } from "@/lib/shop";
+import { PAYMENT_METHOD_LABEL, type CheckoutOut, type ShopConfig } from "@/lib/shop";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Nhập họ và tên").max(120, "Tối đa 120 ký tự"),
@@ -27,7 +27,7 @@ const schema = z.object({
   district: z.string().trim().max(120),
   ward: z.string().trim().max(120),
   note: z.string().max(500, "Tối đa 500 ký tự"),
-  paymentMethod: z.enum(["cod", "vnpay"]),
+  paymentMethod: z.enum(["cod", "payos"]),
 });
 type Values = z.infer<typeof schema>;
 
@@ -41,6 +41,7 @@ export function CheckoutView() {
   const { cart, busy, error: cartError, setQty, remove, refresh } = useCart();
   const [config, setConfig] = useState<ShopConfig | null>(null);
   const [placed, setPlaced] = useState<CheckoutOut | null>(null);
+  const [placedPhone, setPlacedPhone] = useState("");
   const [failure, setFailure] = useState<string | null>(null);
   // One key per checkout attempt. It is kept when the outcome is unknown (network drop) so a retry cannot create a second order.
   const idemKey = useRef<string | null>(null);
@@ -80,7 +81,7 @@ export function CheckoutView() {
           customer: { name: v.name, phone: v.phone },
           shipping: { address: v.address, ward: v.ward, district: v.district, province: v.province },
           note: v.note,
-          paymentMethod: v.paymentMethod as PaymentMethod,
+          paymentMethod: v.paymentMethod,
           attribution: attribution(),
         },
       });
@@ -94,6 +95,7 @@ export function CheckoutView() {
         return;
       }
       setPlaced(data);
+      setPlacedPhone(v.phone);
       void refresh(); // the server emptied the cart; the top bar must show it
       window.scrollTo({ top: 0 });
     } catch {
@@ -101,7 +103,7 @@ export function CheckoutView() {
     }
   }
 
-  if (placed) return <Confirmation order={placed} />;
+  if (placed) return <Confirmation order={placed} phone={placedPhone} />;
 
   const lines = cart?.items ?? [];
   const empty = cart !== null && lines.length === 0;
@@ -247,15 +249,14 @@ export function CheckoutView() {
                 <span className="grid gap-0.5">
                   <b className="text-base font-semibold">{PAYMENT_METHOD_LABEL[m]}</b>
                   <span className="text-sm leading-relaxed text-muted">
-                    {m === "cod" ? "Trả tiền mặt cho người giao hàng." : "Thẻ ATM, QR ngân hàng. Môi trường thử nghiệm, không trừ tiền thật."}
+                    {m === "cod" ? "Trả tiền mặt cho người giao hàng." : "Quét mã QR bằng app ngân hàng. Đơn được xác nhận ngay khi tiền về."}
                   </span>
                 </span>
-                {m === "vnpay" && <span className="ml-auto self-center rounded-full bg-turmeric px-2.5 py-1 text-xs font-semibold">SANDBOX</span>}
               </label>
             ))}
-            {method === "vnpay" && config && (
+            {method === "payos" && config && (
               <p className="text-[13px] leading-relaxed text-muted">
-                Bạn sẽ được chuyển sang trang thanh toán thử của VNPay. Đơn được giữ {config.orderExpiryMinutes} phút, quá hạn sẽ tự hủy.
+                Bạn sẽ được chuyển sang trang thanh toán payOS để quét mã QR. Đơn được giữ {config.orderExpiryMinutes} phút, quá hạn sẽ tự hủy.
               </p>
             )}
           </section>
@@ -280,7 +281,7 @@ export function CheckoutView() {
               disabled={!canOrder || isSubmitting || busy}
               className="flex h-[60px] w-full items-center justify-between rounded-xl bg-accent px-6 text-[17px] font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-40"
             >
-              <span>{isSubmitting ? "Đang gửi…" : method === "vnpay" ? "Thanh toán VNPay (sandbox)" : "Đặt hàng"}</span>
+              <span>{isSubmitting ? "Đang gửi…" : method === "payos" ? "Thanh toán bằng QR" : "Đặt hàng"}</span>
               <span aria-hidden>→</span>
             </button>
             <p className="text-[13px] leading-relaxed text-muted">
@@ -310,7 +311,37 @@ function FieldError({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Confirmation({ order }: { order: CheckoutOut }) {
+/** An online order whose payment page could not be opened (the gateway was down): ask for a new one. */
+function PayAgain({ code, phone }: { code: string; phone: string }) {
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  async function go() {
+    setBusy(true);
+    setFailed(false);
+    const { data } = await browserApi.POST("/api/orders/pay-link", { body: { code, phone } });
+    if (data?.paymentUrl) {
+      window.location.assign(data.paymentUrl);
+      return;
+    }
+    setFailed(true);
+    setBusy(false);
+  }
+  return (
+    <div className="mt-6 grid max-w-sm gap-3 rounded-2xl border-2 border-turmeric bg-turmeric-soft p-4">
+      <p className="text-sm font-medium text-warn">Đơn đã được giữ nhưng chưa mở được trang thanh toán. Bấm bên dưới để thử lại.</p>
+      <button type="button" onClick={() => void go()} disabled={busy} className={buttonClass({ size: "lg" })}>
+        {busy ? "Đang mở…" : "Thanh toán ngay"}
+      </button>
+      {failed && (
+        <p role="alert" className="text-sm font-medium text-danger">
+          Chưa mở được trang thanh toán. Hãy thử lại sau ít phút hoặc tra cứu đơn.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Confirmation({ order, phone }: { order: CheckoutOut; phone: string }) {
   return (
     <div className="mx-auto grid w-full max-w-[1200px] gap-8 px-4 py-10 sm:px-8 md:grid-cols-2 md:gap-14 md:py-16">
       <div className="flex flex-col justify-between gap-10">
@@ -324,6 +355,7 @@ function Confirmation({ order }: { order: CheckoutOut }) {
           <p className="mt-6 max-w-sm text-base leading-relaxed text-muted">
             Shop sẽ gọi xác nhận trong giờ làm việc. Lưu lại mã đơn để tra cứu bất cứ lúc nào, không cần đăng nhập.
           </p>
+          {order.paymentMethod !== "cod" && <PayAgain code={order.code} phone={phone} />}
         </div>
         <div>
           <p className="text-sm font-semibold text-muted">Mã đơn hàng</p>

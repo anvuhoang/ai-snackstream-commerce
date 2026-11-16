@@ -1,5 +1,6 @@
 "use client";
 
+import { Logo } from "@/components/brand/logo";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext } from "react";
@@ -43,8 +44,9 @@ export function AdminShell({ user, csrf, children }: { user: User; csrf: string;
     <AdminContext.Provider value={{ user, csrf }}>
       <div className="flex min-h-screen flex-wrap bg-canvas/40">
         <aside className="flex basis-full flex-col gap-1 bg-leaf p-4 text-paper md:sticky md:top-0 md:h-screen md:basis-[248px] md:shrink-0 md:overflow-y-auto">
-          <Link href="/admin" className="px-3.5 pb-3 pt-1.5 text-[22px] font-extrabold tracking-[-0.03em] text-turmeric">
-            SnackStream <span className="text-xs font-semibold tracking-[0.04em] text-leaf-soft">ADMIN</span>
+          <Link href="/admin" className="flex flex-col gap-1.5 px-3.5 pb-3 pt-1.5" aria-label="SnackStream, trang quản trị">
+            <Logo size={32} onDark />
+            <span className="text-xs font-semibold tracking-[0.04em] text-leaf-soft">QUẢN TRỊ</span>
           </Link>
           <nav aria-label="Quản trị" className="flex gap-1 overflow-x-auto md:flex-col md:overflow-visible">
             {NAV.map((n) => {

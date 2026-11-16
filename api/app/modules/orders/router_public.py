@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -25,6 +26,7 @@ from .schemas import (
     CheckoutOut,
     LookupIn,
     OrderOut,
+    PayLinkOut,
     PaymentReturnOut,
     ShopConfig,
 )
@@ -81,8 +83,7 @@ def shop_config(request: Request) -> ShopConfig:
     return ShopConfig(
         shipping_fee_vnd=s.shipping_fee_vnd,
         free_ship_from_vnd=s.free_ship_from_vnd,
-        payment_methods=["cod", "vnpay"] if s.vnpay_enabled else ["cod"],
-        online_payment_is_sandbox=True,
+        payment_methods=["cod", "payos"] if s.payos_enabled else ["cod"],
         order_expiry_minutes=s.order_expiry_minutes,
     )
 
@@ -139,9 +140,17 @@ def checkout(
     """Place an order from the cart. Safe to repeat: the same Idempotency-Key and request return the same order."""
     cart = service.find_cart(db, request.cookies.get(CART_COOKIE))
     order = service.place_order(db, _settings(request), cart, body, idempotency_key)
-    return presenters.checkout_out(
-        order, service.payment_url(db, _settings(request), order, _client_ip(request))
-    )
+    return presenters.checkout_out(order, service.payment_url(db, _settings(request), order))
+
+
+@router.post("/orders/pay-link", response_model=PayLinkOut)
+def pay_link(body: LookupIn, request: Request, db: Db) -> PayLinkOut:
+    """A new payment page for an order that was placed but not paid (the first page was lost, or payOS had failed)."""
+    ip = _client_ip(request)
+    if _lookup_limiter.blocked(ip):
+        raise AppError(429, "too_many_attempts", "Too many attempts. Please wait a minute and try again.")
+    _lookup_limiter.hit(ip)
+    return PayLinkOut(payment_url=service.pay_link(db, _settings(request), body.code, body.phone))
 
 
 @router.post("/orders/lookup", response_model=OrderOut)
@@ -153,16 +162,20 @@ def lookup(body: LookupIn, request: Request, db: Db) -> OrderOut:
     return presenters.public_order(service.lookup_order(db, body.code, body.phone))
 
 
-# ------------------------------------------------------------------ online payment (VNPay sandbox)
-@router.get("/payments/vnpay/ipn", include_in_schema=True)
-def vnpay_ipn(request: Request, db: Db) -> JSONResponse:
-    """The gateway calls this from its servers after a payment. It is the source of truth, not the browser return."""
-    code, message = service.apply_vnpay_ipn(db, _settings(request), dict(request.query_params))
-    return JSONResponse({"RspCode": code, "Message": message})
+# ------------------------------------------------------------------ online payment (payOS)
+@router.post("/payments/payos/webhook", include_in_schema=False)
+async def payos_webhook(request: Request, db: Db) -> JSONResponse:
+    """payOS calls this from its servers after a payment. It is the source of truth, not the browser return."""
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse({"success": False}, status_code=400)
+    trusted = await run_in_threadpool(service.apply_payos_webhook, db, _settings(request), body)
+    return JSONResponse({"success": trusted}, status_code=200 if trusted else 400)
 
 
-@router.get("/payments/vnpay/return", response_model=PaymentReturnOut)
-def vnpay_return(request: Request, db: Db) -> PaymentReturnOut:
-    """The customer's browser lands on the web page, which asks this what to show. It never changes anything."""
-    result, code = service.vnpay_return_result(db, _settings(request), dict(request.query_params))
+@router.get("/payments/payos/return", response_model=PaymentReturnOut)
+def payos_return(request: Request, db: Db) -> PaymentReturnOut:
+    """The customer's browser lands on the web page, which asks this what to show."""
+    result, code = service.payos_return_result(db, _settings(request), dict(request.query_params))
     return PaymentReturnOut(result=result, order_code=code)  # type: ignore[arg-type]

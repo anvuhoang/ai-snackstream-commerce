@@ -105,11 +105,6 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                         <Link href={`/admin/products/${p.id}`} className="font-medium hover:underline">
                           {p.name}
                         </Link>
-                        {p.isDemo && (
-                          <Badge tone="warn" className="ml-2">
-                            Demo
-                          </Badge>
-                        )}
                       </span>
                     </div>
                   </td>

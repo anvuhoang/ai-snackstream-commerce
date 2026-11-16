@@ -5,7 +5,7 @@ import { DataPanel } from "@/components/admin/analytics/data-panel";
 import { FunnelGroup } from "@/components/admin/funnel";
 import { Button } from "@/components/ui/button";
 import { serverApi } from "@/lib/api/server";
-import { addDays, DEMO_OPTIONS, formatPercent, isDate, isTab, sourceLabel, TABS, todayVn, type DemoFilter, type TabKey } from "@/lib/analytics";
+import { addDays, formatPercent, isDate, isTab, sourceLabel, TABS, todayVn, type DemoFilter, type TabKey } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { formatVnd } from "@/lib/format";
 
@@ -46,7 +46,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const today = todayVn();
   const to = isDate(sp.to) ? sp.to : today;
   const from = isDate(sp.from) ? sp.from : addDays(to, -29);
-  const demo: DemoFilter = DEMO_OPTIONS.find((o) => o.value === sp.demo)?.value ?? "exclude";
+  const demo: DemoFilter = "include"; // every recorded event counts; there is no separate sample data
   const source = (sp.source ?? "").trim().slice(0, 100);
   const query = { from, to, demo };
 
@@ -91,16 +91,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             Đến ngày
             <input type="date" name="to" defaultValue={to} min={from} className={input} />
           </label>
-          <label className="grid gap-1 text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
-            Dữ liệu
-            <select name="demo" defaultValue={demo} className={input}>
-              {DEMO_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
           {tab === "overview" && (
             <label className="grid gap-1 text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
               Nguồn (utm_source)
@@ -140,10 +130,11 @@ async function Overview({ api, query, source }: { api: Api; query: Query; source
   const orders = data.funnel.filter((s) => s.unit === "orders");
   return (
     <>
-      <section aria-label="Chỉ số chính" className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
-        <Tile label="Doanh thu" value={formatVnd(data.totals.revenueVnd)} note="Chỉ tính đơn đã hoàn tất" />
+      <section aria-label="Chỉ số chính" className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+        <Tile label="Giá trị đơn hoàn tất" value={formatVnd(data.totals.revenueVnd)} note="Tổng giá trị đơn hoàn tất, chưa chắc là tiền thực nhận" />
         <Tile label="Đơn đã tạo" value={data.totals.ordersCreated.toLocaleString("vi-VN")} />
         <Tile label="Đơn hoàn tất" value={data.totals.ordersCompleted.toLocaleString("vi-VN")} />
+        <Tile label="Đơn hủy" value={data.totals.ordersCancelled.toLocaleString("vi-VN")} note="Trong số đơn tạo cùng kỳ" />
         <Tile
           label="Tỷ lệ hoàn tất"
           value={data.totals.completionRate === null ? "—" : formatPercent(data.totals.completionRate)}

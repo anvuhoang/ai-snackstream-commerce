@@ -44,9 +44,10 @@ def settings(tmp_path) -> Settings:
         LIVE_MAKE_ENABLED=False,
         LIVE_MAKE_WEBHOOK_URL="",
         LIVE_MAKE_CALLBACK_TOKEN="",
-        # A developer's own api/.env may hold real VNPay or Odoo keys; tests must never read or use them.
-        VNPAY_TMN_CODE="",
-        VNPAY_HASH_SECRET="",
+        # A developer's own api/.env may hold real payOS or Odoo keys; tests must never read or use them.
+        PAYOS_CLIENT_ID="",
+        PAYOS_API_KEY="",
+        PAYOS_CHECKSUM_KEY="",
         ODOO_URL="",
         ODOO_DB="",
         ODOO_API_KEY="",

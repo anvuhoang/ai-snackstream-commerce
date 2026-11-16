@@ -237,7 +237,7 @@ def test_unavailable_items_block_checkout(signed_in, anon):
 
 def test_online_payment_is_refused_without_gateway_keys(signed_in, anon):
     add(anon, sellable(signed_in))
-    r = place(anon, paymentMethod="vnpay")
+    r = place(anon, paymentMethod="payos")
     assert r.status_code == 422 and r.json()["error"]["code"] == "payment_method_unavailable"
 
 
