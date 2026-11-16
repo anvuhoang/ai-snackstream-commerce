@@ -346,3 +346,10 @@ def test_a_product_with_a_bundled_photo_gets_its_image_in_the_chat_card(signed_i
     with db_of(signed_in) as db:
         facts = live_facts.facts_for(db, signed_in.app.state.settings, ["BANH-TRANG-ME-01"])
     assert facts[0].image_url == "/products/BANH-TRANG-ME-01.jpg"
+
+
+def test_the_prompt_tells_the_model_how_to_handle_suitability_questions(signed_in):
+    r, call = _rag_chat(signed_in, "Khô gà lá chanh trẻ em 6 tuổi ăn được không?")
+    assert r.json()["answer"] == "ok"
+    prompt = json.loads(call.call_args.args[0].data)["systemInstruction"]["parts"][0]["text"]
+    assert "trẻ em" in prompt and "KHÔNG được trả lời có hay không" in prompt
