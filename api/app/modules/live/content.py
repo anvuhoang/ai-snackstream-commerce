@@ -1,4 +1,4 @@
-"""Opt-in live narration. Secrets stay in process settings; no implicit provider calls."""
+"""Opt-in live narration. Server-only configuration; no implicit provider calls."""
 
 import io
 import json
@@ -19,8 +19,8 @@ from .schemas import LiveContentOut, LiveProduct
 
 
 class ContentSettings(BaseSettings):
-    # Module-local, process-only configuration: do not change common settings or private .env.
-    model_config = SettingsConfigDict(env_file=None, extra="ignore", populate_by_name=True)
+    # Match the API's normal .env convention; process variables take precedence.
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", populate_by_name=True)
     enabled: bool = Field(False, alias="LIVE_CONTENT_ENABLED")
     reply_audio_enabled: bool = Field(False, alias="LIVE_SIMLI_REPLY_AUDIO_ENABLED")
     mock_reply_wav_path: str = Field("", alias="LIVE_SIMLI_MOCK_REPLY_WAV_PATH")

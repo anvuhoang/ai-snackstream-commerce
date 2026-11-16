@@ -12,6 +12,39 @@ LIVE_MAKE_RESULT_TIMEOUT_SECONDS defaults to 180 seconds from claim
 (`processing_started_at`), not webhook send time. Sending the webhook has its own
 finite I/O timeout and runs outside the event loop; it does not extend the claim.
 
+Use private `api/.env` when starting the API from `api`, the root private `.env`
+for Docker Compose, or the deployment's API environment. Process values override
+the file; restart the intended API before a session. See
+[operator setup](LIVE_SIMLI_HOST.md) for dependencies, accounts and offline mode.
+
+Configure the external scenario separately for each environment:
+
+- Success text callback: `https://<backend-origin>/api/live/make-answer`.
+- Every failed/skipped/timeout branch: `https://<backend-origin>/api/live/make-result`.
+- Only the retained MP4 path uses `https://<backend-origin>/api/live/media-metadata`.
+
+Use the API's deployed domain, or its public HTTPS tunnel during local work, not
+the frontend URL or a different developer's backend. There is no fixed tunnel/port
+or callback-base setting to copy from an acceptance launcher. The callback URL is
+configured in Make; `LIVE_MAKE_WEBHOOK_URL` is the opposite, outbound direction.
+
+Create a private random `LIVE_MAKE_CALLBACK_TOKEN` on the server (for example,
+`python -c "import secrets; print(secrets.token_urlsafe(32))"` in a private terminal).
+In Make's HTTP API-key connection, set placement **In the header**, parameter
+**X-Live-Make-Token**, and value to that exact callback token, without `Bearer`.
+Keep URL restrictions enabled and add the backend's **HTTPS origin only** to
+Allowed service origins (no path/query). Check the connections used by **all**
+terminal branches, not just the success callback. This secret is neither the
+Simli/ElevenLabs API key nor Make's answer-generation connection credential.
+Keep secrets out of exports, screenshots, frontend configuration and Git.
+
+Select immediate webhook processing, inspect/clear only confirmed expired test
+items, then enable the intended scenario before a deliberate paid run. Do not
+retry old queue items to test configuration. The same callback token/origin must
+be configured on any optional gateway, which is not required if Make reaches the
+API directly. No scenario import, provider connection or deployment is performed
+automatically by this repository.
+
 Runtime starts when Make, mock or Simli is enabled and advances/expiries need no
 viewer. With all three disabled there is no background worker: service reads/actions
 refresh the shared video clock, and no question is dispatched.
@@ -130,6 +163,9 @@ and the current one-product Simli flow with a newly generated answer and smooth
 restoration. The current Simli acceptance used text -> backend TTS -> Simli audio,
 not D-ID. Earlier video-generation acceptance is historical evidence for the
 separate video path, not evidence for every current integration point.
-Odoo and Simli product-pin/menu/cart actions, production broadcasting and full
-N01-N04 completion have not been accepted. Automated tests use fake providers;
+The user subsequently accepted the live layout, smooth host picture/speech and
+pinned product display. Database grounding/shared-cart integration are checked
+automatically with a test database and fake providers; no new human checkout or
+Odoo synchronization acceptance is implied. Production broadcasting and full
+N01-N04 completion have not been established. Automated tests use fake providers;
 no claim of provider closure follows from SDK disconnect/local cleanup.
