@@ -20,7 +20,20 @@ KIND_BOOST = 0.2  # the question says what kind of fact it wants ("ingredients",
 # Words (accent-free) that show which kind of passage answers the question. Each product has one passage per kind, and the
 # overview repeats the product name, so without this hint the overview often outranks the passage that really answers.
 KIND_CUES = {
-    "ingredients": ("thanh phan", "nguyen lieu", "lam tu", "gom nhung gi", "chua ", "co nhung gi", "di ung"),
+    "ingredients": ("thanh phan", "nguyen lieu", "lam tu", "gom nhung gi", "chua ", "co nhung gi"),
+    "allergens": ("di ung", "allergen", "gluten", "dau phong", "hai san"),
+    "nutrition": (
+        "calo",
+        "kcal",
+        "dinh duong",
+        "chat beo",
+        "duong ",
+        "natri",
+        "protein",
+        "cay khong",
+        "do cay",
+        "muc cay",
+    ),
     "storage": ("bao quan", "han dung", "de duoc bao lau", "het han", "han su dung", "de duoc may"),
 }
 

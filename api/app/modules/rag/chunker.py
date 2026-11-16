@@ -64,6 +64,34 @@ def product_chunks(p: Product) -> list[ChunkSpec]:
                 f"Hạn dùng và bảo quản {p.name}: {p.storage.strip()}",
             )
         )
+    # Only what a person entered from the package. Nothing is written for an empty field: silence is not "safe".
+    if p.allergens.strip():
+        out.append(
+            ChunkSpec(
+                "product",
+                p.slug,
+                "allergens",
+                sku,
+                p.name,
+                f"Thông tin dị ứng của {p.name} (ghi theo nhãn): {p.allergens.strip()}",
+            )
+        )
+    facts = []
+    if p.spice_level.strip():
+        facts.append(f"Mức cay: {p.spice_level.strip()}.")
+    if p.nutrition.strip():
+        facts.append(f"Dinh dưỡng: {p.nutrition.strip()}")
+    if facts:
+        out.append(
+            ChunkSpec(
+                "product",
+                p.slug,
+                "nutrition",
+                sku,
+                p.name,
+                f"Mức cay và dinh dưỡng của {p.name}: {' '.join(facts)}",
+            )
+        )
     return out
 
 

@@ -110,6 +110,10 @@ THREE_TIERS = (
     "và nói rõ shop chưa có số liệu của sản phẩm đó. "
     "Kiến thức chung CHỈ để giải thích khái niệm; tuyệt đối không đưa con số dinh dưỡng, calo, hàm lượng, hạn dùng, giá, "
     "chính sách hay kết luận an toàn dị ứng cho sản phẩm của shop khi passages và products không ghi. "
+    "Câu hỏi về sự phù hợp với một nhóm người (trẻ em, bà bầu, người ăn kiêng, người có bệnh) KHÔNG được trả lời có hay không, "
+    "và cũng không được bỏ trống: nói shop không đưa khuyến nghị theo độ tuổi hay tình trạng sức khỏe; nêu những gì shop có về sản phẩm "
+    "đó (thành phần, mức cay, dị ứng, quy cách nếu có trong passages); gợi ý chung rằng với trẻ nhỏ hay người có vấn đề sức khỏe nên "
+    "xem kỹ nhãn (độ mặn, độ cay, đồ giòn cứng có thể gây hóc) hoặc hỏi bác sĩ; rồi mời bấm 'Cần hỗ trợ' nếu cần hỏi thêm. "
     "(3) Nếu không có dữ liệu và cũng không phải khái niệm chung, nói ngắn gọn là chưa có thông tin và bảo khách bấm nút "
     "'Cần hỗ trợ' trong khung chat để nhân viên trả lời. Khi gợi ý nút này, đây là ngoại lệ của quy tắc không chuyển cho nhân viên."
 )
