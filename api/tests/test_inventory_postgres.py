@@ -43,8 +43,6 @@ def pg_admin(tmp_path):
         MEDIA_DIR=str(tmp_path),
         BOOTSTRAP_ADMIN_EMAIL=ADMIN[0],
         BOOTSTRAP_ADMIN_PASSWORD=ADMIN[1],
-        VNPAY_TMN_CODE="",
-        VNPAY_HASH_SECRET="",
         ODOO_URL="",
         ODOO_DB="",
         ODOO_API_KEY="",

@@ -149,7 +149,7 @@ export function VariantPicker({
             Mua trên Shopee ↗
           </a>
         ) : (
-          <span className="text-muted">Thanh toán khi nhận hàng hoặc VNPay sandbox.</span>
+          <span className="text-muted">Thanh toán khi nhận hàng hoặc chuyển khoản QR.</span>
         )}
       </div>
     </div>

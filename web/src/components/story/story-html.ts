@@ -2,7 +2,7 @@
 export const STORY_HTML = `<header class="bar">
   <button class="cell" type="button" data-go="0">SnackStream<sup style="font-size:8px;margin-left:1px">™</sup></button>
   <button class="cell hide-m" type="button" data-go="0.36">Thành phần</button>
-  <button class="cell hide-m" type="button" data-to="pg">Cửa hàng</button>
+  <button class="cell hide-m" type="button" data-href="/products">Cửa hàng</button>
   <button class="cell hide-m" type="button" data-chat>Chatbot</button>
   <button class="cell hide-m" type="button" data-href="/live">Live</button>
   <span class="sp"></span>
@@ -78,8 +78,8 @@ export const STORY_HTML = `<header class="bar">
     <div><p class="n" data-t="15000" data-f="d">0</p><p class="t">giá thấp nhất</p></div>
     <div><p class="n" data-t="99000" data-f="d">0</p><p class="t">giá cao nhất, túi khô gà 500g</p></div>
   </div>
-  <div class="end"><h2>Vị phố,<br>giao tận nhà.</h2><button class="shop go" type="button">Vào cửa hàng</button></div>
-  <div class="links"><span>Shop demo của đồ án môn học. Thanh toán online chỉ là sandbox.</span><span style="display:flex;gap:24px"><a href="/products">Cửa hàng</a><span style="opacity:.5">Tra cứu đơn (sắp có)</span></span></div>
+  <div class="end"><h2>Vị phố,<br>giao tận nhà.</h2><button class="shop go" type="button" data-href="/products">Vào cửa hàng</button></div>
+  <div class="links"><span>SnackStream · đồ ăn vặt Việt Nam.</span><span style="display:flex;gap:24px"><a href="/products">Cửa hàng</a><a href="/orders/lookup">Tra cứu đơn</a></span></div>
   <p class="wm" aria-hidden="true">SnackStream</p>
 </section>
 `;

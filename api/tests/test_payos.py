@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 from app.core.config import Settings
+from app.core.db import utcnow
 from app.main import create_app
-from app.modules.orders import payos, service
+from app.modules.orders import payos, service, stock
 from app.modules.orders.models import Order, Payment
 
 from .conftest import ADMIN_EMAIL, ADMIN_PASSWORD
-from .test_orders import ORDERS, PHONE, add, body, key, sellable
-from .test_orders_online import set_expires
+from .test_orders import ADMIN_ORDERS, CART, ORDERS, PHONE, add, body, key, sellable
 
 KEY = "test-checksum-key-0123456789abcdef"
 WEBHOOK = "/api/payments/payos/webhook"
@@ -270,8 +272,6 @@ def test_money_that_arrives_after_the_order_expired_is_recorded_for_a_refund(onl
     admin, visitor = online
     o = order_payos(admin, visitor)
     _, pid, total = payment_of(admin, o["code"])
-    from datetime import timedelta
-
     set_expires(admin, o["code"], timedelta(minutes=-1))
     admin.get("/api/admin/orders")  # listing expires due orders
     assert state(admin, o["code"])[0] == "expired"
@@ -329,3 +329,86 @@ def test_return_with_a_number_that_is_not_ours_is_invalid(online):
     assert visitor.get(RETURN, params={"orderCode": "abc"}).json()["result"] == "invalid"
     assert visitor.get(RETURN, params={"orderCode": 99}).json()["result"] == "invalid"
     assert visitor.get(RETURN, params={"orderCode": 999_990_000}).json()["result"] == "invalid"
+
+
+@pytest.fixture()
+def counted_stock(monkeypatch):
+    calls = {"release": 0}
+    monkeypatch.setattr(
+        stock, "release", lambda db, order: calls.__setitem__("release", calls["release"] + 1)
+    )
+    return calls
+
+
+def set_expires(admin: TestClient, code: str, delta: timedelta) -> None:
+    with admin.app.state.session_factory() as db:
+        o = db.scalar(select(Order).where(Order.code == code))
+        o.expires_at = utcnow() + delta
+        db.commit()
+
+
+# ================================================================== expiry
+def test_an_unpaid_order_expires_and_gives_its_stock_back_once(online, counted_stock):
+    admin, visitor = online
+    o = order_payos(admin, visitor)
+    oid, _, _ = payment_of(admin, o["code"])
+    set_expires(admin, o["code"], timedelta(minutes=-1))
+    first = admin.get(f"{ADMIN_ORDERS}/{oid}").json()
+    assert first["status"] == "cancelled" and first["payments"][0]["status"] == "expired"
+    assert (
+        first["history"][-1]["note"] == "Payment time ran out" and first["history"][-1]["actorEmail"] is None
+    )
+    admin.get(f"{ADMIN_ORDERS}/{oid}")
+    admin.get(ADMIN_ORDERS)
+    with admin.app.state.session_factory() as db:
+        assert service.expire_due_orders(db) == 0
+    assert counted_stock["release"] == 1  # exactly once
+
+
+def test_an_order_that_is_not_due_yet_is_left_alone(online, counted_stock):
+    admin, visitor = online
+    o = order_payos(admin, visitor)
+    oid, _, _ = payment_of(admin, o["code"])
+    set_expires(admin, o["code"], timedelta(minutes=5))
+    assert admin.get(f"{ADMIN_ORDERS}/{oid}").json()["status"] == "new"
+    assert counted_stock["release"] == 0
+
+
+def test_a_paid_order_does_not_expire(online, counted_stock):
+    admin, visitor = online
+    o = order_payos(admin, visitor)
+    oid, pid, total = payment_of(admin, o["code"])
+    visitor.post(WEBHOOK, json=webhook_body(pid, total))
+    with admin.app.state.session_factory() as db:
+        assert service.expire_due_orders(db) == 0
+    assert admin.get(f"{ADMIN_ORDERS}/{oid}").json()["status"] == "new"
+
+
+def test_the_expiry_job_cancels_every_due_order(online, counted_stock):
+    admin, visitor = online
+    codes = []
+    for _ in range(3):
+        codes.append(order_payos(admin, visitor)["code"])
+    for c in codes[:2]:
+        set_expires(admin, c, timedelta(seconds=-5))
+    with admin.app.state.session_factory() as db:
+        assert service.expire_due_orders(db) == 2
+    statuses = sorted(i["status"] for i in admin.get(ADMIN_ORDERS).json()["items"])
+    assert statuses == ["cancelled", "cancelled", "new"] and counted_stock["release"] == 2
+
+
+def test_a_customer_looking_up_an_expired_order_sees_it_cancelled(online):
+    admin, visitor = online
+    o = order_payos(admin, visitor)
+    set_expires(admin, o["code"], timedelta(minutes=-1))
+    r = TestClient(admin.app).post(f"{ORDERS}/lookup", json={"code": o["code"], "phone": PHONE})
+    assert r.status_code == 200 and r.json()["status"] == "cancelled"
+
+
+def test_cash_on_delivery_orders_never_expire(online, counted_stock):
+    admin, visitor = online
+    add(visitor, sellable(admin))
+    assert visitor.post(ORDERS, json=body(), headers={"Idempotency-Key": key()}).json()["expiresAt"] is None
+    with admin.app.state.session_factory() as db:
+        assert service.expire_due_orders(db) == 0
+    assert visitor.get(CART).status_code == 200

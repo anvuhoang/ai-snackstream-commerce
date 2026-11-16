@@ -449,46 +449,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/payments/vnpay/ipn": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Vnpay Ipn
-         * @description The gateway calls this from its servers after a payment. It is the source of truth, not the browser return.
-         */
-        get: operations["vnpay_ipn_api_payments_vnpay_ipn_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/payments/vnpay/return": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Vnpay Return
-         * @description The customer's browser lands on the web page, which asks this what to show. It never changes anything.
-         */
-        get: operations["vnpay_return_api_payments_vnpay_return_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/payments/payos/return": {
         parameters: {
             query?: never;
@@ -1759,7 +1719,7 @@ export interface components {
              * @default cod
              * @enum {string}
              */
-            paymentMethod?: "cod" | "vnpay" | "payos";
+            paymentMethod?: "cod" | "payos";
             attribution?: components["schemas"]["AttributionIn"] | null;
         };
         /** CheckoutOut */
@@ -2595,11 +2555,6 @@ export interface components {
             freeShipFromVnd: number;
             /** Paymentmethods */
             paymentMethods: ("cod" | "vnpay" | "payos")[];
-            /**
-             * Onlinepaymentissandbox
-             * @default true
-             */
-            onlinePaymentIsSandbox?: boolean;
             /** Orderexpiryminutes */
             orderExpiryMinutes: number;
         };
@@ -3762,46 +3717,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    vnpay_ipn_api_payments_vnpay_ipn_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    vnpay_return_api_payments_vnpay_return_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaymentReturnOut"];
                 };
             };
         };
