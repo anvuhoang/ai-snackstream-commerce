@@ -32,6 +32,10 @@ class Product(Base, TimestampMixin):
     description: Mapped[str] = mapped_column(Text, default="")
     ingredients: Mapped[str] = mapped_column(Text, default="")
     storage: Mapped[str] = mapped_column(Text, default="")
+    # Read off the real package. Empty means NOT KNOWN (never "none"): the chatbot must not turn an empty value into a claim.
+    allergens: Mapped[str] = mapped_column(Text, default="")
+    spice_level: Mapped[str] = mapped_column(String(30), default="")
+    nutrition: Mapped[str] = mapped_column(Text, default="")
     # A person confirmed the ingredient and storage text against the real package. Required to publish.
     ingredients_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     status: Mapped[str] = mapped_column(String(12), default="draft", index=True)

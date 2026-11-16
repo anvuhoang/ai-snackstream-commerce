@@ -37,7 +37,6 @@ export function StatusActions({ product }: { product: AdminProduct }) {
           Trạng thái
         </h2>
         <Badge tone={TONE[product.status]}>{STATUS_LABEL[product.status]}</Badge>
-        {product.isDemo && <Badge tone="warn">Demo</Badge>}
       </div>
 
       {product.status !== "published" && blockers.length > 0 && (

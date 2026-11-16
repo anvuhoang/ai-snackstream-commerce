@@ -1318,6 +1318,12 @@ export interface components {
             ingredients: string;
             /** Storage */
             storage: string;
+            /** Allergens */
+            allergens: string;
+            /** Spicelevel */
+            spiceLevel: string;
+            /** Nutrition */
+            nutrition: string;
             /** Ingredientsverified */
             ingredientsVerified: boolean;
             /** Categoryid */
@@ -1778,6 +1784,25 @@ export interface components {
             name: string;
             /** Phone */
             phone: string;
+        };
+        /**
+         * DayRow
+         * @description One Vietnam calendar day of the period; a day with no events is still listed, with zeros.
+         */
+        DayRow: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Viewers */
+            viewers: number;
+            /** Orderscreated */
+            ordersCreated: number;
+            /** Orderscompleted */
+            ordersCompleted: number;
+            /** Revenuevnd */
+            revenueVnd: number;
         };
         /** EventIn */
         EventIn: {
@@ -2302,6 +2327,8 @@ export interface components {
             bySource: components["schemas"]["SourceRow"][];
             /** Topproducts */
             topProducts: components["schemas"]["ProductRow"][];
+            /** Daily */
+            daily: components["schemas"]["DayRow"][];
             /** Shopeeclicks */
             shopeeClicks: number;
         };
@@ -2422,6 +2449,21 @@ export interface components {
              */
             storage?: string;
             /**
+             * Allergens
+             * @default
+             */
+            allergens?: string;
+            /**
+             * Spicelevel
+             * @default
+             */
+            spiceLevel?: string;
+            /**
+             * Nutrition
+             * @default
+             */
+            nutrition?: string;
+            /**
              * Ingredientsverified
              * @default false
              */
@@ -2448,6 +2490,12 @@ export interface components {
             ingredients: string;
             /** Storage */
             storage: string;
+            /** Allergens */
+            allergens: string;
+            /** Spicelevel */
+            spiceLevel: string;
+            /** Nutrition */
+            nutrition: string;
             category: components["schemas"]["CategoryRef"] | null;
             /** Variants */
             variants: components["schemas"]["VariantOut"][];
@@ -2493,6 +2541,12 @@ export interface components {
             ingredients?: string | null;
             /** Storage */
             storage?: string | null;
+            /** Allergens */
+            allergens?: string | null;
+            /** Spicelevel */
+            spiceLevel?: string | null;
+            /** Nutrition */
+            nutrition?: string | null;
             /** Ingredientsverified */
             ingredientsVerified?: boolean | null;
             /** Shopeeurl */

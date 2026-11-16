@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/brand/logo";
 import { CartLink } from "@/components/cart/cart-link";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { ChatLauncher } from "@/components/chat-launcher";
@@ -22,8 +23,8 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         </div>
         <header className="sticky top-0 z-20 border-b border-line bg-paper/95 backdrop-blur">
           <div className="mx-auto flex h-[72px] w-full max-w-[1200px] items-center gap-3 px-4 sm:gap-6 sm:px-8">
-            <Link href="/" className="text-2xl font-extrabold tracking-[-0.03em] text-accent">
-              SnackStream
+            <Link href="/" aria-label="SnackStream, trang chủ">
+              <Logo size={36} />
             </Link>
             <nav aria-label="Điều hướng chính" className="hidden flex-1 items-center gap-1 md:flex">
               {NAV.map((item) => (
@@ -44,8 +45,8 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         <footer className="mt-16 overflow-hidden bg-ink text-[#eadbbd]">
           <div className="mx-auto flex w-full max-w-[1200px] flex-wrap items-start justify-between gap-x-12 gap-y-6 px-4 pb-6 pt-12 text-sm sm:px-8">
             <div className="grid max-w-sm gap-2">
-              <b className="text-xl font-extrabold tracking-[-0.03em] text-turmeric">SnackStream</b>
-              <span className="leading-relaxed">Đặc sản ăn vặt đường phố. Shop demo của đồ án môn học, thanh toán online chỉ là môi trường thử nghiệm.</span>
+              <Logo size={32} onDark />
+              <span className="leading-relaxed">Đặc sản ăn vặt đường phố.</span>
             </div>
             <div className="grid gap-2.5">
               <b className="text-paper">Hỗ trợ</b>

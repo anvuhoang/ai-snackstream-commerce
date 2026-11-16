@@ -1,6 +1,6 @@
 // Static markup of the home page scroll story (generated from the approved design). The engine finds nodes by id.
 export const STORY_HTML = `<header class="bar">
-  <button class="cell" type="button" data-go="0">SnackStream<sup style="font-size:8px;margin-left:1px">™</sup></button>
+  <button class="cell" type="button" data-go="0"><img src="/brand/logo-mark.svg" alt="" width="34" height="34">SnackStream<sup style="font-size:8px;margin-left:1px">™</sup></button>
   <button class="cell hide-m" type="button" data-go="0.36">Thành phần</button>
   <button class="cell hide-m" type="button" data-href="/products">Cửa hàng</button>
   <button class="cell hide-m" type="button" data-chat>Chatbot</button>
@@ -10,7 +10,7 @@ export const STORY_HTML = `<header class="bar">
   <button class="cell" type="button" data-href="/checkout">Giỏ hàng</button>
 </header>
 <div id="track"><div id="pin">
-<div id="scene"><canvas id="stage" aria-hidden="true"></canvas>
+<div id="scene"><div id="tb" class="tb" aria-hidden="true"></div><canvas id="stage" aria-hidden="true"></canvas>
 <section class="layer" id="hero" aria-label="Mở đầu">
   <p>Đồ ăn vặt đường phố.<br>Giao toàn quốc, trả tiền khi nhận.</p>
   <h1>SnackStream<sup>™</sup></h1>
@@ -34,9 +34,13 @@ export const STORY_HTML = `<header class="bar">
   <p class="tr">Mỗi túi 250g. Hạn dùng 6 tháng, tính theo nhãn của từng lô hàng.</p>
 </section>
 <section class="layer" id="pr" aria-label="Rót ra bát">
-  <p class="tr">Mở túi và rót ra bát. Khô gà xé sợi, sấy giòn, thơm lá chanh.</p>
-  <p class="bn"><small>Đã rót</small><span id="prG">0g</span></p>
-  <p class="ft">Số gam minh họa theo nhịp cuộn.</p>
+  <p class="hd">Mở túi,<br>rót ra bát.</p>
+  <p class="tr">Khô gà xé sợi, sấy giòn, thơm lá chanh.</p>
+  <ul class="fx">
+    <li><b>250 g</b><span>mỗi túi</span></li>
+    <li><b>6 tháng</b><span>hạn dùng, theo nhãn của từng lô</span></li>
+    <li><b>Đậy kín</b><span>để nơi khô ráo, thoáng mát</span></li>
+  </ul>
 </section>
 </div>
 <section class="layer panel" id="pA" aria-label="Minh bạch">
@@ -46,7 +50,6 @@ export const STORY_HTML = `<header class="bar">
       <span class="bk" style="left:8%;top:12%;width:90px;height:90px"></span><span class="bk" style="left:62%;top:8%;width:60px;height:60px;opacity:.7"></span><span class="bk" style="left:78%;top:30%;width:120px;height:120px;opacity:.5"></span>
       <span class="bk" style="left:14%;top:66%;width:110px;height:110px;opacity:.6"></span><span class="bk" style="left:52%;top:84%;width:70px;height:70px"></span><span class="bk" style="left:86%;top:76%;width:80px;height:80px;opacity:.6"></span>
       <div class="mark"><span>Đã đối chiếu</span><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="#fff" stroke-width="5"/><path d="M30 52 l14 14 l28 -32" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><i></i><span>với bao bì thật</span></div>
-      <small>Ảnh minh họa, sẽ thay bằng ảnh macro nguyên liệu chụp thật</small>
     </div>
   </div>
 </section>

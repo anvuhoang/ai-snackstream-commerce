@@ -156,6 +156,13 @@ what cost — and what evidence is missing?"
 - Logs: conversation / question id, SKU, received / answered times, outcome, error, handoff, card click, reviewed-correct.
 - **Accept:** a written expectation table (right, ambiguous, missing-data, service-down questions) with actual results;
   usable on mobile without covering the buy button; the dashboard reads the real logs.
+- **Retrieval (RAG), module `app/modules/rag`:** the shop's text (published products, approved FAQs, policy files in
+  `rag/knowledge/`) is cut into passages, embedded and stored in `kb_chunk`; a question finds its closest passages (cosine
+  similarity plus small boosts for the product being viewed, a product named in the question and the kind of fact asked
+  for). Price and stock are not passages: they are read from our tables at answer time. Switch on with `CHAT_RAG_ENABLED`;
+  build with `python -m app.cli reindex-kb`. `python -m app.cli eval-rag` measures hit@k and MRR on `eval/rag_questions.json`.
+  The default embedder (`hash`) is lexical: it needs no key but does not know that two different words mean the same;
+  `RAG_EMBEDDER=gemini` uses Gemini embeddings (not tested against the live service yet).
 
 ## P6 · AI Live — N01–N04 (size L) · Nguyen
 

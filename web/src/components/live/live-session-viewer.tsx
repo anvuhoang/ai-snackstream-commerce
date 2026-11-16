@@ -204,7 +204,6 @@ export function LiveSessionViewer() {
       {snapshot !== null && (
         live ? (
           <section className="grid gap-3 rounded-card border border-line bg-surface p-5">
-            {live.isDemo && <p className="text-sm text-muted">Dữ liệu thử nghiệm</p>}
             <h2 className="text-xl font-bold">{live.status ? STATUS_LABELS[live.status] : ""}</h2>
             <p className="break-all text-sm text-muted">Mã phiên: {live.liveId}</p>
             <p className="text-sm text-muted">

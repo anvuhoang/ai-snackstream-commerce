@@ -22,7 +22,7 @@ from app.modules.catalog.models import Product, Variant
 from app.modules.orders.models import Order
 
 from .models import Event
-from .schemas import FunnelStep, Overview, ProductRow, SourceRow, Totals
+from .schemas import DayRow, FunnelStep, Overview, ProductRow, SourceRow, Totals
 
 VN = timezone(timedelta(hours=7))
 STEPS: list[tuple[str, str]] = [
@@ -60,6 +60,53 @@ def _scope(stmt: Select, start: datetime, end: datetime, demo: str, source: str 
     if source is not None:
         stmt = stmt.where(Event.source == ("" if source == "direct" else source))
     return stmt
+
+
+def _vn_day(moment: datetime) -> date:
+    """The Vietnam calendar day of a stored time (SQLite hands back naive UTC)."""
+    return (moment if moment.tzinfo else moment.replace(tzinfo=UTC)).astimezone(VN).date()
+
+
+def daily_series(db: Session, date_from: date, date_to: date, demo: str, source: str | None) -> list[DayRow]:
+    start, end = day_bounds(date_from, date_to)
+    days = [date_from + timedelta(days=i) for i in range((date_to - date_from).days + 1)]
+    viewers: dict[date, set[str]] = {d: set() for d in days}
+    created: dict[date, int] = dict.fromkeys(days, 0)
+    completed: dict[date, int] = dict.fromkeys(days, 0)
+    revenue: dict[date, int] = dict.fromkeys(days, 0)
+    rows = db.execute(
+        _scope(
+            select(Event.occurred_at, Event.name, Event.session_id, Event.order_id, Order.total_vnd)
+            .select_from(Event)
+            .outerjoin(Order, Order.id == Event.order_id)
+            .where(Event.name.in_(("product_view", "order_created", "order_completed"))),
+            start,
+            end,
+            demo,
+            source,
+        )
+    )
+    for moment, name, session_id, _order_id, total in rows:
+        day = _vn_day(moment)
+        if day not in viewers:
+            continue
+        if name == "product_view":
+            viewers[day].add(session_id)
+        elif name == "order_created":
+            created[day] += 1
+        else:
+            completed[day] += 1
+            revenue[day] += int(total or 0)
+    return [
+        DayRow(
+            day=d,
+            viewers=len(viewers[d]),
+            orders_created=created[d],
+            orders_completed=completed[d],
+            revenue_vnd=revenue[d],
+        )
+        for d in days
+    ]
 
 
 def overview(db: Session, date_from: date, date_to: date, demo: str, source: str | None) -> Overview:
@@ -237,5 +284,6 @@ def overview(db: Session, date_from: date, date_to: date, demo: str, source: str
         totals=totals,
         by_source=by_source,
         top_products=top,
+        daily=daily_series(db, date_from, date_to, demo, source),
         shopee_clicks=int(shopee or 0),
     )

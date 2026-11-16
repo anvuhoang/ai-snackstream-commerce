@@ -291,3 +291,17 @@ def test_demo_flag_is_stored_on_the_product_not_guessed(signed_in, client):
     p = sellable(signed_in)
     with client.app.state.session_factory() as db:
         assert db.scalar(select(Product.is_demo).where(Product.id == p["id"])) is False
+
+
+def test_the_daily_series_lists_every_day_with_zeros_and_counts_sessions_once(signed_in, anon):
+    p = sellable(signed_in)
+    sku = p["variants"][0]["sku"]
+    for n in (1, 2):
+        send(anon, "product_view", n, sku=sku)
+    send(anon, "product_view", 1, sku=sku)  # the same session again: still one viewer
+    today = report.vn_today().isoformat()
+    body = funnel(signed_in, **{"from": "2020-01-01", "to": "2020-01-03"})
+    assert [d["day"] for d in body["daily"]] == ["2020-01-01", "2020-01-02", "2020-01-03"]
+    assert all(d["viewers"] == 0 and d["revenueVnd"] == 0 for d in body["daily"])
+    body = funnel(signed_in, **{"from": today, "to": today})
+    assert [(d["day"], d["viewers"]) for d in body["daily"]] == [(today, 2)]

@@ -26,6 +26,7 @@ from app.modules.chat.schemas import (
     SupportState,
 )
 from app.modules.chat.service import answer_chat
+from app.modules.rag import service as rag_service
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 _hits: deque[float] = deque()
@@ -55,14 +56,23 @@ def send_message(
         handoff = management.support(db, conversation)
         if handoff and handoff.state == "active":
             raise AppError(409, "human_takeover", "A human has taken over this conversation")
-        result = answer_chat(request.app.state.settings, body, management.faqs(db, approved_only=True))
+        settings = request.app.state.settings
+        rag = rag_service.build_context(db, settings, body) if settings.chat_rag_enabled else None
+        result = answer_chat(settings, body, management.faqs(db, approved_only=True), rag)
     except AppError as exc:
         logs.finish(db, row, started, error=exc.code)
         raise
     except Exception:
         logs.finish(db, row, started, error="chat_internal_error")
         raise
-    logs.finish(db, row, started, result=result)
+    # "no_data": nothing the shop wrote down matched, so no AI call was made. These questions show what data is missing.
+    logs.finish(
+        db,
+        row,
+        started,
+        result=result,
+        outcome="no_data" if rag is not None and not rag.relevant else "answered",
+    )
     result.questionId = row.question_id
     response.set_cookie(
         "ss_chat",

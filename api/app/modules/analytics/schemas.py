@@ -91,6 +91,16 @@ class ProductRow(ApiModel):
     shopee_clicks: int
 
 
+class DayRow(ApiModel):
+    """One Vietnam calendar day of the period; a day with no events is still listed, with zeros."""
+
+    day: date
+    viewers: int  # distinct sessions that viewed a product that day
+    orders_created: int
+    orders_completed: int
+    revenue_vnd: int  # value of the orders marked completed that day
+
+
 class Overview(ApiModel):
     date_from: date
     date_to: date
@@ -100,6 +110,7 @@ class Overview(ApiModel):
     totals: Totals
     by_source: list[SourceRow]
     top_products: list[ProductRow]
+    daily: list[DayRow]
     shopee_clicks: int  # never counted as a purchase
 
 

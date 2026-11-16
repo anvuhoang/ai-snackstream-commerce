@@ -83,6 +83,9 @@ class ProductDetail(ApiModel):
     description: str
     ingredients: str
     storage: str
+    allergens: str
+    spice_level: str
+    nutrition: str
     category: CategoryRef | None
     variants: list[VariantOut]
     images: list[ImageOut]
@@ -129,6 +132,9 @@ class ProductCreate(ApiModel):
     description: str = Field("", max_length=5000)
     ingredients: str = Field("", max_length=3000)
     storage: str = Field("", max_length=2000)
+    allergens: str = Field("", max_length=1000)
+    spice_level: str = Field("", max_length=30)
+    nutrition: str = Field("", max_length=1000)
     ingredients_verified: bool = False
     shopee_url: str = Field("", max_length=500)
     variants: list[VariantIn] = Field(min_length=1)
@@ -147,6 +153,9 @@ class ProductUpdate(ApiModel):
     description: str | None = Field(None, max_length=5000)
     ingredients: str | None = Field(None, max_length=3000)
     storage: str | None = Field(None, max_length=2000)
+    allergens: str | None = Field(None, max_length=1000)
+    spice_level: str | None = Field(None, max_length=30)
+    nutrition: str | None = Field(None, max_length=1000)
     ingredients_verified: bool | None = None
     shopee_url: str | None = Field(None, max_length=500)
 
@@ -191,6 +200,9 @@ class AdminProduct(ApiModel):
     description: str
     ingredients: str
     storage: str
+    allergens: str
+    spice_level: str
+    nutrition: str
     ingredients_verified: bool
     category_id: int | None
     shopee_url: str
