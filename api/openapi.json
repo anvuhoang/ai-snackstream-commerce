@@ -3879,6 +3879,18 @@
             "type": "string",
             "title": "Storage"
           },
+          "allergens": {
+            "type": "string",
+            "title": "Allergens"
+          },
+          "spiceLevel": {
+            "type": "string",
+            "title": "Spicelevel"
+          },
+          "nutrition": {
+            "type": "string",
+            "title": "Nutrition"
+          },
           "ingredientsVerified": {
             "type": "boolean",
             "title": "Ingredientsverified"
@@ -3943,6 +3955,9 @@
           "description",
           "ingredients",
           "storage",
+          "allergens",
+          "spiceLevel",
+          "nutrition",
           "ingredientsVerified",
           "categoryId",
           "shopeeUrl",
@@ -5133,6 +5148,41 @@
           "phone"
         ],
         "title": "CustomerIn"
+      },
+      "DayRow": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "viewers": {
+            "type": "integer",
+            "title": "Viewers"
+          },
+          "ordersCreated": {
+            "type": "integer",
+            "title": "Orderscreated"
+          },
+          "ordersCompleted": {
+            "type": "integer",
+            "title": "Orderscompleted"
+          },
+          "revenueVnd": {
+            "type": "integer",
+            "title": "Revenuevnd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "viewers",
+          "ordersCreated",
+          "ordersCompleted",
+          "revenueVnd"
+        ],
+        "title": "DayRow",
+        "description": "One Vietnam calendar day of the period; a day with no events is still listed, with zeros."
       },
       "EventIn": {
         "properties": {
@@ -6675,6 +6725,13 @@
             "type": "array",
             "title": "Topproducts"
           },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/DayRow"
+            },
+            "type": "array",
+            "title": "Daily"
+          },
           "shopeeClicks": {
             "type": "integer",
             "title": "Shopeeclicks"
@@ -6690,6 +6747,7 @@
           "totals",
           "bySource",
           "topProducts",
+          "daily",
           "shopeeClicks"
         ],
         "title": "Overview"
@@ -7040,6 +7098,24 @@
             "title": "Storage",
             "default": ""
           },
+          "allergens": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Allergens",
+            "default": ""
+          },
+          "spiceLevel": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Spicelevel",
+            "default": ""
+          },
+          "nutrition": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Nutrition",
+            "default": ""
+          },
           "ingredientsVerified": {
             "type": "boolean",
             "title": "Ingredientsverified",
@@ -7093,6 +7169,18 @@
             "type": "string",
             "title": "Storage"
           },
+          "allergens": {
+            "type": "string",
+            "title": "Allergens"
+          },
+          "spiceLevel": {
+            "type": "string",
+            "title": "Spicelevel"
+          },
+          "nutrition": {
+            "type": "string",
+            "title": "Nutrition"
+          },
           "category": {
             "anyOf": [
               {
@@ -7139,6 +7227,9 @@
           "description",
           "ingredients",
           "storage",
+          "allergens",
+          "spiceLevel",
+          "nutrition",
           "category",
           "variants",
           "images",
@@ -7247,6 +7338,42 @@
               }
             ],
             "title": "Storage"
+          },
+          "allergens": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allergens"
+          },
+          "spiceLevel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spicelevel"
+          },
+          "nutrition": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nutrition"
           },
           "ingredientsVerified": {
             "anyOf": [
