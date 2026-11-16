@@ -98,9 +98,13 @@ NO_DATA_ANSWER = (
 
 # Added to the prompt only when retrieval is on. It overrides the older rule "only use facts in the catalog" in one narrow way.
 THREE_TIERS = (
-    "\nCÁCH TRẢ LỜI: "
+    "\nĐịnh dạng: chỉ viết văn bản thường, không dùng dấu * hay ** hay # để định dạng; "
+    "muốn liệt kê thì xuống dòng và dùng dấu gạch ngang. "
+    "CÁCH TRẢ LỜI: "
     "(1) Dữ kiện có trong passages hoặc products thì trả lời chắc chắn. Đoạn chỉ ghi 'Đang cập nhật theo bao bì thật' "
     "nghĩa là CHƯA có dữ liệu. "
+    "Thông tin dị ứng chỉ được nhắc lại đúng như passage 'Thông tin dị ứng ... (ghi theo nhãn)' kèm lời nhắc kiểm tra lại trên bao bì; "
+    "không có passage đó thì không được nói sản phẩm có hay không có chất gây dị ứng và không suy ra từ thành phần. "
     "(2) Nếu khách hỏi một khái niệm ăn uống hay dinh dưỡng chung (ví dụ 'glucose là gì', 'chuối có đường không') mà shop chưa có dữ liệu, "
     "được giải thích ngắn gọn bằng kiến thức phổ thông, mở đầu bằng 'Thông tin chung (không phải số liệu của sản phẩm này):' "
     "và nói rõ shop chưa có số liệu của sản phẩm đó. "

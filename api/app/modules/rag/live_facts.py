@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import Settings
 from app.modules.catalog.models import Product, Variant
+from app.modules.chat.media import IMAGE_SKUS
 from app.modules.chat.schemas import Product as ChatProduct
 from app.modules.inventory import service as inventory
 
@@ -37,6 +38,8 @@ def facts_for(db: Session, settings: Settings, skus: list[str]) -> list[ChatProd
                     price=float(v.price_vnd),
                     currency="VND",
                     sales_description=f"Quy cách: {v.name}" if v.name else None,
+                    # The same bundled photos the Odoo path shows, found by SKU; none for a SKU without one.
+                    image_url=f"/products/{v.sku}.jpg" if v.sku in IMAGE_SKUS else None,
                     product_url=f"/products/{p.slug}",
                     # None = not tracked or not trusted: the prompt rules already say "null is unknown".
                     available=float(info.available)

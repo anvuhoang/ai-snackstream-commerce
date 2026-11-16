@@ -167,6 +167,7 @@ def test_price_and_stock_come_from_our_tables_at_answer_time(signed_in):
         facts = live_facts.facts_for(db, settings, ["KG-1"])
     assert [(f.sku, f.price, f.currency) for f in facts] == [("KG-1", 55000.0, "VND")]
     assert facts[0].product_url.startswith("/products/")
+    assert facts[0].image_url is None  # KG-1 has no bundled photo
     variant_id = a["variants"][0]["id"]
     assert (
         signed_in.patch(f"/api/admin/catalog/variants/{variant_id}", json={"priceVnd": 60000}).status_code
@@ -276,3 +277,72 @@ def test_a_question_about_a_product_still_goes_to_the_ai_with_the_three_tier_rul
     call.assert_called_once()
     prompt = json.loads(call.call_args.args[0].data)["systemInstruction"]["parts"][0]["text"]
     assert "CÁCH TRẢ LỜI" in prompt
+
+
+# ================================================================== allergen, spice and nutrition facts
+def test_allergen_spice_and_nutrition_text_become_passages_only_when_entered(signed_in):
+    a, b = two_products(signed_in)
+    r = signed_in.patch(
+        f"/api/admin/catalog/products/{a['id']}",
+        json={"allergens": "Chứa gluten.", "spiceLevel": "Cay vừa", "nutrition": "450 kcal / 100 g"},
+    )
+    assert r.status_code == 200, r.text
+    assert (r.json()["allergens"], r.json()["spiceLevel"]) == ("Chứa gluten.", "Cay vừa")
+    with db_of(signed_in) as db:
+        chunks = chunker.build_chunks(db)
+    by = {(c.sku, c.kind): c.text for c in chunks}
+    assert "Chứa gluten." in by[("KG-1", "allergens")] and "ghi theo nhãn" in by[("KG-1", "allergens")]
+    assert "Cay vừa" in by[("KG-1", "nutrition")] and "450 kcal" in by[("KG-1", "nutrition")]
+    assert ("BT-1", "allergens") not in by and (
+        "BT-1",
+        "nutrition",
+    ) not in by  # nothing entered, nothing claimed
+
+
+def test_a_question_about_allergens_finds_the_allergen_passage(signed_in):
+    a, _ = two_products(signed_in)
+    signed_in.patch(f"/api/admin/catalog/products/{a['id']}", json={"allergens": "Chứa đậu phộng."})
+    with db_of(signed_in) as db:
+        index.reindex(db, EMB)
+        top = retriever.retrieve(db, EMB, "Khô gà lá chanh có gây dị ứng không?", k=1)
+    assert (top[0].sku, top[0].kind) == ("KG-1", "allergens")
+
+
+def test_the_completed_sheet_fills_only_the_cells_that_have_a_value(signed_in):
+    from app.modules.catalog import facts_import
+
+    a, b = two_products(signed_in)
+    rows = [
+        {
+            "sku": "KG-1",
+            "allergens_from_label": "Chứa gluten.",
+            "spice_level_checked": "Cay vừa",
+            "energy_kcal_per_100g": "450",
+            "sodium_mg_per_100g": "900",
+        },
+        {"sku": "BT-1", "allergens_from_label": "", "spice_level_checked": ""},  # nothing entered: left alone
+        {"sku": "NOPE", "allergens_from_label": "x"},
+    ]
+    with db_of(signed_in) as db:
+        result = facts_import.import_facts(db, rows)
+    assert result == {"updated": 1, "unknown_skus": ["NOPE"], "rejected": []}
+    got = signed_in.get(f"/api/admin/catalog/products/{a['id']}").json()
+    assert (
+        got["allergens"] == "Chứa gluten."
+        and got["nutrition"] == "Trên 100 g: năng lượng 450 kcal; natri 900 mg."
+    )
+    assert signed_in.get(f"/api/admin/catalog/products/{b['id']}").json()["allergens"] == ""
+
+
+def test_a_product_with_a_bundled_photo_gets_its_image_in_the_chat_card(signed_in):
+    make_product(
+        signed_in,
+        publish=True,
+        name="Bánh tráng me cay",
+        ingredients="Bánh tráng, me",
+        storage="30 ngày",
+        variants=[{"sku": "BANH-TRANG-ME-01", "name": "Gói", "priceVnd": 20000}],
+    )
+    with db_of(signed_in) as db:
+        facts = live_facts.facts_for(db, signed_in.app.state.settings, ["BANH-TRANG-ME-01"])
+    assert facts[0].image_url == "/products/BANH-TRANG-ME-01.jpg"
