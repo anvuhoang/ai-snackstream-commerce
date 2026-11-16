@@ -83,6 +83,16 @@ class Settings(BaseSettings):
     # 0 = never expire (the last synced number is used).
     stock_stale_minutes: int = Field(0, alias="STOCK_STALE_MINUTES", ge=0)
 
+    # Retrieval-augmented answers for the chatbot (see app/modules/rag). Off = the chatbot sends the whole catalog every time.
+    chat_rag_enabled: bool = Field(False, alias="CHAT_RAG_ENABLED")
+    # "hash" runs on this machine with no key (lexical); "gemini" asks Gemini for embeddings (needs GEMINI_API_KEY).
+    rag_embedder: Literal["hash", "gemini"] = Field("hash", alias="RAG_EMBEDDER")
+    rag_embed_model: str = Field("gemini-embedding-001", alias="RAG_EMBED_MODEL")
+    rag_top_k: int = Field(5, alias="RAG_TOP_K", ge=1, le=20)
+    # When no passage scores at least this high, the question is not about anything the shop has written down, so the chatbot
+    # answers with a fixed hand-off message and does not call Gemini. Tuned for the "hash" embedder; re-tune for "gemini".
+    rag_min_score: float = Field(0.2, alias="RAG_MIN_SCORE", ge=0, le=1)
+
     # The chatbot reads products over XML-RPC and needs the login too (it shares ODOO_URL, ODOO_DB and ODOO_API_KEY above).
     odoo_login: str = ""
     chat_public_skus: list[str] = Field(default_factory=list)
