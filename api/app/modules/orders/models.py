@@ -60,6 +60,10 @@ class Order(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     # Public, random, never a counter. Looking an order up needs this code AND the phone number.
     code: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    # Who placed it. Null for orders made before accounts existed (they stay reachable by code + phone).
+    customer_id: Mapped[int | None] = mapped_column(
+        ForeignKey("customer.id", ondelete="SET NULL"), index=True
+    )
     status: Mapped[str] = mapped_column(String(12), default="new", index=True)
     customer_name: Mapped[str] = mapped_column(String(120))
     customer_phone: Mapped[str] = mapped_column(String(15), index=True)

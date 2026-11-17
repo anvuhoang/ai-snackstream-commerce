@@ -138,6 +138,472 @@
         }
       }
     },
+    "/api/account/register": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Register",
+        "operationId": "register_api_account_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSession"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/login": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_account_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSession"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/logout": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_account_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/account/me": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Me",
+        "description": "Never an error for a visitor: the page header asks this on every load and just wants to know who is there.",
+        "operationId": "me_api_account_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/profile": {
+      "patch": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Update Profile",
+        "operationId": "update_profile_api_account_profile_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/forgot-password": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Forgot Password",
+        "description": "Always the same answer, whether or not the address has an account, and the mail goes out after the reply is sent.",
+        "operationId": "forgot_password_api_account_forgot_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/reset-password": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Reset Password",
+        "operationId": "reset_password_api_account_reset_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/verify-email": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Verify Email",
+        "operationId": "verify_email_api_account_verify_email_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/resend-verification": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Resend Verification",
+        "operationId": "resend_verification_api_account_resend_verification_post",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/change-password": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Change Password",
+        "operationId": "change_password_api_account_change_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/customers": {
+      "get": {
+        "tags": [
+          "admin-customers"
+        ],
+        "summary": "List Customers",
+        "operationId": "list_customers_api_admin_customers_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Pagesize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/customers/{customer_id}": {
+      "patch": {
+        "tags": [
+          "admin-customers"
+        ],
+        "summary": "Set Active",
+        "description": "Switching an account off stops it signing in and ends any session it already has; its orders stay as they are.",
+        "operationId": "set_active_api_admin_customers__customer_id__patch",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Customer Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActiveIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerRow"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/catalog/categories": {
       "get": {
         "tags": [
@@ -1154,7 +1620,7 @@
           "shop"
         ],
         "summary": "Checkout",
-        "description": "Place an order from the cart. Safe to repeat: the same Idempotency-Key and request return the same order.",
+        "description": "Place an order from the cart. Needs a signed-in customer. Safe to repeat: the same Idempotency-Key and request return the same order.",
         "operationId": "checkout_api_orders_post",
         "parameters": [
           {
@@ -1188,6 +1654,73 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CheckoutOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/orders": {
+      "get": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "My Orders",
+        "operationId": "my_orders_api_account_orders_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderOut"
+                  },
+                  "type": "array",
+                  "title": "Response My Orders Api Account Orders Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/orders/{code}": {
+      "get": {
+        "tags": [
+          "shop"
+        ],
+        "summary": "My Order",
+        "operationId": "my_order_api_account_orders__code__get",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
                 }
               }
             }
@@ -4419,6 +4952,51 @@
   },
   "components": {
     "schemas": {
+      "AccountSession": {
+        "properties": {
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CustomerOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "csrf": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Csrf"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer",
+          "csrf"
+        ],
+        "title": "AccountSession",
+        "description": "Who is signed in (null for a visitor) and the CSRF token to send on every account write."
+      },
+      "ActiveIn": {
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "title": "Isactive"
+          }
+        },
+        "type": "object",
+        "required": [
+          "isActive"
+        ],
+        "title": "ActiveIn"
+      },
       "AdminCategory": {
         "properties": {
           "id": {
@@ -4451,6 +5029,86 @@
           "productCount"
         ],
         "title": "AdminCategory"
+      },
+      "AdminCustomerPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminCustomerRow"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageSize": {
+            "type": "integer",
+            "title": "Pagesize"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "title": "AdminCustomerPage"
+      },
+      "AdminCustomerRow": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "fullName": {
+            "type": "string",
+            "title": "Fullname"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "isActive": {
+            "type": "boolean",
+            "title": "Isactive"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "title": "Emailverified"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "orderCount": {
+            "type": "integer",
+            "title": "Ordercount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "fullName",
+          "phone",
+          "isActive",
+          "emailVerified",
+          "createdAt",
+          "orderCount"
+        ],
+        "title": "AdminCustomerRow"
       },
       "AdminOrder": {
         "properties": {
@@ -5563,6 +6221,28 @@
         "type": "object",
         "title": "CategoryUpdate"
       },
+      "ChangePasswordIn": {
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Currentpassword"
+          },
+          "newPassword": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Newpassword"
+          }
+        },
+        "type": "object",
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "title": "ChangePasswordIn"
+      },
       "ChannelRow": {
         "properties": {
           "channel": {
@@ -6047,6 +6727,59 @@
         ],
         "title": "CustomerIn"
       },
+      "CustomerOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "fullName": {
+            "type": "string",
+            "title": "Fullname"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "shipAddress": {
+            "type": "string",
+            "title": "Shipaddress"
+          },
+          "shipWard": {
+            "type": "string",
+            "title": "Shipward"
+          },
+          "shipDistrict": {
+            "type": "string",
+            "title": "Shipdistrict"
+          },
+          "shipProvince": {
+            "type": "string",
+            "title": "Shipprovince"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "title": "Emailverified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "fullName",
+          "phone",
+          "shipAddress",
+          "shipWard",
+          "shipDistrict",
+          "shipProvince",
+          "emailVerified"
+        ],
+        "title": "CustomerOut"
+      },
       "DayRow": {
         "properties": {
           "day": {
@@ -6281,6 +7014,21 @@
           "answer"
         ],
         "title": "FAQInput"
+      },
+      "ForgotPasswordIn": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "minLength": 3,
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "ForgotPasswordIn"
       },
       "FunnelStep": {
         "properties": {
@@ -8221,6 +8969,18 @@
         ],
         "title": "MovementOut"
       },
+      "OkOut": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "OkOut",
+        "description": "The answer to requests that must not reveal whether an e-mail has an account."
+      },
       "OrderItemOut": {
         "properties": {
           "sku": {
@@ -9131,6 +9891,51 @@
         "title": "ProductUpdate",
         "description": "Only the fields that are sent are changed."
       },
+      "ProfileIn": {
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Fullname"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Phone",
+            "default": ""
+          },
+          "shipAddress": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Shipaddress",
+            "default": ""
+          },
+          "shipWard": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Shipward",
+            "default": ""
+          },
+          "shipDistrict": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Shipdistrict",
+            "default": ""
+          },
+          "shipProvince": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Shipprovince",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "fullName"
+        ],
+        "title": "ProfileIn"
+      },
       "PublicStatus": {
         "properties": {
           "enabled": {
@@ -9164,6 +9969,63 @@
         },
         "type": "object",
         "title": "PublicStatus"
+      },
+      "RegisterIn": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "minLength": 3,
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Password"
+          },
+          "fullName": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Fullname"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Phone",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password",
+          "fullName"
+        ],
+        "title": "RegisterIn"
+      },
+      "ResetPasswordIn": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 20,
+            "title": "Token"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "ResetPasswordIn"
       },
       "ReviewRequest": {
         "properties": {
@@ -9716,6 +10578,21 @@
           "lastRun"
         ],
         "title": "SyncStatus"
+      },
+      "TokenIn": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 20,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "TokenIn"
       },
       "Totals": {
         "properties": {

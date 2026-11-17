@@ -67,6 +67,11 @@ def public_order(o: Order) -> OrderOut:
     return OrderOut(**_order_fields(o, public=True))
 
 
+def own_order(o: Order) -> OrderOut:
+    """The customer's own order: the full phone number (it is theirs), never a staff e-mail."""
+    return OrderOut(**_order_fields(o, public=False))
+
+
 def checkout_out(o: Order, payment_url: str | None) -> CheckoutOut:
     return CheckoutOut(**_order_fields(o, public=True), payment_url=payment_url)
 

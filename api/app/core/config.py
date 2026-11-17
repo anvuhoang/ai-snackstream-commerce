@@ -99,6 +99,16 @@ class Settings(BaseSettings):
     # answers with a fixed hand-off message and does not call Gemini. Tuned for the "hash" embedder; re-tune for "gemini".
     rag_min_score: float = Field(0.2, alias="RAG_MIN_SCORE", ge=0, le=1)
 
+    # E-mail (https://resend.com): verification and password-reset links. Empty key = no mail is sent; the link is only logged,
+    # which is enough to try the flow on a laptop. Without a verified domain Resend only delivers to the account owner's own
+    # address and only from onboarding@resend.dev.
+    resend_api_key: SecretStr = Field(default=SecretStr(""), alias="RESEND_API_KEY")
+    mail_from: str = Field("SnackStream <onboarding@resend.dev>", alias="MAIL_FROM")
+    # The web address that links in e-mails point to (no trailing slash).
+    web_base_url: str = Field("http://localhost:3000", alias="WEB_BASE_URL")
+    # Customers must confirm their e-mail before checkout. Default: on exactly when mail can be sent.
+    require_email_verification: bool | None = Field(None, alias="REQUIRE_EMAIL_VERIFICATION")
+
     # The chatbot reads products over XML-RPC and needs the login too (it shares ODOO_URL, ODOO_DB and ODOO_API_KEY above).
     odoo_login: str = ""
     chat_public_skus: list[str] = Field(default_factory=list)
@@ -129,6 +139,16 @@ class Settings(BaseSettings):
     @property
     def odoo_enabled(self) -> bool:
         return bool(self.odoo_url and self.odoo_db and self.odoo_api_key)
+
+    @property
+    def mail_enabled(self) -> bool:
+        return bool(self.resend_api_key.get_secret_value().strip())
+
+    @property
+    def email_verification_required(self) -> bool:
+        return (
+            self.mail_enabled if self.require_email_verification is None else self.require_email_verification
+        )
 
     @property
     def is_prod(self) -> bool:

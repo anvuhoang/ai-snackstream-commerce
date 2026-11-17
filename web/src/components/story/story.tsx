@@ -24,6 +24,24 @@ export function Story() {
     };
   }, []);
 
+  // The header button says "Đăng nhập" in the static markup; once we know who is here it becomes their account link.
+  useEffect(() => {
+    let live = true;
+    fetch("/api/account/me", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { customer?: { fullName: string } | null } | null) => {
+        const button = document.getElementById("acct");
+        if (!live || !button || !data?.customer) return;
+        const first = data.customer.fullName.trim().split(/\s+/).at(-1) ?? "bạn";
+        button.textContent = `Xin chào, ${first}`;
+        button.setAttribute("data-href", "/account");
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+
   return (
     <div
       className="story"

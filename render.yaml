@@ -47,6 +47,16 @@ services:
       - key: PAYOS_CANCEL_URL
         sync: false
 
+      # ---- E-mail for customer accounts (https://resend.com). Verification and password-reset links are sent from here.
+      # WEB_BASE_URL is the WEB address (the Vercel URL, no trailing slash): links in e-mails point to it.
+      # Without a verified domain on Resend, MAIL_FROM must stay onboarding@resend.dev and mail reaches only your own address.
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        value: "SnackStream <onboarding@resend.dev>"
+      - key: WEB_BASE_URL
+        sync: false
+
       # ---- The shop's own Shopee page. A product with no Shopee link of its own sends the customer here.
       - key: SHOPEE_SHOP_URL
         value: https://shopee.vn/tohuyenchau555

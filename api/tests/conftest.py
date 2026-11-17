@@ -10,6 +10,7 @@ from app.core.config import Settings
 from app.main import create_app
 from app.modules.auth import router as auth_router
 from app.modules.auth import service as auth_service
+from app.modules.customers import router as customers_router
 from app.modules.orders import router_public as orders_public
 
 ADMIN_EMAIL = "admin@example.com"
@@ -48,6 +49,9 @@ def settings(tmp_path) -> Settings:
         PAYOS_CLIENT_ID="",
         PAYOS_API_KEY="",
         PAYOS_CHECKSUM_KEY="",
+        # Tests never send mail and never read a developer's real mail key.
+        RESEND_API_KEY="",
+        REQUIRE_EMAIL_VERIFICATION=False,
         ODOO_URL="",
         ODOO_DB="",
         ODOO_API_KEY="",
@@ -57,6 +61,17 @@ def settings(tmp_path) -> Settings:
 @pytest.fixture()
 def client(settings: Settings) -> Iterator[TestClient]:
     auth_router._login_limiter._hits.clear()
+    customers_router._login_limiter._hits.clear()
+    customers_router._register_limiter._hits.clear()
+    for limiter in (
+        customers_router._email_limiter,
+        customers_router._forgot_ip_limiter,
+        customers_router._forgot_email_limiter,
+        customers_router._link_limiter,
+        customers_router._resend_limiter,
+        customers_router._password_limiter,
+    ):
+        limiter._hits.clear()
     orders_public._lookup_limiter._hits.clear()
     # Entering the context runs the lifespan: migrations + bootstrap admin.
     with TestClient(create_app(settings)) as c:

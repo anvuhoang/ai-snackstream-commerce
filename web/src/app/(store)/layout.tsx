@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { AccountLink } from "@/components/account/account-link";
+import { AccountProvider } from "@/components/account/account-provider";
 import { Logo } from "@/components/brand/logo";
 import { CartLink } from "@/components/cart/cart-link";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { ChatLauncher } from "@/components/chat-launcher";
+import { LiveBanner } from "@/components/live/live-banner";
 import { freeShipText } from "@/lib/format";
 import { getShopConfig } from "@/lib/shop-config";
 
@@ -16,11 +19,13 @@ const link = "rounded-[10px] px-3.5 py-2.5 text-[15px] font-medium transition-co
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const { freeShipFromVnd } = await getShopConfig();
   return (
+    <AccountProvider>
     <CartProvider>
       <div className="flex min-h-screen flex-col">
         <div className="bg-leaf px-4 py-2.5 text-center text-[13px] font-medium text-paper">
-          {freeShipText(freeShipFromVnd)} · Thanh toán khi nhận hàng · Tra cứu đơn không cần tài khoản
+          {freeShipText(freeShipFromVnd)} · Thanh toán khi nhận hàng · Đăng nhập để đặt hàng
         </div>
+        <LiveBanner />
         <header className="sticky top-0 z-20 border-b border-line bg-paper/95 backdrop-blur">
           <div className="mx-auto flex h-[72px] w-full max-w-[1200px] items-center gap-3 px-4 sm:gap-6 sm:px-8">
             <Link href="/" aria-label="SnackStream, trang chủ">
@@ -37,6 +42,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             <Link href="/orders/lookup" className={`${link} hidden sm:block`}>
               Tra cứu đơn
             </Link>
+            <AccountLink />
             <CartLink className="inline-flex h-11 items-center rounded-xl bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover" />
           </div>
         </header>
@@ -64,5 +70,6 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         </footer>
       </div>
     </CartProvider>
+    </AccountProvider>
   );
 }

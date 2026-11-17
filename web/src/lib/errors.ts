@@ -4,6 +4,12 @@
  */
 const MESSAGES: Record<string, string> = {
   not_authenticated: "Vui lòng đăng nhập.",
+  login_required: "Bạn cần đăng nhập để thanh toán.",
+  email_taken: "E-mail này đã có tài khoản. Hãy đăng nhập hoặc dùng e-mail khác.",
+  invalid_token: "Đường dẫn không hợp lệ hoặc đã hết hạn. Hãy yêu cầu một thư mới.",
+  wrong_password: "Mật khẩu hiện tại chưa đúng.",
+  email_not_verified: "Hãy xác nhận e-mail (bấm đường dẫn trong thư chúng tôi đã gửi) trước khi đặt hàng.",
+  customer_not_found: "Không tìm thấy khách hàng.",
   invalid_credentials: "Sai e-mail hoặc mật khẩu.",
   too_many_attempts: "Bạn thử sai quá nhiều lần. Vui lòng chờ vài phút rồi thử lại.",
   csrf_invalid: "Phiên làm việc đã hết hạn. Hãy tải lại trang và thử lại.",

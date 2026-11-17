@@ -26,6 +26,8 @@ from app.modules.catalog import router_admin as catalog_admin
 from app.modules.catalog import router_public as catalog_public
 from app.modules.catalog import seed as catalog_seed
 from app.modules.chat import router as chat_router
+from app.modules.customers import router as customers_router
+from app.modules.customers import router_admin as customers_admin
 from app.modules.health import router as health_router
 from app.modules.inventory import router_admin as inventory_admin
 from app.modules.live import router as live_router
@@ -105,6 +107,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     for router in (
         health_router.router,
         auth_router.router,
+        customers_router.router,
+        customers_admin.router,
         catalog_public.router,
         catalog_admin.router,
         orders_public.router,
