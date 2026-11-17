@@ -3,14 +3,19 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import Settings
+
 from .chunker import build_chunks, text_hash
-from .embedder import Embedder
+from .embedder import Embedder, make_embedder
 from .models import KbChunk
+
+log = logging.getLogger(__name__)
 
 
 def reindex(db: Session, embedder: Embedder, directory: Path | None = None) -> dict[str, int]:
@@ -43,3 +48,14 @@ def reindex(db: Session, embedder: Embedder, directory: Path | None = None) -> d
             stats["removed"] += 1
     db.commit()
     return stats
+
+
+def rebuild_quietly(db: Session, settings: Settings) -> None:
+    """Bring the chatbot's passages up to date when the shop's text changed. Cheap when nothing changed (only new or edited
+    text is embedded). A failure is logged and swallowed: it must never break a request or stop the API from starting."""
+    if not settings.chat_rag_enabled:
+        return
+    try:
+        log.info("knowledge index ready: %s", reindex(db, make_embedder(settings)))
+    except Exception:
+        log.exception("knowledge index could not be built; the chatbot may find no passages")

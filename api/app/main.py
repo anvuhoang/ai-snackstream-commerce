@@ -10,7 +10,6 @@ from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
 from alembic import command
@@ -38,7 +37,6 @@ from app.modules.live.service import LiveService
 from app.modules.orders import router_admin as orders_admin
 from app.modules.orders import router_public as orders_public
 from app.modules.rag import index as rag_index
-from app.modules.rag.embedder import make_embedder
 
 log = logging.getLogger(__name__)
 API_ROOT = Path(__file__).resolve().parent.parent
@@ -49,16 +47,6 @@ def run_migrations(database_url: str) -> None:
     cfg.set_main_option("script_location", str(API_ROOT / "alembic"))
     cfg.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
     command.upgrade(cfg, "head")
-
-
-def _index_knowledge(db: Session, settings: Settings) -> None:
-    """Build the chatbot's searchable passages at start-up. Cheap when nothing changed (only new or edited text is embedded),
-    and a failure here must never stop the API: the chatbot just answers from what it has."""
-    try:
-        stats = rag_index.reindex(db, make_embedder(settings))
-        log.info("knowledge index ready: %s", stats)
-    except Exception:
-        log.exception("knowledge index could not be built; the chatbot may find no passages")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -73,8 +61,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             auth_service.ensure_bootstrap_admin(db, settings)
             if settings.seed_demo_catalog:
                 catalog_seed.seed_catalog(db, app.state.storage)
-            if settings.chat_rag_enabled:
-                _index_knowledge(db, settings)
+            rag_index.rebuild_quietly(db, settings)
         playback_task = None
         if settings.live_mock_enabled or settings.live_make_enabled or settings.live_simli_enabled:
             playback_task = asyncio.create_task(run_playback(app.state.live, settings))

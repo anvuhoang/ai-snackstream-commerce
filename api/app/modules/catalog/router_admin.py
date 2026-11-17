@@ -11,6 +11,7 @@ from app.core.db import get_db
 from app.core.errors import AppError
 from app.core.storage import MediaStorage, get_storage, sniff_image_ext
 from app.modules.auth.deps import require_csrf, require_role
+from app.modules.rag.deps import refresh_chatbot_index
 
 from . import presenters, service
 from .schemas import (
@@ -32,6 +33,9 @@ router = APIRouter(prefix="/api/admin/catalog", tags=["admin-catalog"])
 Reader = Depends(require_role("admin", "staff"))
 Writer = [Depends(require_role("admin")), Depends(require_csrf)]
 Db = Annotated[Session, Depends(get_db)]
+
+
+ProductWriter = [*Writer, Depends(refresh_chatbot_index)]
 Storage = Annotated[MediaStorage, Depends(get_storage)]
 
 
@@ -46,7 +50,7 @@ def create_category(body: CategoryIn, db: Db) -> AdminCategory:
     return presenters.admin_category(service.create_category(db, body), 0)
 
 
-@router.patch("/categories/{category_id}", response_model=AdminCategory, dependencies=Writer)
+@router.patch("/categories/{category_id}", response_model=AdminCategory, dependencies=ProductWriter)
 def update_category(category_id: int, body: CategoryUpdate, db: Db) -> AdminCategory:
     c = service.update_category(db, category_id, body)
     count = dict((x.id, n) for x, n in service.list_admin_categories(db)).get(c.id, 0)
@@ -69,7 +73,7 @@ def list_products(
     )
 
 
-@router.post("/products", response_model=AdminProduct, status_code=201, dependencies=Writer)
+@router.post("/products", response_model=AdminProduct, status_code=201, dependencies=ProductWriter)
 def create_product(body: ProductCreate, db: Db, storage: Storage) -> AdminProduct:
     return presenters.admin_product(service.create_product(db, body), storage)
 
@@ -79,30 +83,33 @@ def get_product(product_id: int, db: Db, storage: Storage) -> AdminProduct:
     return presenters.admin_product(service.get_admin_product(db, product_id), storage)
 
 
-@router.patch("/products/{product_id}", response_model=AdminProduct, dependencies=Writer)
+@router.patch("/products/{product_id}", response_model=AdminProduct, dependencies=ProductWriter)
 def update_product(product_id: int, body: ProductUpdate, db: Db, storage: Storage) -> AdminProduct:
     return presenters.admin_product(service.update_product(db, product_id, body), storage)
 
 
-@router.post("/products/{product_id}/publish", response_model=AdminProduct, dependencies=Writer)
+@router.post("/products/{product_id}/publish", response_model=AdminProduct, dependencies=ProductWriter)
 def publish(product_id: int, db: Db, storage: Storage) -> AdminProduct:
     return presenters.admin_product(service.publish_product(db, product_id), storage)
 
 
-@router.post("/products/{product_id}/hide", response_model=AdminProduct, dependencies=Writer)
+@router.post("/products/{product_id}/hide", response_model=AdminProduct, dependencies=ProductWriter)
 def hide(product_id: int, db: Db, storage: Storage) -> AdminProduct:
     return presenters.admin_product(service.hide_product(db, product_id), storage)
 
 
 # ------------------------------------------------------------------ variants
 @router.post(
-    "/products/{product_id}/variants", response_model=AdminProduct, status_code=201, dependencies=Writer
+    "/products/{product_id}/variants",
+    response_model=AdminProduct,
+    status_code=201,
+    dependencies=ProductWriter,
 )
 def add_variant(product_id: int, body: VariantIn, db: Db, storage: Storage) -> AdminProduct:
     return presenters.admin_product(service.add_variant(db, product_id, body), storage)
 
 
-@router.patch("/variants/{variant_id}", response_model=AdminProduct, dependencies=Writer)
+@router.patch("/variants/{variant_id}", response_model=AdminProduct, dependencies=ProductWriter)
 def update_variant(variant_id: int, body: VariantUpdate, db: Db, storage: Storage) -> AdminProduct:
     return presenters.admin_product(service.update_variant(db, variant_id, body), storage)
 

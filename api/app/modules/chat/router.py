@@ -27,6 +27,7 @@ from app.modules.chat.schemas import (
 )
 from app.modules.chat.service import answer_chat
 from app.modules.rag import service as rag_service
+from app.modules.rag.deps import refresh_chatbot_index
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 _hits: deque[float] = deque()
@@ -161,17 +162,25 @@ def get_faqs(db: Session = Depends(get_db)):
     return management.faqs(db)
 
 
-@admin_router.post("/faqs", response_model=FAQEntry, dependencies=[Depends(require_csrf)])
+@admin_router.post(
+    "/faqs", response_model=FAQEntry, dependencies=[Depends(require_csrf), Depends(refresh_chatbot_index)]
+)
 def add_faq(body: FAQInput, db: Session = Depends(get_db)):
     return management.save_faq(db, body)
 
 
-@admin_router.put("/faqs/{faq_id}", response_model=FAQEntry, dependencies=[Depends(require_csrf)])
+@admin_router.put(
+    "/faqs/{faq_id}",
+    response_model=FAQEntry,
+    dependencies=[Depends(require_csrf), Depends(refresh_chatbot_index)],
+)
 def update_faq(faq_id: int, body: FAQInput, db: Session = Depends(get_db)):
     return management.save_faq(db, body, faq_id)
 
 
-@admin_router.delete("/faqs/{faq_id}", status_code=204, dependencies=[Depends(require_csrf)])
+@admin_router.delete(
+    "/faqs/{faq_id}", status_code=204, dependencies=[Depends(require_csrf), Depends(refresh_chatbot_index)]
+)
 def remove_faq(faq_id: int, db: Session = Depends(get_db)):
     management.delete_faq(db, faq_id)
     return Response(status_code=204)
