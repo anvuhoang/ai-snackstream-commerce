@@ -29,9 +29,12 @@ upload manager or automatic fallback to configured sample audio.
 
 ## Audio and API
 
-Set process environment `LIVE_CONTENT_ENABLED=true`, `ELEVENLABS_API_KEY`,
-`ELEVENLABS_VOICE_ID`, `ELEVENLABS_MODEL_ID`. These module-local settings do not
-read a private .env file. See [Simli host](LIVE_SIMLI_HOST.md) for host settings.
+Set `LIVE_CONTENT_ENABLED=true`, `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID` and
+`ELEVENLABS_MODEL_ID` in private `api/.env` when running from `api`, or in the API's
+deployment environment. Process values override `.env`. Restart the intended API
+before preparing a session. No private launcher, acceptance account, OpenAI/Gemini
+key or pre-existing audio file is required. See [Simli host](LIVE_SIMLI_HOST.md)
+for install/run steps, separate admin accounts and no-charge mock configuration.
 
 ElevenLabs is requested with `wav_16000` and `language_code=vi`.
 The result must be complete, non-silent, uncompressed mono PCM16 WAV at 16000 Hz,
@@ -49,6 +52,10 @@ Existing admin authentication/CSRF protects:
 
 The producer obtains PCM only through its lease-protected host routes.
 Viewers receive the common broadcast, not PCM or provider credentials.
+Any valid admin can prepare a new session with their own account. Content cannot
+be edited after host acquire, even by another admin. A running producer's lease
+cannot be transferred to a different account; after end, wait for the existing
+slot hold before starting another session. No shared account is required.
 End/replacement during TTS discards a late result; an already sent provider task
 cannot be recalled and may have consumed usage.
 
