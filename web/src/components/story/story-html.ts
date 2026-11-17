@@ -7,6 +7,7 @@ export const STORY_HTML = `<header class="bar">
   <button class="cell hide-m" type="button" data-href="/live">Live</button>
   <span class="sp"></span>
   <button class="cell hide-m" type="button" data-href="/orders/lookup">Tra cứu đơn</button>
+  <button class="cell hide-m" id="acct" type="button" data-href="/account/login">Đăng nhập</button>
   <button class="cell" type="button" data-href="/checkout">Giỏ hàng</button>
 </header>
 <div id="track"><div id="pin">

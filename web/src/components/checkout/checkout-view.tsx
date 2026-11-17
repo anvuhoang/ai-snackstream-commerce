@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
+import { useAccount } from "@/components/account/account-provider";
 import { useCart } from "@/components/cart/cart-provider";
 import { OrderSummary } from "@/components/orders/order-summary";
 import { buttonClass } from "@/components/ui/button";
@@ -39,6 +40,7 @@ const field =
 
 export function CheckoutView() {
   const { cart, busy, error: cartError, setQty, remove, refresh } = useCart();
+  const { customer, csrf, ready } = useAccount();
   const [config, setConfig] = useState<ShopConfig | null>(null);
   const [placed, setPlaced] = useState<CheckoutOut | null>(null);
   const [placedPhone, setPlacedPhone] = useState("");
@@ -64,6 +66,8 @@ export function CheckoutView() {
     register,
     handleSubmit,
     control,
+    getValues,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Values>({
     resolver: zodResolver(schema),
@@ -71,11 +75,30 @@ export function CheckoutView() {
   });
   const method = useWatch({ control, name: "paymentMethod" });
 
+  // Fill the delivery details the customer saved, but never over something they already typed.
+  const customerId = customer?.id;
+  useEffect(() => {
+    if (!customer) return;
+    const saved = {
+      name: customer.fullName,
+      phone: customer.phone,
+      address: customer.shipAddress,
+      ward: customer.shipWard,
+      district: customer.shipDistrict,
+      province: customer.shipProvince,
+    } as const;
+    for (const [key, value] of Object.entries(saved) as [keyof typeof saved, string][]) {
+      if (value && !getValues(key)) setValue(key, value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the signed-in customer changes
+  }, [customerId]);
+
   async function onSubmit(v: Values) {
     setFailure(null);
     idemKey.current ??= crypto.randomUUID();
     try {
       const { data, error } = await browserApi.POST("/api/orders", {
+        headers: { "X-CSRF-Token": csrf ?? "" },
         params: { header: { "idempotency-key": idemKey.current } },
         body: {
           customer: { name: v.name, phone: v.phone },
@@ -108,14 +131,43 @@ export function CheckoutView() {
   const lines = cart?.items ?? [];
   const empty = cart !== null && lines.length === 0;
   const methods = config?.paymentMethods ?? ["cod"];
-  const canOrder = !empty && cart !== null && !cart.hasUnavailable && cart.itemCount > 0;
+  const signedIn = customer !== null;
+  const needLogin = ready && !signedIn;
+  const canOrder = !empty && cart !== null && !cart.hasUnavailable && cart.itemCount > 0 && signedIn;
 
   return (
     <div className="mx-auto grid w-full max-w-[1200px] gap-6 px-4 pb-4 pt-8 sm:px-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-[clamp(32px,5vw,46px)] font-extrabold leading-[1.05] tracking-[-0.04em]">Giỏ hàng và thanh toán</h1>
-        <span className="rounded-full bg-leaf-soft px-3.5 py-2 text-sm font-semibold text-leaf">Không cần tài khoản</span>
+        <span className="rounded-full bg-leaf-soft px-3.5 py-2 text-sm font-semibold text-leaf">{customer ? `Đăng nhập: ${customer.email}` : "Cần đăng nhập để đặt hàng"}</span>
       </div>
+
+      {needLogin && !empty && (
+        <section role="region" aria-label="Đăng nhập để thanh toán" className={cn(card, "flex flex-wrap items-center justify-between gap-4 border-accent")}>
+          <div className="grid gap-1">
+            <b className="text-lg">Đăng nhập để thanh toán</b>
+            <span className="text-sm text-muted">Giỏ hàng của bạn được giữ lại. Đăng nhập hoặc tạo tài khoản rồi quay lại để đặt hàng.</span>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/account/login?next=/checkout" className={buttonClass()}>
+              Đăng nhập
+            </Link>
+            <Link href="/account/register?next=/checkout" className={buttonClass({ variant: "outline" })}>
+              Tạo tài khoản
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {customer && !customer.emailVerified && !empty && (
+        <p role="status" className="rounded-[10px] bg-turmeric-soft px-5 py-3.5 text-[14px] leading-relaxed">
+          <b>Hãy xác nhận e-mail để đặt hàng.</b> Chúng tôi đã gửi một thư tới {customer.email}. Bấm đường dẫn trong thư, hoặc{" "}
+          <Link href="/account" className="font-semibold underline underline-offset-4">
+            gửi lại thư
+          </Link>
+          .
+        </p>
+      )}
 
       <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate className="grid items-start gap-6 lg:grid-cols-[1fr_380px] lg:gap-8">
         <div className="grid min-w-0 gap-5">
