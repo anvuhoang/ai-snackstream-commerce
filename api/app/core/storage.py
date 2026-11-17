@@ -79,7 +79,9 @@ class CloudinaryStorage:
     def _api(self, action: str, params: dict[str, str], files: dict | None = None) -> httpx.Response:
         params = {**params, "timestamp": str(int(time.time()))}
         body = {**params, "api_key": self.api_key, "signature": self._sign(params)}
-        return self._client.post(f"https://api.cloudinary.com/v1_1/{self.cloud}/image/{action}", data=body, files=files)
+        return self._client.post(
+            f"https://api.cloudinary.com/v1_1/{self.cloud}/image/{action}", data=body, files=files
+        )
 
     @staticmethod
     def _public_id(key: str) -> str:
@@ -102,7 +104,9 @@ class CloudinaryStorage:
         return key
 
     def delete(self, key: str) -> None:
-        with contextlib.suppress(httpx.HTTPError, ValueError):  # an orphaned picture is harmless; the row is already gone
+        with contextlib.suppress(
+            httpx.HTTPError, ValueError
+        ):  # an orphaned picture is harmless; the row is already gone
             self._api("destroy", {"public_id": self._public_id(key)})
 
     def url(self, key: str) -> str:
