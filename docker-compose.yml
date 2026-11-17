@@ -40,6 +40,7 @@ services:
       # E-mail links for customer accounts (see api/.env.example); the key stays in this container only.
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       MAIL_FROM: ${MAIL_FROM:-SnackStream <onboarding@resend.dev>}
+      CLOUDINARY_URL: ${CLOUDINARY_URL:-}
       WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:3000}
       LIVE_SIMLI_AUDIO_PATH: ${LIVE_SIMLI_AUDIO_PATH:-}
       LIVE_SIMLI_AUDIO_SKU: ${LIVE_SIMLI_AUDIO_SKU:-}

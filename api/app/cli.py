@@ -21,6 +21,7 @@ from pathlib import Path
 
 from app.core.config import get_settings
 from app.core.db import make_engine, make_session_factory
+from app.core.storage import build_storage
 from app.main import run_migrations
 from app.modules.auth import service as auth_service
 from app.modules.catalog import facts_import
@@ -68,7 +69,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "seed-catalog":
         run_migrations(settings.database_url)
         with make_session_factory(make_engine(settings.database_url))() as db:
-            print(catalog_seed.seed_catalog(db, Path(settings.media_dir)))
+            print(catalog_seed.seed_catalog(db, build_storage(settings)))
         return 0
 
     if args.cmd == "sync-odoo":

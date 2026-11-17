@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     bootstrap_admin_email: str = Field("", alias="BOOTSTRAP_ADMIN_EMAIL")
     bootstrap_admin_password: str = Field("", alias="BOOTSTRAP_ADMIN_PASSWORD")
     media_dir: str = Field("./media", alias="MEDIA_DIR")
+    # cloudinary://<api_key>:<api_secret>@<cloud_name>. Set = pictures live on Cloudinary (survive a redeploy); empty = local folder.
+    cloudinary_url: SecretStr = Field(default=SecretStr(""), alias="CLOUDINARY_URL")
     max_upload_bytes: int = Field(5 * 1024 * 1024, alias="MAX_UPLOAD_BYTES")
     # Opt-in: create the labelled demo catalog at start-up (idempotent). Handy on hosts without a shell.
     seed_demo_catalog: bool = Field(False, alias="SEED_DEMO_CATALOG")
