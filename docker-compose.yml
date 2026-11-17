@@ -16,6 +16,10 @@ services:
 
   api:
     build: ./api
+    # Anything else from api/.env.example can be put in the root .env and reaches the API container through this file.
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql+psycopg://snack:${POSTGRES_PASSWORD}@db:5432/snackstream
       APP_ENV: ${APP_ENV:-dev}
