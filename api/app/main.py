@@ -17,7 +17,7 @@ from app.core.config import Settings, get_settings
 from app.core.db import make_engine, make_session_factory
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestIdMiddleware, configure_logging
-from app.core.storage import LocalMediaStorage
+from app.core.storage import LocalMediaStorage, build_storage
 from app.modules.analytics import router_admin as analytics_admin
 from app.modules.analytics import router_public as analytics_public
 from app.modules.auth import router as auth_router
@@ -57,7 +57,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with app.state.session_factory() as db:
             auth_service.ensure_bootstrap_admin(db, settings)
             if settings.seed_demo_catalog:
-                catalog_seed.seed_catalog(db, Path(settings.media_dir))
+                catalog_seed.seed_catalog(db, app.state.storage)
         playback_task = None
         if settings.live_mock_enabled or settings.live_make_enabled or settings.live_simli_enabled:
             playback_task = asyncio.create_task(run_playback(app.state.live, settings))
@@ -81,8 +81,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.engine = make_engine(settings.database_url)
     app.state.session_factory = make_session_factory(app.state.engine)
     app.state.live = LiveService()
-    app.state.storage = LocalMediaStorage(Path(settings.media_dir))
-    app.mount("/api/media", StaticFiles(directory=app.state.storage.root), name="media")
+    app.state.storage = build_storage(settings)
+    if isinstance(app.state.storage, LocalMediaStorage):
+        app.mount("/api/media", StaticFiles(directory=app.state.storage.root), name="media")
 
     # Middleware order: the last one added runs first.
     app.add_middleware(

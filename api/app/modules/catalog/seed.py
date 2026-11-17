@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.db import utcnow
+from app.core.storage import LocalMediaStorage, MediaStorage
 from app.core.text import slugify
 from app.modules.inventory.models import StockLevel, StockMovement
 
@@ -103,14 +104,19 @@ def _file_for(sku: str) -> Path:
     return ASSETS / f"{sku.lower()}.webp"
 
 
-def _attach_images(db: Session, product: Product, skus: list[str], media_dir: Path) -> None:
-    media_dir.mkdir(parents=True, exist_ok=True)
+def _put_assets(storage: MediaStorage) -> None:
+    """Make sure the bundled pictures exist in storage. A host with an ephemeral disk (Render free) loses a local folder on
+    every restart while the product rows that point at it stay in the database; Cloudinary keeps them, so only gaps are filled."""
+    for src in sorted(ASSETS.glob("*.webp")):
+        storage.put_if_missing(f"seed-{src.name}", src.read_bytes())
+
+
+def _attach_images(db: Session, product: Product, skus: list[str]) -> None:
     for order, sku in enumerate(skus):
         src = _file_for(sku)
         if not src.exists():
             continue
         key = f"seed-{src.name}"  # a fixed bare file name, so re-running the seed reuses the same file
-        (media_dir / key).write_bytes(src.read_bytes())
         db.add(ProductImage(product_id=product.id, storage_key=key, alt=product.name, sort_order=order))
     db.commit()
 
@@ -141,12 +147,15 @@ def _stock_demo_variants(db: Session) -> int:
     return len(variants)
 
 
-def seed_catalog(db: Session, media_dir: Path | None = None) -> dict[str, int]:
+def seed_catalog(db: Session, media: MediaStorage | Path | None = None) -> dict[str, int]:
     """Create the categories and products that do not exist yet. Returns how many of each were created.
 
-    With `media_dir`, the bundled product renders are copied there and attached as each product's pictures.
+    With `media` (a storage, or a folder), the bundled product renders are stored there and attached as each product's pictures.
     """
     created = {"categories": 0, "products": 0}
+    storage = LocalMediaStorage(media) if isinstance(media, Path) else media
+    if storage is not None:
+        _put_assets(storage)
     by_name: dict[str, Category] = {}
     for name in CATEGORIES:
         existing = db.scalar(select(Category).where(Category.slug == slugify(name)))
@@ -175,8 +184,8 @@ def seed_catalog(db: Session, media_dir: Path | None = None) -> dict[str, int]:
             is_demo=True,
         )
         service.publish_product(db, product.id)
-        if media_dir is not None:
-            _attach_images(db, product, [v[0] for v in variants], media_dir)
+        if storage is not None:
+            _attach_images(db, product, [v[0] for v in variants])
         created["products"] += 1
     _stock_demo_variants(db)  # not counted in the result: callers and tests rely on its two keys
     return created

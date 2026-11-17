@@ -27,6 +27,10 @@ services:
         value: "true"
       - key: SEED_DEMO_CATALOG
         value: "1"
+      # Product pictures. Render's free disk is wiped on every restart, so keep them on Cloudinary: copy "API Environment
+      # variable" (cloudinary://<key>:<secret>@<cloud>) from the Cloudinary dashboard. Empty = local folder (lost on restart).
+      - key: CLOUDINARY_URL
+        sync: false
       # Create the first admin once; set these in the Render dashboard (sync: false keeps them out of git).
       - key: BOOTSTRAP_ADMIN_EMAIL
         sync: false

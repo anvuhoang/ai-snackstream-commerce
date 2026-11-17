@@ -1,23 +1,34 @@
 """Where uploaded files live.
 
 `LocalMediaStorage` writes to a folder and the app serves it under /api/media. That is right for development and a single
-server. On hosts with an ephemeral disk (e.g. Render's free tier) uploads vanish on redeploy; swap in an object-storage
-implementation with the same three methods (see docs/ROADMAP.md, P7) when that matters.
+server. On hosts with an ephemeral disk (e.g. Render's free tier) uploads vanish on redeploy, so `CloudinaryStorage`
+keeps them on Cloudinary instead. It is chosen when CLOUDINARY_URL is set; the rest of the app only sees `MediaStorage`.
 """
 
 from __future__ import annotations
 
+import contextlib
+import hashlib
+import time
 import uuid
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
+from urllib.parse import unquote, urlsplit
 
+import httpx
 from fastapi import Request
+
+if TYPE_CHECKING:
+    from app.core.config import Settings
+
+FOLDER = "snackstream"
 
 
 class MediaStorage(Protocol):
     def save(self, data: bytes, ext: str) -> str: ...
     def delete(self, key: str) -> None: ...
     def url(self, key: str) -> str: ...
+    def put_if_missing(self, key: str, data: bytes) -> None: ...
 
 
 class LocalMediaStorage:
@@ -38,6 +49,77 @@ class LocalMediaStorage:
 
     def url(self, key: str) -> str:
         return f"{self.url_prefix}/{key}"
+
+    def put_if_missing(self, key: str, data: bytes) -> None:
+        """Store a file under a fixed name (the bundled demo pictures); leave it alone when it is already there."""
+        if Path(key).name != key:
+            raise ValueError("storage key must be a bare file name")
+        target = self.root / key
+        if not target.exists():
+            target.write_bytes(data)
+
+
+class CloudinaryStorage:
+    """Pictures on Cloudinary. A key is `<name><ext>`; the file lives at <cloud>/image/upload/snackstream/<name>."""
+
+    def __init__(self, cloudinary_url: str, client: httpx.Client | None = None):
+        parts = urlsplit(cloudinary_url.strip())
+        if parts.scheme != "cloudinary" or not (parts.username and parts.password and parts.hostname):
+            raise ValueError("CLOUDINARY_URL must look like cloudinary://<api_key>:<api_secret>@<cloud_name>")
+        self.api_key = unquote(parts.username)
+        self._secret = unquote(parts.password)
+        self.cloud = parts.hostname
+        self._client = client or httpx.Client(timeout=20.0)
+
+    # -- helpers
+    def _sign(self, params: dict[str, str]) -> str:
+        to_sign = "&".join(f"{k}={params[k]}" for k in sorted(params))
+        return hashlib.sha1((to_sign + self._secret).encode()).hexdigest()  # noqa: S324  (Cloudinary's own scheme)
+
+    def _api(self, action: str, params: dict[str, str], files: dict | None = None) -> httpx.Response:
+        params = {**params, "timestamp": str(int(time.time()))}
+        body = {**params, "api_key": self.api_key, "signature": self._sign(params)}
+        return self._client.post(f"https://api.cloudinary.com/v1_1/{self.cloud}/image/{action}", data=body, files=files)
+
+    @staticmethod
+    def _public_id(key: str) -> str:
+        if Path(key).name != key:
+            raise ValueError("storage key must be a bare file name")
+        return f"{FOLDER}/{Path(key).stem}"
+
+    def _upload(self, key: str, data: bytes, overwrite: bool) -> None:
+        params = {"public_id": self._public_id(key)}
+        if overwrite:
+            params["overwrite"] = "true"
+        resp = self._api("upload", params, files={"file": (key, data)})
+        if resp.status_code != 200:
+            raise RuntimeError(f"Cloudinary upload failed ({resp.status_code})")
+
+    # -- MediaStorage
+    def save(self, data: bytes, ext: str) -> str:
+        key = f"{uuid.uuid4().hex}{ext}"
+        self._upload(key, data, overwrite=False)
+        return key
+
+    def delete(self, key: str) -> None:
+        with contextlib.suppress(httpx.HTTPError, ValueError):  # an orphaned picture is harmless; the row is already gone
+            self._api("destroy", {"public_id": self._public_id(key)})
+
+    def url(self, key: str) -> str:
+        return f"https://res.cloudinary.com/{self.cloud}/image/upload/{FOLDER}/{key}"
+
+    def put_if_missing(self, key: str, data: bytes) -> None:
+        try:
+            if self._client.head(self.url(key)).status_code == 200:
+                return
+        except httpx.HTTPError:
+            pass  # cannot tell: try to upload, which overwrites the same name
+        self._upload(key, data, overwrite=True)
+
+
+def build_storage(settings: Settings) -> MediaStorage:
+    cloud = settings.cloudinary_url.get_secret_value().strip()
+    return CloudinaryStorage(cloud) if cloud else LocalMediaStorage(Path(settings.media_dir))
 
 
 def sniff_image_ext(data: bytes) -> str | None:
