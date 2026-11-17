@@ -50,3 +50,18 @@ def test_the_catalog_can_be_seeded_at_start_up(settings: Settings):
     on = settings.model_copy(update={"seed_demo_catalog": True})
     with TestClient(create_app(on)) as c:
         assert c.get(f"{PUBLIC}/products").json()["total"] == len(seed.PRODUCTS)
+
+
+def test_the_chatbot_index_is_built_at_start_up_only_when_rag_is_on(settings: Settings):
+    from sqlalchemy import func, select
+
+    from app.modules.rag.models import KbChunk
+
+    def chunks(config: Settings) -> int:
+        app = create_app(config)
+        with TestClient(app), app.state.session_factory() as db:
+            return db.scalar(select(func.count()).select_from(KbChunk))
+
+    base = settings.model_copy(update={"seed_demo_catalog": True})
+    assert chunks(base.model_copy(update={"chat_rag_enabled": False})) == 0
+    assert chunks(base.model_copy(update={"chat_rag_enabled": True, "rag_embedder": "hash"})) > 0
