@@ -21,7 +21,7 @@ from app.core.config import Settings
 from app.main import create_app
 
 from .test_inventory import INVENTORY, row, track
-from .test_orders import ADMIN_ORDERS, CART, body, key, sellable
+from .test_orders import ADMIN_ORDERS, CART, body, ensure_customer, key, sellable
 
 pytestmark = pytest.mark.postgres
 
@@ -57,6 +57,7 @@ def pg_admin(tmp_path):
 def _buyer(app, product: dict, gate: threading.Barrier) -> int:
     """One customer: fills a cart, waits for the other customer, then places the order. Returns the HTTP status."""
     c = TestClient(app)
+    ensure_customer(c)
     added = c.post(f"{CART}/items", json={"variantId": product["variants"][0]["id"], "qty": 1})
     assert added.status_code == 200, added.text
     gate.wait(timeout=30)  # both carts are ready: release both orders at the same moment

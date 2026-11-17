@@ -39,7 +39,16 @@ server-sent events need. Server components call the API with the visitor's cooki
 
 ## Authentication
 
-- **Customers have no accounts** (guest checkout). They get an unguessable order token and look orders up with token + phone.
+- **Customers have accounts** (`customer` table, module `customers`, routes `/api/account/*`): e-mail + password (scrypt), the same signed
+  session cookie as staff but a different key, CSRF on writes, `Cache-Control: no-store` on every account answer. **Browsing and the cart
+  need no login; checkout does** (`POST /api/orders` answers `401 login_required`). An order stores `customer_id`; a customer sees only their
+  own orders (`/api/account/orders`). Orders from before accounts have no customer and stay reachable by order token + phone.
+- **E-mail links** (`customer_token`, only the SHA-256 of a token is stored): confirm an address (`/verify-email`, 24 h) and choose a new
+  password (`/forgot-password` then `/reset-password`, 1 h, one use; a newer link cancels the older one). "Forgot password" answers the
+  same for every address. Mail goes out through Resend after the reply is sent (`app/core/mail.py`); with no `RESEND_API_KEY` the link is
+  only logged. Checkout needs a confirmed e-mail exactly when mail can be sent (`REQUIRE_EMAIL_VERIFICATION` overrides).
+  Signing in upgrades an older, cheaper scrypt hash to the current cost. Staff can list customers and an admin can switch an account off
+  (`/api/admin/customers`); a switched-off account stops working at once, even in an open session.
 - **Staff** sign in with e-mail and password (scrypt). The session is a signed cookie; every write sends `X-CSRF-Token`.
   Roles: `admin` (everything) and `staff` (operate orders and stock).
 - Service-to-service writers (chat, live workers) will use scoped tokens, one per module, so a leak can be revoked alone.

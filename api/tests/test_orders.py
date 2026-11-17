@@ -8,6 +8,7 @@ from itertools import count
 import pytest
 from fastapi.testclient import TestClient
 
+from app.modules.customers import router as customers_router
 from app.modules.orders import stock
 
 from .helpers import make_product
@@ -51,7 +52,32 @@ def add(visitor: TestClient, product: dict, qty: int = 1):
     return visitor.post(f"{CART}/items", json={"variantId": product["variants"][0]["id"], "qty": qty})
 
 
+def sign_in_customer(visitor: TestClient) -> dict:
+    """Register a fresh customer on this visitor's cookie jar; checkout needs a signed-in customer."""
+    n = next(_n)
+    customers_router._register_limiter._hits.clear()  # many tests sign up; the limiter is not what they check
+    r = visitor.post(
+        "/api/account/register",
+        json={
+            "email": f"buyer{n}-{uuid.uuid4().hex[:6]}@example.com",
+            "password": "buyer-password-1",
+            "fullName": "Nguyễn Văn An",
+            "phone": PHONE,
+        },
+    )
+    assert r.status_code == 201, r.text
+    visitor.headers["X-CSRF-Token"] = r.json()["csrf"]
+    visitor._customer = r.json()["customer"]  # type: ignore[attr-defined]
+    return r.json()["customer"]
+
+
+def ensure_customer(visitor: TestClient) -> None:
+    if getattr(visitor, "_customer", None) is None:
+        sign_in_customer(visitor)
+
+
 def place(visitor: TestClient, idem: str | None = None, **overrides):
+    ensure_customer(visitor)
     return visitor.post(ORDERS, json=body(**overrides), headers={"Idempotency-Key": idem or key()})
 
 
@@ -202,12 +228,14 @@ def test_a_key_used_for_a_different_request_is_rejected(signed_in, anon):
     add(anon, sellable(signed_in), 1)
     other = body()
     other["customer"]["name"] = "Someone Else"
+    ensure_customer(anon)
     r = anon.post(ORDERS, json=other, headers={"Idempotency-Key": idem})
     assert r.status_code == 409 and r.json()["error"]["code"] == "idempotency_key_reused"
 
 
 def test_checkout_needs_an_idempotency_key_and_a_cart(signed_in, anon):
     add(anon, sellable(signed_in))
+    ensure_customer(anon)
     assert anon.post(ORDERS, json=body()).status_code == 422
     empty = TestClient(anon.app)
     r = place(empty)
@@ -246,6 +274,7 @@ def test_a_bad_phone_number_is_rejected(signed_in, anon, phone):
     add(anon, sellable(signed_in))
     payload = body()
     payload["customer"]["phone"] = phone
+    ensure_customer(anon)
     assert anon.post(ORDERS, json=payload, headers={"Idempotency-Key": key()}).status_code == 422
 
 
@@ -253,6 +282,7 @@ def test_plus_84_phone_numbers_are_stored_with_a_leading_zero(signed_in, anon):
     add(anon, sellable(signed_in))
     payload = body()
     payload["customer"]["phone"] = "+84 901 234 567"
+    ensure_customer(anon)
     r = anon.post(ORDERS, json=payload, headers={"Idempotency-Key": key()})
     assert r.status_code == 201
     assert signed_in.get(ADMIN_ORDERS).json()["items"][0]["customerPhone"] == PHONE

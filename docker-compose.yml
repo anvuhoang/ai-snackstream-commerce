@@ -37,6 +37,10 @@ services:
       LIVE_MAKE_RESULT_TIMEOUT_SECONDS: ${LIVE_MAKE_RESULT_TIMEOUT_SECONDS:-180}
       LIVE_MOCK_ENABLED: ${LIVE_MOCK_ENABLED:-false}
       LIVE_MOCK_VIDEO_DURATION_SECONDS: ${LIVE_MOCK_VIDEO_DURATION_SECONDS:-10.077007}
+      # E-mail links for customer accounts (see api/.env.example); the key stays in this container only.
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-SnackStream <onboarding@resend.dev>}
+      WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:3000}
       LIVE_SIMLI_AUDIO_PATH: ${LIVE_SIMLI_AUDIO_PATH:-}
       LIVE_SIMLI_AUDIO_SKU: ${LIVE_SIMLI_AUDIO_SKU:-}
       LIVE_SIMLI_MOCK_REPLY_WAV_PATH: ${LIVE_SIMLI_MOCK_REPLY_WAV_PATH:-}

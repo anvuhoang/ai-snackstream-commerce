@@ -16,7 +16,7 @@ from app.modules.orders import payos, service, stock
 from app.modules.orders.models import Order, Payment
 
 from .conftest import ADMIN_EMAIL, ADMIN_PASSWORD
-from .test_orders import ADMIN_ORDERS, CART, ORDERS, PHONE, add, body, key, sellable
+from .test_orders import ADMIN_ORDERS, CART, ORDERS, PHONE, add, body, ensure_customer, key, sellable
 
 KEY = "test-checksum-key-0123456789abcdef"
 WEBHOOK = "/api/payments/payos/webhook"
@@ -116,6 +116,7 @@ def online(settings: Settings, fake):
 
 def order_payos(admin: TestClient, visitor: TestClient, price: int = 100_000) -> dict:
     add(visitor, sellable(admin, price))
+    ensure_customer(visitor)
     r = visitor.post(ORDERS, json=body(paymentMethod="payos"), headers={"Idempotency-Key": key()})
     assert r.status_code == 201, r.text
     return r.json()
@@ -214,6 +215,7 @@ def test_every_new_link_gets_its_own_order_number_but_settles_the_same_payment(o
 def test_payos_cannot_be_chosen_while_it_is_switched_off(signed_in):
     visitor = TestClient(signed_in.app)
     add(visitor, sellable(signed_in, 100_000))
+    ensure_customer(visitor)
     r = visitor.post(ORDERS, json=body(paymentMethod="payos"), headers={"Idempotency-Key": key()})
     assert r.status_code == 422 and r.json()["error"]["code"] == "payment_method_unavailable"
 
@@ -408,6 +410,7 @@ def test_a_customer_looking_up_an_expired_order_sees_it_cancelled(online):
 def test_cash_on_delivery_orders_never_expire(online, counted_stock):
     admin, visitor = online
     add(visitor, sellable(admin))
+    ensure_customer(visitor)
     assert visitor.post(ORDERS, json=body(), headers={"Idempotency-Key": key()}).json()["expiresAt"] is None
     with admin.app.state.session_factory() as db:
         assert service.expire_due_orders(db) == 0

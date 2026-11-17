@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import re
 from datetime import datetime
 from typing import Literal
 
 from pydantic import Field, field_validator
 
 from app.core.schemas import ApiModel
+from app.core.text import normalize_phone
 from app.modules.analytics.schemas import AttributionIn
 from app.modules.catalog.schemas import ImageOut
 
@@ -17,16 +17,6 @@ OrderStatus = Literal["new", "confirmed", "shipping", "completed", "cancelled"]
 PaymentMethod = Literal["cod", "vnpay", "payos"]
 CheckoutMethod = Literal["cod", "payos"]
 PaymentStatus = Literal["pending", "paid", "failed", "expired"]
-
-
-def normalize_phone(raw: str) -> str:
-    """Vietnamese mobile/landline numbers as plain digits with a leading 0 (+84 and 84 are accepted)."""
-    digits = re.sub(r"\D", "", raw)
-    if digits.startswith("84") and len(digits) >= 11:
-        digits = "0" + digits[2:]
-    if not re.fullmatch(r"0\d{9,10}", digits):
-        raise ValueError("Enter a valid Vietnamese phone number, e.g. 0901234567.")
-    return digits
 
 
 # ------------------------------------------------------------------ shop settings the web needs

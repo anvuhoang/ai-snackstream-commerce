@@ -180,8 +180,9 @@ def normalize_code(code: str) -> str:
     return code.strip().upper().replace(" ", "")
 
 
-def _request_hash(lines: list[CartLineData], body: CheckoutIn) -> str:
+def _request_hash(lines: list[CartLineData], body: CheckoutIn, customer_id: int) -> str:
     payload = {
+        "customer": customer_id,
         "cart": sorted((ln.item.variant_id, ln.item.qty) for ln in lines),
         "body": body.model_dump(mode="json"),
     }
@@ -212,16 +213,23 @@ def _replay(db: Session, key: str, request_hash: str) -> Order | None:
 
 
 def place_order(
-    db: Session, settings: Settings, cart: Cart | None, body: CheckoutIn, idempotency_key: str
+    db: Session,
+    settings: Settings,
+    cart: Cart | None,
+    body: CheckoutIn,
+    idempotency_key: str,
+    customer_id: int,
 ) -> Order:
     lines = cart_lines(db, cart)
     if not lines:
         # A retry after success finds an empty cart: answer with the order that key already made.
         stored = db.scalar(select(IdempotencyKey).where(IdempotencyKey.key == idempotency_key))
         if stored is not None:
-            return load_order(db, stored.order_id)
+            order = load_order(db, stored.order_id)
+            if order.customer_id == customer_id:
+                return order
         raise AppError(409, "cart_empty", "Your cart is empty.")
-    request_hash = _request_hash(lines, body)
+    request_hash = _request_hash(lines, body, customer_id)
     replayed = _replay(db, idempotency_key, request_hash)
     if replayed is not None:
         return replayed
@@ -242,6 +250,7 @@ def place_order(
     fee = shipping_fee(subtotal, settings)
     order = Order(
         code=_new_code(db),
+        customer_id=customer_id,
         status="new",
         customer_name=body.customer.name,
         customer_phone=body.customer.phone,
@@ -360,6 +369,30 @@ def lookup_order(db: Session, code: str, phone: str) -> Order:
     order = db.scalar(select(Order).where(Order.code == normalize_code(code)))
     if order is None or order.customer_phone != phone:
         raise AppError(404, "order_not_found", "We could not find an order with that code and phone number.")
+    expire_if_due(db, order)
+    return load_order(db, order.id)
+
+
+def customer_orders(db: Session, customer_id: int, limit: int = 50) -> list[Order]:
+    """A signed-in customer's own orders, newest first. Overdue unpaid ones are closed on the way, as in look-up."""
+    orders = db.scalars(
+        select(Order)
+        .where(Order.customer_id == customer_id)
+        .order_by(Order.id.desc())
+        .limit(limit)
+        .options(selectinload(Order.items), selectinload(Order.payments), selectinload(Order.history))
+    ).all()
+    for order in orders:
+        expire_if_due(db, order)
+    return list(orders)
+
+
+def customer_order(db: Session, customer_id: int, code: str) -> Order:
+    order = db.scalar(
+        select(Order).where(Order.code == normalize_code(code), Order.customer_id == customer_id)
+    )
+    if order is None:
+        raise AppError(404, "order_not_found", "We could not find that order.")
     expire_if_due(db, order)
     return load_order(db, order.id)
 

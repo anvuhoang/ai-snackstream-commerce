@@ -1,4 +1,4 @@
-"""Public shop endpoints: cart, checkout, order look-up and the online-payment callbacks. No login: guests only."""
+"""Shop endpoints: the cart (anyone), checkout and own-order history (signed-in customers), look-up and payment callbacks."""
 
 from __future__ import annotations
 
@@ -14,6 +14,9 @@ from app.core.db import get_db
 from app.core.errors import AppError
 from app.core.security import RateLimiter
 from app.core.storage import MediaStorage, get_storage
+from app.modules.auth.deps import require_csrf
+from app.modules.customers.deps import current_customer, no_store
+from app.modules.customers.models import Customer
 from app.modules.inventory import service as inventory
 
 from . import presenters, service
@@ -133,14 +136,30 @@ def checkout(
     body: CheckoutIn,
     request: Request,
     db: Db,
+    customer: Annotated[Customer, Depends(current_customer)],
+    _csrf: Annotated[
+        None, Depends(require_csrf)
+    ],  # after the customer, so a visitor hears "sign in", not "reload"
     idempotency_key: Annotated[
         str, Header(min_length=8, max_length=80, description="A fresh random value per checkout attempt.")
     ],
 ) -> CheckoutOut:
-    """Place an order from the cart. Safe to repeat: the same Idempotency-Key and request return the same order."""
+    """Place an order from the cart. Needs a signed-in customer. Safe to repeat: the same Idempotency-Key and request return the same order."""
+    if _settings(request).email_verification_required and not customer.email_verified:
+        raise AppError(403, "email_not_verified", "Please confirm your e-mail address before ordering.")
     cart = service.find_cart(db, request.cookies.get(CART_COOKIE))
-    order = service.place_order(db, _settings(request), cart, body, idempotency_key)
+    order = service.place_order(db, _settings(request), cart, body, idempotency_key, customer.id)
     return presenters.checkout_out(order, service.payment_url(db, _settings(request), order))
+
+
+@router.get("/account/orders", response_model=list[OrderOut], dependencies=[Depends(no_store)])
+def my_orders(db: Db, customer: Annotated[Customer, Depends(current_customer)]) -> list[OrderOut]:
+    return [presenters.own_order(o) for o in service.customer_orders(db, customer.id)]
+
+
+@router.get("/account/orders/{code}", response_model=OrderOut, dependencies=[Depends(no_store)])
+def my_order(code: str, db: Db, customer: Annotated[Customer, Depends(current_customer)]) -> OrderOut:
+    return presenters.own_order(service.customer_order(db, customer.id, code))
 
 
 @router.post("/orders/pay-link", response_model=PayLinkOut)
